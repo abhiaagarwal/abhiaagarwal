@@ -2,6 +2,8 @@
 tags:
   - observations
 title: Running a bunch of python futures in a safely
+draft: true
+tags: [observations]
 ---
 Hey, did you know that unless you know exactly what you're doing, you should _never_ use `asyncio.gather` after manually creating async tasks via `asyncio.create_task()`? 
 
