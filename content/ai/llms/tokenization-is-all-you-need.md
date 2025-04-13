@@ -1,8 +1,10 @@
 ---
-tags:
-  - thoughts
 title: Tokenization is all you need
+tags: [thoughts]
 ---
+
+> [!attention] Disclaimer (4/11/25)
+> I wrote this a couple years ago. Having more experience with LLMs on both a technical level and a professional level, I feel most of this article is misinformed / incorrect. I'm leaving it up because it's an interesting snapshot into what I was thinking as a true amateur, but I do not think it's really intelligent or worthwhile.
 
 A LLM, at the end of the day, is a fancy autocomplete. A fancy autocomplete that ingests a bunch of tokens, embeds them to "understand" the semantic context of said tokens, and then outputs a bunch of tokens based on statistical modeling.
 
