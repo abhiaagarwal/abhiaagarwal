@@ -1,1 +1,25 @@
 @import "tailwindcss";
+
+:root {
+    --color-primary: #a35fc6;
+    --color-secondary: #ff6c9f;
+    --color-light: #faf8f8;
+}
+
+:root[class~="dark"] {
+    --color-primary: #a35fc6;
+    --color-secondary: #0c0c0c;
+    --color-light: #212529;
+}
+
+@theme inline {
+    --color-primary: rgb(var(--color-primary));
+    --color-secondary: rgb(var(--color-secondary));
+    --color-light: rgb(var(--color-light));
+}
+
+@theme {
+    --font-sans: "Fira Sans", sans-serif;
+    --font-mono: "Fira Code", monospace;
+    --font-serif: "Lora", serif;
+}
