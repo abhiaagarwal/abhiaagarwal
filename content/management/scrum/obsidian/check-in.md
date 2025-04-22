@@ -1,6 +1,5 @@
 ---
-tags:
-  - observations
+tags: [observations]
 ---
 
 I'm a big fan of 1:1 meetings, especially as a means to close out a sprint and begin planning the next one. Here's the obsidian template I use to record notes from the 1:1s I have with my team members.

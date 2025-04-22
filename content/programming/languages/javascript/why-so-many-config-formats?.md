@@ -1,7 +1,6 @@
 ---
 title: Why does Javascript have so many config formats?
-tags:
-  - thoughts
+tags: [thoughts]
 ---
 
 I've been learning Typescript recently. I kinda love it in all honesty! I was turned off from Javascript because of the lack of a type system, but Typescript's is _very_ strong and ergonomic.

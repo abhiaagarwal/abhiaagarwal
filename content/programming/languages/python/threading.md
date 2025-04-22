@@ -1,6 +1,5 @@
 ---
-tags:
-  - notes
+tags: [notes]
 ---
 
 - Python threading by default is the worst of both words. In its current form, it sucks, completely.

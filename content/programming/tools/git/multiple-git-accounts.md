@@ -1,7 +1,6 @@
 ---
 title: Handling multiple git accounts
-tags:
-  - thoughts
+tags: [thoughts]
 ---
 
 Imagine the scenario: you have multiple github accounts, one for personal stuff, one for school, one for work stuff. Managing this stuff becomes a nightmare, and I'm sure y'all can relate to pushing with the wrong email, frantically having to amend, then `git config user.email`.

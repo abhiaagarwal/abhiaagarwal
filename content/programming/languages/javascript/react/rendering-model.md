@@ -1,7 +1,6 @@
 ---
-title: Notes on React's Rendering Model
-tags:
-  - notes
+title: "Notes on React's Rendering Model"
+tags: [notes]
 ---
 
 - **React Core:** Creates "stuff" on the page with Javascript. How? VDOM!

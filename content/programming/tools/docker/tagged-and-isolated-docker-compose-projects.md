@@ -1,7 +1,6 @@
 ---
 title: Using `just` to properly tag and isolate docker compose projects
-tags:
-  - observations
+tags: [observations]
 ---
 
 You're developing a dockerized application, so you have a docker compose stack.

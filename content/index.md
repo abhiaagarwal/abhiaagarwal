@@ -1,6 +1,6 @@
 ---
 title: Welcome to my notes :)
-description: Welcome to Abhi's Notes, a place for short-form thoughts about thingies.
+description: "Welcome to Abhi's Notes, a place for short-form thoughts about thingies."
 ---
 
 I tend to spend hours, sometime even days, going on wild goose chases to answer the weird questions I have.

@@ -1,6 +1,7 @@
 ---
 title: x509 client authentication/mTLS for Keycloak behind a reverse proxy.
 ---
+
 I had to solve an interesting problem recently:
 
 - I have a keycloak instance, living in a docker compose stack / kubernetes deployment.

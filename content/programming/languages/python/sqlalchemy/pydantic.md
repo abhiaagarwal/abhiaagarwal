@@ -1,7 +1,6 @@
 ---
 title: Pydantic models in SQLAlchemy
-tags:
-  - observations
+tags: [observations]
 ---
 
 Been using this snippet a lot recently in SQLAlchemy to have Pydantic models be de/serialized to JSON transparently for a nice abstraction.

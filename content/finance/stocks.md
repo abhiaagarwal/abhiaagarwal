@@ -1,7 +1,6 @@
 ---
-tags:
-  - thoughts
 draft: true
+tags: [thoughts]
 ---
 
 > [!warning] Disclaimer

@@ -1,7 +1,6 @@
 ---
-tags:
-  - thoughts
 title: Tokenization is all you need
+tags: [thoughts]
 ---
 
 > [!attention] Disclaimer (4/11/25)

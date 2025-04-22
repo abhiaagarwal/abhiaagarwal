@@ -1,7 +1,6 @@
 ---
-tags:
-  - thoughts
 draft: true
+tags: [thoughts]
 ---
 
 Credit cards are such a fun system. For me, there's kinda a thrill associated with them — you get access to "free" money for a month, but if you fuck up, you get hit with an exorbitant fine.

@@ -1,7 +1,6 @@
 ---
 title: My scrum workflow
-tags:
-  - thoughts
+tags: [thoughts]
 ---
 
 I recently became a task lead at my company. While I'm thrilled at the opportunity, I also am terrified.

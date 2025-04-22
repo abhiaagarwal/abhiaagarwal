@@ -1,7 +1,6 @@
 ---
 title: Notes on React Memoization
-tags:
-  - notes
+tags: [notes]
 ---
 
 - **What is Memoization?**

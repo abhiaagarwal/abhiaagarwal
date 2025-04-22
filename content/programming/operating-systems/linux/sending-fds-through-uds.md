@@ -1,7 +1,6 @@
 ---
 title: Sending file descriptors through unix domain sockets
-tags:
-  - observations
+tags: [observations]
 ---
 
 Unix domain sockets is the third type of socket (after TCP and UDP) which enables IPC. It also has a pretty unique power in that it can duplicate file descriptors across processes.

@@ -1,7 +1,6 @@
 ---
-title: Interview questions I've taken from the internet
-tags:
-  - notes
+title: "Interview questions I've taken from the internet"
+tags: [notes]
 ---
 
 - Personality:
