@@ -2,19 +2,21 @@
 import "@fontsource/fira-sans";
 import "@fontsource-variable/lora";
 import "@fontsource-variable/fira-code";
-import "../global.css";
+import "../styles/global.css";
+import Nav from "./Nav.astro";
 ---
 
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
-  </head>
-  <body class="bg-color-primary">
-    <slot />
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="generator" content={Astro.generator} />
+        <title>Abhi Agarwal</title>
+    </head>
+    <body class="bg-light flex flex-col min-h-screen">
+       <Nav></Nav>
+        <slot />
+    </body>
 </html>

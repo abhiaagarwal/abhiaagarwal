@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+    --color-primary: #a35fc6;
+    --color-secondary: #ff6c9f;
+    --color-light: #faf8f8;
+    --color-light-gray: #e5e5e5;
+    --color-gray: #b8b8b8;
+    --color-dark-gray: #4e4e4e;
+    --color-dark: #2b2b2b;
+}
+
+:root[class~="dark"] {
+    --color-primary: #a35fc6;
+    --color-secondary: #0c0c0c;
+    --color-light: #212529;
+    --color-light-gray: #393639;
+    --color-gray: #646464;
+    --color-dark-gray: #d4d4d4;
+    --color-dark: #ebebec;
+}
+
+::-moz-selection {
+    background-color: color-mix(in srgb,var(--color-secondary) 60%,#fff0)
+}
+
+::selection {
+    background-color: color-mix(in srgb,var(--color-secondary) 60%,#fff0)
+}
+
+@theme inline {
+    --color-primary: var(--color-primary);
+    --color-secondary: var(--color-secondary);
+    --color-light: var(--color-light);
+    --color-light-gray: var(--color-light-gray);
+    --color-gray: var(--color-gray);
+    --color-dark-gray: var(--color-dark-gray);
+    --color-dark: var(--color-dark);
+}
+
+@theme {
+    --font-sans: "Fira Sans", sans-serif;
+    --font-mono: "Fira Code", monospace;
+    --font-serif: "Lora", serif;
+}
