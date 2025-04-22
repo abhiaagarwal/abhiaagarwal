@@ -1,9 +1,77 @@
 ---
-import Welcome from "../components/Welcome.astro";
 import Layout from "../layouts/Base.astro";
-
 ---
 
 <Layout>
-  <Welcome />
+    <main class="m-8 flex justify-center">
+        <div class="text-dark max-w-300">
+            <h1 class="text-3xl font-serif font-semibold mb-6">Abhi Agarwal</h1>
+            <div class="text-base/6 font-serif">
+                <p>Howdy! I'm Abhi, and I build things and now try to write about them.</p>
+                <p>Some things about me:</p>
+                <ul class="list-disc list-outside ps-6 py-3">
+                    <li>
+                        I was born in Texas, lived in Minnesota for 10 years,
+                        then moved to northern mass. I now live in Cambridge,
+                        MA.
+                    </li>
+                    <li>
+                        I graduated from Bates College in Lewiston, Maine, where
+                        I spent my undergrad studying math, economics, and
+                        physics.
+                    </li>
+                    <li>
+                        I watch a lot of professional Basketball, and adore my
+                        Boston Celtics. I'm a part-time Connecticut Sun fan,
+                        too.
+                    </li>
+                    <li>I have two kittens that I adore.</li>
+                    <li>
+                        I currently build software for America's
+                        national security ecosystem.
+                    </li>
+                </ul>
+                <p>Some values that are important to me:</p>
+                <ul class="list-disc list-outside ps-6 py-3">
+                    <li>Agency</li><ul class="list-disc list-outside ps-6">
+                        <li>
+                            Be loud. Be right more than you are wrong. Be
+                            confidently wrong. Listen to others and make them
+                            correct you.
+                        </li>
+                        <li>Fear is the mind-killer.</li>
+                    </ul>
+                    <li>Exponential growth</li><ul
+                        class="list-disc list-outside ps-6"
+                    >
+                        <li>
+                            Most processes in life are autoregressive, which can
+                            be modeled exponentially.
+                        </li>
+                        <li>
+                            The decisions you make today affect what you make
+                            tomorrow. But the ones in the future.
+                        </li>
+                    </ul>
+                    <li>Sharing</li><ul class="list-disc list-outside ps-6">
+                        <li>Give back more than you take.</li>
+                        <li>
+                            Gatekeeping is lame. If you have alpha, let others
+                            catch up to you.
+                        </li>
+                    </ul>
+                    <li>Life is short. Have fun :D</li>
+                </ul>
+                <p>
+                    You can email me at hey@$&#123;this_domain&#125;. My resume
+                    is on
+                    <a
+                        class="font-medium"
+                        href="https://www.linkedin.com/in/abhiaagarwal/"
+                        >Linkedin</a
+                    >.
+                </p>
+            </div>
+        </div>
+    </main>
 </Layout>
