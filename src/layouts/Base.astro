@@ -4,6 +4,9 @@ import "@fontsource-variable/lora";
 import "@fontsource-variable/fira-code";
 import "../styles/global.css";
 import Nav from "./Nav.astro";
+
+import lora from "@fontsource-variable/lora/files/lora-latin-wght-normal.woff2?url";
+import firaCode from "@fontsource-variable/fira-code/files/fira-code-latin-wght-normal.woff2?url";
 ---
 
 <!doctype html>
@@ -17,14 +20,28 @@ import Nav from "./Nav.astro";
         />
         <meta name="generator" content={Astro.generator} />
         <title>Abhi Agarwal</title>
-        <script is:inline>
-            const theme = localStorage.getItem("theme");
+        <script>
+            const theme = localStorage.getItem("theme-preference");
             const isDark =
                 theme === "dark" ||
                 ((theme === null || theme === "system") &&
                     window.matchMedia("(prefers-color-scheme: dark)").matches);
             document.documentElement.dataset.theme = isDark ? "dark" : "light";
         </script>
+        <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            crossorigin="anonymous"
+            href={lora}
+        />
+        <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            crossorigin="anonymous"
+            href={firaCode}
+        />
     </head>
     <body class="bg-light transition-colors flex flex-col min-h-screen">
         <Nav />
