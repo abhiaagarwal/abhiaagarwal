@@ -1,9 +1,31 @@
-<header class="flex flex-row bg-light text-dark h-12 justify-end mx-8">
+---
+import ThemeToggle from "../components/ThemeToggle.astro";
+const { pathname } = Astro.url;
+
+const links: { href: string; text: string }[] = [
+    { href: "/", text: "Home" },
+    { href: "/blog", text: "Blog" },
+    { href: "/notes", text: "Notes" },
+];
+---
+
+<header class="flex flex-row text-dark h-12 justify-end mx-8">
     <nav
         class="flex justify-center gap-2 items-center font-serif font-semibold text-lg text-dark"
     >
-        <a href="/" class="active:text-primary">Home</a>
-        <a href="/blog">Blog</a>
-        <a href="/notes">Notes</a>
+        {
+            links.map((link) => (
+                <a
+                    class:list={[
+                        pathname === link.href && "text-primary",
+                        "hover:text-secondary transition-colors",
+                    ]}
+                    href={link.href}
+                >
+                    {link.text}
+                </a>
+            ))
+        }
+        <ThemeToggle className="hover:text-secondary transition-colors" />
     </nav>
 </header>
