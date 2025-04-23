@@ -1,0 +1,125 @@
+---
+import Sun from "@lucide/astro/icons/sun";
+import Moon from "@lucide/astro/icons/moon";
+import SunMoon from "@lucide/astro/icons/sun-moon";
+
+interface Props {
+    className?: string;
+}
+
+const { className } = Astro.props;
+
+const themeConfig = {
+    light: { Icon: Sun },
+    dark: { Icon: Moon },
+    system: { Icon: SunMoon },
+};
+const themes = Object.keys(themeConfig);
+---
+
+<button
+    type="button"
+    id="theme-toggle-button"
+    aria-label="Toggle theme"
+    class:list={[className, "flex rounded-md relative w-8 h-8 overflow-hidden"]}
+>
+    {
+        themes.map((theme) => {
+            const { Icon } = themeConfig[theme];
+            return (
+                <Icon
+                    id={`theme-icon-${theme}`}
+                    aria-selected="false"
+                    class="block m-auto pointer-events-none opacity-0 transition-opacity ease-in-out absolute inset-0 aria-selected:pointer-events-auto aria-selected:opacity-100"
+                />
+            );
+        })
+    }
+    <span class="sr-only">Toggle theme</span>
+</button>
+
+<script>
+    const STORAGE_KEY = "theme-preference";
+    const THEMES = ["light", "dark", "system"];
+    const button = document.getElementById("theme-toggle-button");
+
+    const icons = {};
+    THEMES.forEach((theme) => {
+        icons[theme] = document.getElementById(`theme-icon-${theme}`);
+    });
+
+    const themeLabels = {
+        light: "Currently Light Mode, Switch to Dark Mode",
+        dark: "Currently Dark Mode, Switch to System Preference",
+        system: "Currently System Preference, Switch to Light Mode",
+    };
+
+    const getStoredPreference = (): string => {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored && THEMES.includes(stored) ? stored : "system";
+    };
+
+    const applyEffectiveTheme = (preference: string): void => {
+        const isDark =
+            preference === "dark" ||
+            (preference === "system" &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches);
+
+        document.documentElement.dataset.theme = isDark ? "dark" : "light";
+    };
+
+    const updateButtonState = (preference: string): void => {
+        if (!button) return;
+
+        THEMES.forEach((theme) => {
+            if (icons[theme]) {
+                icons[theme].setAttribute(
+                    "aria-selected",
+                    theme === preference ? "true" : "false",
+                );
+            }
+        });
+
+        button.setAttribute(
+            "aria-label",
+            themeLabels[preference] || "Toggle theme",
+        );
+        button.setAttribute("aria-value-text", preference);
+    };
+    const setPreference = (preference: string): void => {
+        if (!THEMES.includes(preference)) {
+            preference = "system";
+        }
+
+        localStorage.setItem(STORAGE_KEY, preference);
+
+        applyEffectiveTheme(preference);
+        updateButtonState(preference);
+    };
+
+    const cyclePreference = (): void => {
+        const currentPreference = getStoredPreference();
+        const currentIndex = THEMES.indexOf(currentPreference);
+        const nextIndex = (currentIndex + 1) % THEMES.length;
+        setPreference(THEMES[nextIndex]);
+    };
+
+    const handleSystemChange = (): void => {
+        const currentPreference = getStoredPreference();
+        if (currentPreference === "system") {
+            applyEffectiveTheme("system");
+        }
+    };
+
+    const initialPreference = getStoredPreference();
+    setPreference(initialPreference);
+
+    button?.addEventListener("click", cyclePreference);
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    mediaQuery.addEventListener("change", handleSystemChange);
+
+    window.addEventListener("unload", () => {
+        mediaQuery.removeEventListener("change", handleSystemChange);
+    });
+</script>

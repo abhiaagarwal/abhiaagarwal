@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 :root {
     --color-primary: #a35fc6;
@@ -12,9 +12,9 @@
     --color-dark: #2b2b2b;
 }
 
-:root[class~="dark"] {
+:root[data-theme="dark"] {
     --color-primary: #a35fc6;
-    --color-secondary: #0c0c0c;
+    --color-secondary: #ff6c9f;
     --color-light: #212529;
     --color-light-gray: #393639;
     --color-gray: #646464;
@@ -23,11 +23,11 @@
 }
 
 ::-moz-selection {
-    background-color: color-mix(in srgb,var(--color-secondary) 60%,#fff0)
+    background-color: color-mix(in srgb, var(--color-secondary) 60%, #fff0);
 }
 
 ::selection {
-    background-color: color-mix(in srgb,var(--color-secondary) 60%,#fff0)
+    background-color: color-mix(in srgb, var(--color-secondary) 60%, #fff0);
 }
 
 @theme inline {

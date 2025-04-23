@@ -3,21 +3,15 @@ import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import { visualizer } from "rollup-plugin-visualizer";
 
-import react from "@astrojs/react";
-
 import sitemap from "@astrojs/sitemap";
+
+import preact from "@astrojs/preact";
 
 // https://astro.build/config
 export default defineConfig({
     site: "https://abhi.rodeo",
     vite: {
-        plugins: [
-            tailwindcss(),
-            visualizer({
-                emitFile: true,
-                filename: "stats.html",
-            }),
-        ],
+        plugins: [tailwindcss()],
     },
-    integrations: [react(), sitemap()],
+    integrations: [sitemap(), preact()],
 });

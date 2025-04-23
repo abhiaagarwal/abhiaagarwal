@@ -4,6 +4,9 @@ import "@fontsource-variable/lora";
 import "@fontsource-variable/fira-code";
 import "../styles/global.css";
 import Nav from "./Nav.astro";
+
+import lora from "@fontsource-variable/lora/files/lora-latin-wght-normal.woff2?url";
+import firaCode from "@fontsource-variable/fira-code/files/fira-code-latin-wght-normal.woff2?url";
 ---
 
 <!doctype html>
@@ -11,12 +14,37 @@ import Nav from "./Nav.astro";
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤠</text></svg>"
+        />
         <meta name="generator" content={Astro.generator} />
         <title>Abhi Agarwal</title>
+        <script>
+            const theme = localStorage.getItem("theme-preference");
+            const isDark =
+                theme === "dark" ||
+                ((theme === null || theme === "system") &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches);
+            document.documentElement.dataset.theme = isDark ? "dark" : "light";
+        </script>
+        <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            crossorigin="anonymous"
+            href={lora}
+        />
+        <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            crossorigin="anonymous"
+            href={firaCode}
+        />
     </head>
-    <body class="bg-light flex flex-col min-h-screen">
-       <Nav></Nav>
+    <body class="bg-light transition-colors flex flex-col min-h-screen">
+        <Nav />
         <slot />
     </body>
 </html>
