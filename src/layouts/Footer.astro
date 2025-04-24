@@ -1,0 +1,14 @@
+---
+const currentYear = new Date().getFullYear();
+import Copyright from "@lucide/astro/icons/copyright";
+---
+
+<footer
+    class="text-sm text-dark-gray text-white my-4 mx-8 font-serif self-end-safe text-right"
+>
+    <p>
+        <Copyright class="inline h-4 w-4 align-text-bottom" />
+        {currentYear} Abhi Agarwal.
+    </p>
+    <p>Built with {Astro.generator}. <a>Open Source</a>.</p>
+</footer>

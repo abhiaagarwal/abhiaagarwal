@@ -24,11 +24,19 @@
     }
 
     ::-moz-selection {
-        background-color: color-mix(in oklch, var(--color-secondary) 60%, #fff0);
+        background-color: color-mix(
+            in oklch,
+            var(--color-secondary) 60%,
+            #fff0
+        );
     }
 
     ::selection {
-        background-color: color-mix(in oklch, var(--color-secondary) 60%, #fff0);
+        background-color: color-mix(
+            in oklch,
+            var(--color-secondary) 60%,
+            #fff0
+        );
     }
 }
 
