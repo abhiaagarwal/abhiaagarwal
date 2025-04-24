@@ -2,46 +2,38 @@
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-:root {
-    --color-primary: #a35fc6;
-    --color-secondary: #ff6c9f;
-    --color-light: #faf8f8;
-    --color-light-gray: #e5e5e5;
-    --color-gray: #b8b8b8;
-    --color-dark-gray: #4e4e4e;
-    --color-dark: #2b2b2b;
+@theme {
+    --color-*: initial;
+
+    --color-primary: oklch(0.58 0.16 304.16);
+    --color-secondary: oklch(0.64 0.15 350);
+    --color-light: oklch(0.98 0.0166380643126323 334.6067525190699);
+    --color-light-gray: oklch(0.92 0.02 325);
+    --color-gray: oklch(0.75 0.02 325);
+    --color-dark-gray: oklch(0.45 0.02 325);
+    --color-dark: oklch(0.19 0.0268 323.48);
 }
 
-:root[data-theme="dark"] {
-    --color-primary: #a35fc6;
-    --color-secondary: #ff6c9f;
-    --color-light: #212529;
-    --color-light-gray: #393639;
-    --color-gray: #646464;
-    --color-dark-gray: #d4d4d4;
-    --color-dark: #ebebec;
-}
+@layer base {
+    @variant dark {
+        --color-light: oklch(0.19 0.0268 323.48);
+        --color-light-gray: oklch(0.35 0.02 325);
+        --color-gray: oklch(0.55 0.02 325);
+        --color-dark-gray: oklch(0.85 0.02 325);
+        --color-dark: oklch(0.98 0.0166380643126323 334.6067525190699);
+    }
 
-::-moz-selection {
-    background-color: color-mix(in srgb, var(--color-secondary) 60%, #fff0);
-}
+    ::-moz-selection {
+        background-color: color-mix(in oklch, var(--color-secondary) 60%, #fff0);
+    }
 
-::selection {
-    background-color: color-mix(in srgb, var(--color-secondary) 60%, #fff0);
-}
-
-@theme inline {
-    --color-primary: var(--color-primary);
-    --color-secondary: var(--color-secondary);
-    --color-light: var(--color-light);
-    --color-light-gray: var(--color-light-gray);
-    --color-gray: var(--color-gray);
-    --color-dark-gray: var(--color-dark-gray);
-    --color-dark: var(--color-dark);
+    ::selection {
+        background-color: color-mix(in oklch, var(--color-secondary) 60%, #fff0);
+    }
 }
 
 @theme {
     --font-sans: "Fira Sans", sans-serif;
-    --font-mono: "Fira Code", monospace;
-    --font-serif: "Lora", serif;
+    --font-mono: "Fira Code Variable", monospace;
+    --font-serif: "Lora Variable", serif;
 }
