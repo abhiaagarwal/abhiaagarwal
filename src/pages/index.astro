@@ -3,6 +3,7 @@ import Thoughts from "@lucide/astro/icons/cloud";
 import Notebook from "@lucide/astro/icons/notebook";
 import Orbit from "@lucide/astro/icons/orbit";
 import { getCollection } from "astro:content";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
 import Layout from "../layouts/Base.astro";
 
 const posts = (await getCollection("blog")).filter(
@@ -14,22 +15,36 @@ const posts = (await getCollection("blog")).filter(
     <div class="mx-auto w-2xl font-serif">
         <h1 class="mb-6 text-3xl font-semibold">Latest Posts</h1>
         {
-            posts.map((post) => (
-                <div class="mb-12">
-                    <h2 class="mb-2 text-2xl font-semibold text-dark">
-                        {
-                            {
-                                thoughts: <Thoughts class="inline" />,
-                                notes: <Notebook class="inline" />,
-                                observations: <Orbit class="inline" />,
-                            }[post.data.kind]
-                        }
-                        <a href={`/posts/${post.id}`}>
-                            {post.data.title ?? "Unknown"}
-                        </a>
-                    </h2>
-                </div>
-            ))
+            posts.map((post) => {
+                const breadcrumbs = post.id
+                    .split("/")
+                    .filter((segment) => segment)
+                    .map((segment) => {
+                        return { label: segment, fragment: segment };
+                    });
+                return (
+                    <div class="mb-12">
+                        <Breadcrumbs
+                            baseUrl="/posts"
+                            breadcrumbs={[...breadcrumbs]}
+                        />
+                        <h2 class="mb-2 flex items-baseline text-2xl font-semibold text-dark">
+                            <span class="mr-2 shrink-0">
+                                {
+                                    {
+                                        thoughts: <Thoughts class="inline" />,
+                                        notes: <Notebook class="inline" />,
+                                        observations: <Orbit class="inline" />,
+                                    }[post.data.kind]
+                                }
+                            </span>
+                            <a href={`/posts/${post.id}`} class="flex-1">
+                                {post.data.title ?? "Unknown"}
+                            </a>
+                        </h2>
+                    </div>
+                );
+            })
         }
     </div>
 </Layout>

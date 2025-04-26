@@ -1,0 +1,42 @@
+---
+import ChevronRight from "@lucide/astro/icons/chevron-right";
+
+interface Breadcrumb {
+    label: string;
+    fragment: string;
+}
+
+interface Props {
+    baseUrl: string;
+    breadcrumbs: Breadcrumb[];
+}
+
+const { baseUrl, breadcrumbs } = Astro.props;
+
+const breadcrumbsWithUrls = breadcrumbs.map((crumb, index, arr) => {
+    const pathSegments = arr.slice(0, index + 1).map((c) => c.fragment);
+    const url = `${baseUrl}/${pathSegments.join("/")}`;
+    return { ...crumb, url };
+});
+---
+
+<nav aria-label="Breadcrumb" class="mb-2 font-sans text-sm text-dark-gray">
+    <ol class="flex flex-wrap">
+        {
+            breadcrumbsWithUrls.map((crumb, index) => (
+                <li class="flex items-center">
+                    {index > 0 && (
+                        <ChevronRight class="h-4 w-4 text-dark-gray" />
+                    )}
+                    {index < breadcrumbsWithUrls.length ? (
+                        <a href={crumb.url} class="hover:underline">
+                            {crumb.label}
+                        </a>
+                    ) : (
+                        <span class="font-medium">{crumb.label}</span>
+                    )}
+                </li>
+            ))
+        }
+    </ol>
+</nav>
