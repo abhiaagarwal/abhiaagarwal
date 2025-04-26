@@ -9,8 +9,8 @@ const config = {
     singleQuote: false,
     plugins: [
         "@ianvs/prettier-plugin-sort-imports",
-        "prettier-plugin-tailwindcss",
         "prettier-plugin-astro",
+        "prettier-plugin-tailwindcss",
     ],
     overrides: [
         {
