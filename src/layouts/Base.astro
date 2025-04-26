@@ -14,7 +14,7 @@ import Nav from "./Nav.astro";
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link
             rel="icon"
             href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤠</text></svg>"
@@ -66,10 +66,10 @@ import Nav from "./Nav.astro";
     </head>
     <body
         transition:animate={fade({ duration: "0.15s" })}
-        class="bg-light transition-colors flex flex-col min-h-screen gap-4"
+        class="flex min-h-screen flex-col gap-4 bg-light px-4 py-2 transition-colors md:px-8 md:py-4"
     >
         <Nav />
-        <main class="flex-grow m-8"><slot /></main>
+        <main class="flex-grow"><slot /></main>
         <Footer />
     </body>
 </html>

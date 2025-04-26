@@ -24,7 +24,7 @@ const themes = Object.keys(themeConfig);
     transition:persist
     class:list={[
         className,
-        "flex rounded-md relative w-8 h-8 overflow-hidden cursor-pointer",
+        "relative flex h-8 w-8 cursor-pointer overflow-hidden rounded-md",
     ]}
 >
     {
@@ -33,7 +33,7 @@ const themes = Object.keys(themeConfig);
             return (
                 <Icon
                     id={`theme-icon-${theme}`}
-                    class="block m-auto absolute inset-0 opacity-0 pointer-events-none"
+                    class="pointer-events-none absolute inset-0 m-auto block opacity-0"
                 />
             );
         })

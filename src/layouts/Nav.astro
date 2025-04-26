@@ -10,16 +10,16 @@ const links: { href: string; text: string }[] = [
 ];
 ---
 
-<header class="flex flex-row text-dark h-12 justify-end mx-8">
+<header class="flex h-12 flex-row justify-end text-dark">
     <nav
-        class="flex justify-center gap-2 items-center font-serif font-semibold text-lg text-dark"
+        class="flex items-center justify-center gap-2 font-serif text-lg font-semibold text-dark"
     >
         {
             links.map((link) => (
                 <a
                     class:list={[
+                        "transition-colors hover:text-secondary",
                         pathname === link.href && "text-primary",
-                        "hover:text-secondary transition-colors",
                     ]}
                     href={link.href}
                 >
@@ -27,6 +27,6 @@ const links: { href: string; text: string }[] = [
                 </a>
             ))
         }
-        <ThemeToggle className="hover:text-secondary transition-colors" />
+        <ThemeToggle className="transition-colors hover:text-secondary" />
     </nav>
 </header>
