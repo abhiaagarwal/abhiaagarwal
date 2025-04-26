@@ -8,6 +8,8 @@ import Nav from "./Nav.astro";
 import lora from "@fontsource-variable/lora/files/lora-latin-wght-normal.woff2?url";
 import firaCode from "@fontsource-variable/fira-code/files/fira-code-latin-wght-normal.woff2?url";
 import Footer from "./Footer.astro";
+
+import { ClientRouter, fade } from "astro:transitions";
 ---
 
 <!doctype html>
@@ -22,24 +24,31 @@ import Footer from "./Footer.astro";
         <meta name="generator" content={Astro.generator} />
         <title>Abhi Agarwal</title>
         <script>
-            const STORAGE_KEY = "theme-preference";
-            const THEMES = ["light", "dark", "system"];
+            function applyTheme() {
+                const STORAGE_KEY = "theme-preference";
+                const THEMES = ["light", "dark", "system"];
 
-            const storedPreference = localStorage.getItem(STORAGE_KEY);
-            const initialPreference =
-                storedPreference && THEMES.includes(storedPreference)
-                    ? storedPreference
-                    : "system";
+                const storedPreference = localStorage.getItem(STORAGE_KEY);
+                const initialPreference =
+                    storedPreference && THEMES.includes(storedPreference)
+                        ? storedPreference
+                        : "system";
 
-            document.documentElement.dataset.themePreference =
-                initialPreference;
+                document.documentElement.dataset.themePreference =
+                    initialPreference;
 
-            const isDark =
-                initialPreference === "dark" ||
-                (initialPreference === "system" &&
-                    window.matchMedia("(prefers-color-scheme: dark)").matches);
+                const isDark =
+                    initialPreference === "dark" ||
+                    (initialPreference === "system" &&
+                        window.matchMedia("(prefers-color-scheme: dark)")
+                            .matches);
 
-            document.documentElement.dataset.theme = isDark ? "dark" : "light";
+                document.documentElement.dataset.theme = isDark
+                    ? "dark"
+                    : "light";
+            }
+            applyTheme();
+            document.addEventListener("astro:after-swap", applyTheme);
         </script>
         <link
             rel="preload"
@@ -55,8 +64,12 @@ import Footer from "./Footer.astro";
             crossorigin="anonymous"
             href={firaCode}
         />
+        <ClientRouter />
     </head>
-    <body class="bg-light transition-colors flex flex-col min-h-screen gap-4">
+    <body
+        transition:animate={fade({ duration: "0.15s" })}
+        class="bg-light transition-colors flex flex-col min-h-screen gap-4"
+    >
         <Nav />
         <main class="flex-grow m-8"><slot /></main>
         <Footer />
