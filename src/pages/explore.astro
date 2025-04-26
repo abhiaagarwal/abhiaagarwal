@@ -1,6 +1,124 @@
 ---
-import Graph from "../components/Graph.tsx";
+import Graph from "../components/Graph.astro";
 import Layout from "../layouts/Base.astro";
+
+const hierarchicalData = {
+    name: "Blog Root",
+    path: "/",
+    children: [
+        {
+            name: "notes",
+            path: "/notes",
+            children: [
+                {
+                    name: "daily",
+                    path: "/notes/daily",
+                    children: [
+                        {
+                            name: "2025-04-23.md",
+                            path: "/notes/daily/2025-04-23.md",
+                            backlinks: ["/notes/ideas.md"],
+                        },
+                        {
+                            name: "2025-04-22.md",
+                            path: "/notes/daily/2025-04-22.md",
+                        },
+                    ],
+                },
+                {
+                    name: "ideas.md",
+                    path: "/notes/ideas.md",
+                    backlinks: [
+                        "/programming/tools.md",
+                        "/notes/daily/2025-04-23.md",
+                    ],
+                },
+                {
+                    name: "research",
+                    path: "/notes/research",
+                    children: [
+                        {
+                            name: "d3-examples.txt",
+                            path: "/notes/research/d3-examples.txt",
+                        },
+                        {
+                            name: "astro-links.url",
+                            path: "/notes/research/astro-links.url",
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            name: "programming",
+            path: "/programming",
+            children: [
+                {
+                    name: "language",
+                    path: "/programming/language",
+                    children: [
+                        {
+                            name: "python_tricks.py",
+                            path: "/programming/language/python_tricks.py",
+                        },
+                        {
+                            name: "js_snippets.js",
+                            path: "/programming/language/js_snippets.js",
+                        },
+                    ],
+                },
+                {
+                    name: "webdev",
+                    path: "/programming/webdev",
+                    children: [
+                        {
+                            name: "css_grid.html",
+                            path: "/programming/webdev/css_grid.html",
+                        },
+                        {
+                            name: "tailwind_config.js",
+                            path: "/programming/webdev/tailwind_config.js",
+                        },
+                    ],
+                },
+                {
+                    name: "tools.md",
+                    path: "/programming/tools.md",
+                    backlinks: ["/notes/ideas.md"],
+                },
+            ],
+        },
+        {
+            name: "personal",
+            path: "/personal",
+            children: [
+                {
+                    name: "foo",
+                    path: "/personal/foo",
+                    children: [
+                        {
+                            name: "journal_entry_1.txt",
+                            path: "/personal/foo/journal_entry_1.txt",
+                        },
+                    ],
+                },
+                {
+                    name: "bar",
+                    path: "/personal/bar",
+                    children: [
+                        {
+                            name: "recipe_ideas.md",
+                            path: "/personal/bar/recipe_ideas.md",
+                        },
+                    ],
+                },
+                { name: "thoughts.md", path: "/personal/thoughts.md" },
+            ],
+        },
+        { name: "about.md", path: "/about.md" },
+        { name: "contact.html", path: "/contact.html" },
+    ],
+};
 ---
 
-<Layout><Graph client:load /></Layout>
+<Layout><Graph data={hierarchicalData} /></Layout>

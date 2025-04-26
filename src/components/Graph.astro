@@ -1,0 +1,527 @@
+---
+import { compress } from "compress-json";
+
+interface HierarchicalNode {
+    name: string;
+    path: string;
+    children?: HierarchicalNode[];
+    backlinks?: string[];
+}
+
+interface Props {
+    data: HierarchicalNode;
+}
+
+const { data: hierarchicalData } = Astro.props;
+---
+
+<style is:global>
+    #force-graph-svg {
+        .node text {
+            pointer-events: none;
+            user-select: none;
+            text-anchor: middle;
+        }
+
+        .node,
+        .link {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .node.fade,
+        .link.fade {
+            opacity: 0.15;
+        }
+
+        .node:not(.fade),
+        .link:not(.fade) {
+            opacity: 1;
+        }
+    }
+</style>
+
+<div
+    id="graph-container"
+    class="h-150 border-light-gray border-1 rounded-2xl relative w-8/12 m-auto overflow-hidden cursor-default"
+    data-hierarchy-data={JSON.stringify(compress(hierarchicalData))}
+>
+    <svg id="force-graph-svg" class="block w-full h-full"></svg>
+</div>
+
+<script>
+    import * as d3 from "d3";
+    import { decompress } from "compress-json";
+
+    interface NodeData extends d3.SimulationNodeDatum {
+        id: string;
+        name: string;
+        initialDepth: number;
+        isLeaf: boolean;
+        relativeDepth: number;
+        x?: number;
+        y?: number;
+        vx?: number;
+        vy?: number;
+        fx?: number | null;
+        fy?: number | null;
+    }
+
+    interface LinkData extends d3.SimulationLinkDatum<NodeData> {
+        source: string | NodeData;
+        target: string | NodeData;
+        isBacklink: boolean;
+    }
+
+    interface HierarchicalNode {
+        name: string;
+        path: string;
+        children?: HierarchicalNode[];
+        backlinks?: string[];
+    }
+
+    interface ProcessedGraphData {
+        nodes: NodeData[];
+        links: Array<
+            Omit<LinkData, "source" | "target"> & {
+                source: string;
+                target: string;
+            }
+        >;
+        hierarchyAdjacencyMap: { [key: string]: string[] };
+        fullAdjacencyMap: { [key: string]: string[] };
+    }
+
+    function runSimulation() {
+        const BASE_RADIUS = 10;
+        const VISUAL_RADIUS_SCALE_FACTOR = 0.85;
+        const MIN_VISUAL_RADIUS = 3;
+        const RADIAL_INCREMENT = 80;
+        const RADIAL_STRENGTH = 0.8;
+        const ROOT_NODE_ID = "/";
+        const SIM_ALPHA_DECAY = 0.018;
+        const SIM_CHARGE_STRENGTH = -600;
+        const DRAG_ALPHA_TARGET = 0.1;
+
+        function processHierarchicalData(data) {
+            console.log("Processing hierarchical data...");
+            const nodes = [];
+            const links = [];
+            const hierarchyAdjacencyMap = new Map();
+            const fullAdjacencyMap = new Map();
+            const nodeMap = new Map();
+
+            function traverseBuild(node, parentPath = null, depth = 0) {
+                const nodeId = node.path;
+                if (!nodeId) return;
+
+                if (!hierarchyAdjacencyMap.has(nodeId))
+                    hierarchyAdjacencyMap.set(nodeId, new Set());
+                if (!fullAdjacencyMap.has(nodeId))
+                    fullAdjacencyMap.set(nodeId, new Set());
+
+                const isExistingNode = nodeMap.has(nodeId);
+                let newNode;
+
+                if (!isExistingNode) {
+                    newNode = {
+                        id: nodeId,
+                        name: node.name,
+                        initialDepth: depth,
+                        isLeaf: !node.children || node.children.length === 0,
+                        backlinksTemp: node.backlinks || [],
+                        fx: null,
+                        fy: null,
+                    };
+                    nodes.push(newNode);
+                    nodeMap.set(nodeId, newNode);
+                } else {
+                    newNode = nodeMap.get(nodeId);
+                    newNode.initialDepth = Math.min(
+                        newNode.initialDepth,
+                        depth,
+                    );
+                    if (node.backlinks) {
+                        newNode.backlinksTemp = [
+                            ...new Set([
+                                ...(newNode.backlinksTemp || []),
+                                ...node.backlinks,
+                            ]),
+                        ];
+                    }
+                }
+
+                if (parentPath !== null) {
+                    const link = {
+                        source: parentPath,
+                        target: nodeId,
+                        isBacklink: false,
+                    };
+                    links.push(link);
+                    if (!hierarchyAdjacencyMap.has(parentPath))
+                        hierarchyAdjacencyMap.set(parentPath, new Set());
+                    if (!fullAdjacencyMap.has(parentPath))
+                        fullAdjacencyMap.set(parentPath, new Set());
+
+                    hierarchyAdjacencyMap.get(parentPath).add(nodeId);
+                    hierarchyAdjacencyMap.get(nodeId).add(parentPath);
+                    fullAdjacencyMap.get(parentPath).add(nodeId);
+                    fullAdjacencyMap.get(nodeId).add(parentPath);
+                }
+
+                if (node.children) {
+                    node.children.forEach((child) =>
+                        traverseBuild(child, nodeId, depth + 1),
+                    );
+                }
+            }
+            traverseBuild(data);
+
+            nodes.forEach((node) => {
+                (node.backlinksTemp || []).forEach((targetPath) => {
+                    if (nodeMap.has(targetPath)) {
+                        if (!fullAdjacencyMap.has(targetPath)) {
+                            console.warn(
+                                `Target node ${targetPath} found but missing from adjacency map initially.`,
+                            );
+                            fullAdjacencyMap.set(targetPath, new Set());
+                        }
+
+                        fullAdjacencyMap.get(node.id)?.add(targetPath);
+                        fullAdjacencyMap.get(targetPath)?.add(node.id);
+
+                        const hierarchicalLinkExists = links.some(
+                            (l) =>
+                                !l.isBacklink &&
+                                ((l.source === node.id &&
+                                    l.target === targetPath) ||
+                                    (l.source === targetPath &&
+                                        l.target === node.id)),
+                        );
+
+                        if (!hierarchicalLinkExists) {
+                            const backlinkAlreadyAdded = links.some(
+                                (l) =>
+                                    l.isBacklink &&
+                                    ((l.source === node.id &&
+                                        l.target === targetPath) ||
+                                        (l.source === targetPath &&
+                                            l.target === node.id)),
+                            );
+                            if (!backlinkAlreadyAdded) {
+                                links.push({
+                                    source: node.id,
+                                    target: targetPath,
+                                    isBacklink: true,
+                                });
+                            }
+                        }
+                    } else {
+                        console.warn(
+                            `Backlink target not found: ${targetPath} from ${node.id}`,
+                        );
+                    }
+                });
+                delete node.backlinksTemp;
+            });
+
+            console.log(
+                "Data processed:",
+                nodes.length,
+                "nodes,",
+                links.length,
+                "links",
+            );
+            console.log("Full Adjacency Map:", fullAdjacencyMap); // Log the map for debugging
+
+            nodes.forEach((n) => {
+                if (!fullAdjacencyMap.has(n.id)) {
+                    console.warn(
+                        `Node ${n.id} exists in node list but not in fullAdjacencyMap! Initializing.`,
+                    );
+                    fullAdjacencyMap.set(n.id, new Set());
+                }
+            });
+
+            return { nodes, links, hierarchyAdjacencyMap, fullAdjacencyMap };
+        }
+
+        function calculateVisualNodeRadius(node) {
+            const depth = isFinite(node.initialDepth) ? node.initialDepth : 5;
+            const depthFactor = Math.pow(VISUAL_RADIUS_SCALE_FACTOR, depth);
+            return Math.max(MIN_VISUAL_RADIUS, BASE_RADIUS * depthFactor);
+        }
+
+        function getLinkKey(link) {
+            const sourceId =
+                typeof link.source === "string" ? link.source : link.source.id;
+            const targetId =
+                typeof link.target === "string" ? link.target : link.target.id;
+            return sourceId < targetId
+                ? `${sourceId}-${targetId}`
+                : `${targetId}-${sourceId}`;
+        }
+
+        const container = document.getElementById("graph-container");
+        if (!container) {
+            console.error("Graph container not found!");
+            return;
+        }
+        const svg = d3.select("#force-graph-svg");
+
+        const hierarchicalData: HierarchicalNode = decompress(
+            JSON.parse(container.dataset.hierarchyData),
+        );
+
+        let width = container.clientWidth;
+        let height = container.clientHeight;
+
+        const graphData = processHierarchicalData(hierarchicalData);
+        let nodes = graphData.nodes;
+        let links = graphData.links;
+        const fullAdjacencyMap = graphData.fullAdjacencyMap;
+
+        let simulation = d3
+            .forceSimulation(nodes)
+            .force(
+                "link",
+                d3
+                    .forceLink(links)
+                    .id((d) => d.id)
+                    .distance((d) => {
+                        return d.isBacklink ? 65 : 50;
+                    })
+                    .strength((d) => (d.isBacklink ? 0.15 : 0.7)),
+            )
+            .force("charge", d3.forceManyBody().strength(SIM_CHARGE_STRENGTH))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force(
+                "collide",
+                d3
+                    .forceCollide()
+                    .radius((d) => calculateVisualNodeRadius(d) + 4)
+                    .iterations(2),
+            )
+            .force(
+                "radial",
+                d3
+                    .forceRadial()
+                    .radius((d) =>
+                        isFinite(d.initialDepth)
+                            ? d.initialDepth * RADIAL_INCREMENT
+                            : Math.max(width, height) * 1.5,
+                    )
+                    .strength((d) =>
+                        isFinite(d.initialDepth) ? RADIAL_STRENGTH : 0.05,
+                    )
+                    .x(width / 2)
+                    .y(height / 2),
+            )
+            .alphaDecay(SIM_ALPHA_DECAY)
+            .alphaTarget(0);
+
+        const linkGroup = svg.append("g").attr("class", "links");
+        const nodeGroup = svg.append("g").attr("class", "nodes");
+
+        const zoomBehavior = d3
+            .zoom()
+            .scaleExtent([0.1, 8])
+            .on("zoom", (event) => {
+                linkGroup.attr("transform", event.transform);
+                nodeGroup.attr("transform", event.transform);
+            });
+        svg.call(zoomBehavior);
+
+        let linkElements = linkGroup
+            .selectAll("line.link")
+            .data(links, getLinkKey)
+            .join("line")
+            .attr(
+                "class",
+                (d) =>
+                    `link ${d.isBacklink ? "stroke-gray stroke-1 [stroke-dasharray:3,3]" : "stroke-dark-gray stroke-2"}`,
+            );
+
+        let nodeElements = nodeGroup
+            .selectAll("g.node")
+            .data(nodes, (d) => d.id)
+            .join("g")
+            .attr("class", "node");
+
+        nodeElements
+            .append("circle")
+            .attr("r", calculateVisualNodeRadius)
+            .attr(
+                "class",
+                (d) =>
+                    `stroke-dark-gray stroke-1 cursor-pointer ${d.isLeaf ? "fill-primary" : "fill-secondary"}`,
+            );
+
+        nodeElements
+            .append("text")
+            .attr("dy", "0.35em")
+            .attr("y", (d) => calculateVisualNodeRadius(d) + 7)
+            .attr("class", "text-xs fill-dark")
+            .text((d) => d.name);
+
+        const ticked = () => {
+            const nodePadding = 5;
+            nodes.forEach((d) => {
+                if (d.fx === null && d.fy === null) {
+                    const radius = calculateVisualNodeRadius(d);
+                    const currentX = typeof d.x === "number" ? d.x : width / 2;
+                    const currentY = typeof d.y === "number" ? d.y : height / 2;
+                    d.x = Math.max(
+                        radius + nodePadding,
+                        Math.min(width - radius - nodePadding, currentX),
+                    );
+                    d.y = Math.max(
+                        radius + nodePadding,
+                        Math.min(height - radius - nodePadding, currentY),
+                    );
+                }
+            });
+
+            linkElements
+                .attr("x1", (d) => d.source.x)
+                .attr("y1", (d) => d.source.y)
+                .attr("x2", (d) => d.target.x)
+                .attr("y2", (d) => d.target.y);
+
+            nodeElements.attr("transform", (d) => `translate(${d.x},${d.y})`);
+        };
+        simulation.on("tick", ticked);
+
+        const dragBehavior = d3
+            .drag()
+            .on("start", (event, d) => {
+                if (!event.active)
+                    simulation.alphaTarget(DRAG_ALPHA_TARGET).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+                d3.select(event.sourceEvent.target)
+                    .classed("cursor-grabbing", true)
+                    .classed("cursor-pointer", false);
+            })
+            .on("drag", (event, d) => {
+                d.fx = event.x;
+                d.fy = event.y;
+            })
+            .on("end", (event, d) => {
+                if (!event.active) simulation.alphaTarget(0);
+
+                if (!d.wasInitiallyFixed) {
+                    d.fx = null;
+                    d.fy = null;
+                }
+                d3.select(event.sourceEvent.target)
+                    .classed("cursor-grabbing", false)
+                    .classed("cursor-pointer", true);
+            });
+        nodeElements.call(dragBehavior);
+
+        nodeElements
+            .on("mouseover", (event, d) => {
+                const hoveredNodeId = d.id;
+
+                const neighbors = new Set(
+                    fullAdjacencyMap.get(hoveredNodeId) || [],
+                );
+                neighbors.add(hoveredNodeId);
+
+                nodeElements.classed("fade", (n) => !neighbors.has(n.id));
+
+                d3.select(event.currentTarget)
+                    .select("circle")
+                    .classed("highlight", true);
+                d3.select(event.currentTarget).classed("fade", false);
+
+                linkElements.classed("fade", (l) => {
+                    const sourceId =
+                        typeof l.source === "object" ? l.source.id : l.source;
+                    const targetId =
+                        typeof l.target === "object" ? l.target.id : l.target;
+                    return (
+                        sourceId !== hoveredNodeId && targetId !== hoveredNodeId
+                    );
+                });
+            })
+            .on("mouseout", (event, d) => {
+                nodeElements.classed("fade", false);
+                d3.select(event.currentTarget)
+                    .select("circle")
+                    .classed("highlight", false);
+                linkElements.classed("fade", false);
+            });
+
+        const resizeObserver = new ResizeObserver((entries) => {
+            if (!entries || entries.length === 0) return;
+            const entry = entries[0];
+            const newWidth = entry.contentRect.width;
+            const newHeight = entry.contentRect.height;
+
+            if (width !== newWidth || height !== newHeight) {
+                width = newWidth;
+                height = newHeight;
+
+                svg.attr("width", width).attr("height", height);
+
+                simulation.force(
+                    "center",
+                    d3.forceCenter(width / 2, height / 2),
+                );
+                simulation
+                    .force("radial")
+                    .x(width / 2)
+                    .y(height / 2)
+                    .radius((node) =>
+                        isFinite(node.initialDepth)
+                            ? node.initialDepth * RADIAL_INCREMENT
+                            : Math.max(width, height) * 1.5,
+                    );
+
+                const root = nodes.find((n) => n.id === ROOT_NODE_ID);
+                if (root) {
+                    root.fx = width / 2;
+                    root.fy = height / 2;
+                }
+
+                simulation.alpha(0.4).restart();
+
+                setTimeout(() => {
+                    if (root && !root.wasInitiallyFixed) {
+                        root.fx = null;
+                        root.fy = null;
+                    }
+                    simulation.alphaTarget(0);
+                }, 1500);
+            }
+        });
+        resizeObserver.observe(container);
+
+        width = container.clientWidth;
+        height = container.clientHeight;
+
+        const rootNode = nodes.find((n) => n.id === ROOT_NODE_ID);
+        if (rootNode) {
+            rootNode.fx = width / 2;
+            rootNode.fy = height / 2;
+            rootNode.wasInitiallyFixed = true;
+
+            simulation.alpha(1).restart();
+            setTimeout(() => {
+                rootNode.fx = null;
+                rootNode.fy = null;
+                rootNode.wasInitiallyFixed = false;
+                simulation.alphaTarget(0);
+            }, 2000);
+        } else {
+            simulation.alpha(1).restart();
+            simulation.alphaTarget(0);
+        }
+        ticked();
+    }
+
+    document.addEventListener("astro:page-load", () => {
+        runSimulation();
+    });
+</script>
