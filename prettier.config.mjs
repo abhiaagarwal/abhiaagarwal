@@ -7,7 +7,11 @@ const config = {
     tabWidth: 4,
     semi: true,
     singleQuote: false,
-    plugins: ["prettier-plugin-tailwindcss", "prettier-plugin-astro"],
+    plugins: [
+        "@ianvs/prettier-plugin-sort-imports",
+        "prettier-plugin-tailwindcss",
+        "prettier-plugin-astro",
+    ],
     overrides: [
         {
             files: "*.astro",

@@ -1,30 +1,29 @@
+import { drag, type D3DragEvent } from "d3-drag";
 import {
-    useState,
-    useEffect,
-    useRef,
-    useMemo,
-    useCallback,
-} from "preact/hooks";
-
-import {
-    type SimulationNodeDatum,
-    type SimulationLinkDatum,
-    type Simulation,
-    forceSimulation,
-    forceLink,
-    forceManyBody,
     forceCenter,
     forceCollide,
+    forceLink,
+    forceManyBody,
     forceRadial,
+    forceSimulation,
+    type Simulation,
+    type SimulationLinkDatum,
+    type SimulationNodeDatum,
 } from "d3-force";
+import { select, type Selection } from "d3-selection";
 import {
     zoom,
     zoomIdentity,
     type D3ZoomEvent,
     type ZoomBehavior,
 } from "d3-zoom";
-import { select, type Selection } from "d3-selection";
-import { drag, type D3DragEvent } from "d3-drag";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "preact/hooks";
 
 interface NodeData extends SimulationNodeDatum {
     id: string;
