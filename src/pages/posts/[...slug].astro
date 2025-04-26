@@ -1,6 +1,6 @@
 ---
-import ChevronRight from "@lucide/astro/icons/chevron-right";
 import { getCollection, render } from "astro:content";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import Prose from "../../components/Prose.astro";
 import Base from "../../layouts/Base.astro";
 
@@ -17,40 +17,17 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 
-const pathSegments = post.id.split("/").filter((segment) => segment);
-const breadcrumbs = [];
-
-let accumulatedPath = "";
-for (let i = 0; i < pathSegments.length - 1; i++) {
-    const segment = pathSegments[i];
-    accumulatedPath += `/${segment}`;
-    breadcrumbs.push({ label: segment, url: "/posts" + accumulatedPath });
-}
+const breadcrumbs = post.id
+    .split("/")
+    .filter((segment) => segment)
+    .map((segment) => {
+        return { label: segment, fragment: segment };
+    });
 ---
 
 <Base>
     <div class="m-auto max-w-2xl">
-        <nav
-            aria-label="Breadcrumb"
-            class="mb-2 font-sans text-sm text-dark-gray"
-        >
-            <ol class="flex flex-wrap">
-                {
-                    breadcrumbs.map((crumb, index) => (
-                        <li class="flex items-center">
-                            {index > 0 && (
-                                <ChevronRight class="h-4 w-4 text-dark-gray" />
-                            )}
-                            {crumb.url ? (
-                                <a href={crumb.url}>{crumb.label}</a>
-                            ) : (
-                                <span class="font-medium">{crumb.label}</span>
-                            )}
-                        </li>
-                    ))
-                }
-            </ol>
-        </nav>
+        <Breadcrumbs baseUrl="/posts" breadcrumbs={[...breadcrumbs]} />
         <Prose><h1 class="text-dark">{post.data.title}</h1><Content /></Prose>
     </div>
 </Base>
