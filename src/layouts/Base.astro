@@ -3,8 +3,8 @@ import "@fontsource/fira-sans";
 import "@fontsource-variable/lora";
 import "@fontsource-variable/fira-code";
 import "../styles/global.css";
-import firaCode from "@fontsource-variable/fira-code/files/fira-code-latin-wght-normal.woff2?url";
 import lora from "@fontsource-variable/lora/files/lora-latin-wght-normal.woff2?url";
+import firaSans from "@fontsource/fira-sans/files/fira-sans-latin-400-normal.woff2?url";
 import { ClientRouter, fade } from "astro:transitions";
 import Footer from "./Footer.astro";
 import Nav from "./Nav.astro";
@@ -60,7 +60,7 @@ import Nav from "./Nav.astro";
             as="font"
             type="font/woff2"
             crossorigin="anonymous"
-            href={firaCode}
+            href={firaSans}
         />
         <ClientRouter />
     </head>
