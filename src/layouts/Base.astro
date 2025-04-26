@@ -22,11 +22,23 @@ import Footer from "./Footer.astro";
         <meta name="generator" content={Astro.generator} />
         <title>Abhi Agarwal</title>
         <script>
-            const theme = localStorage.getItem("theme-preference");
+            const STORAGE_KEY = "theme-preference";
+            const THEMES = ["light", "dark", "system"];
+
+            const storedPreference = localStorage.getItem(STORAGE_KEY);
+            const initialPreference =
+                storedPreference && THEMES.includes(storedPreference)
+                    ? storedPreference
+                    : "system";
+
+            document.documentElement.dataset.themePreference =
+                initialPreference;
+
             const isDark =
-                theme === "dark" ||
-                ((theme === null || theme === "system") &&
+                initialPreference === "dark" ||
+                (initialPreference === "system" &&
                     window.matchMedia("(prefers-color-scheme: dark)").matches);
+
             document.documentElement.dataset.theme = isDark ? "dark" : "light";
         </script>
         <link

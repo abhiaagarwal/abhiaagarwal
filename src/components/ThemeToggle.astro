@@ -21,7 +21,10 @@ const themes = Object.keys(themeConfig);
     type="button"
     id="theme-toggle-button"
     aria-label="Toggle theme"
-    class:list={[className, "flex rounded-md relative w-8 h-8 overflow-hidden"]}
+    class:list={[
+        className,
+        "flex rounded-md relative w-8 h-8 overflow-hidden cursor-pointer",
+    ]}
 >
     {
         themes.map((theme) => {
@@ -29,8 +32,7 @@ const themes = Object.keys(themeConfig);
             return (
                 <Icon
                     id={`theme-icon-${theme}`}
-                    aria-selected="false"
-                    class="block m-auto pointer-events-none opacity-0 transition-opacity ease-in-out absolute inset-0 aria-selected:pointer-events-auto aria-selected:opacity-100"
+                    class="block m-auto absolute inset-0 opacity-0 pointer-events-none"
                 />
             );
         })
@@ -41,12 +43,7 @@ const themes = Object.keys(themeConfig);
 <script>
     const STORAGE_KEY = "theme-preference";
     const THEMES = ["light", "dark", "system"];
-    const button = document.getElementById("theme-toggle-button");
-
-    const icons = {};
-    THEMES.forEach((theme) => {
-        icons[theme] = document.getElementById(`theme-icon-${theme}`);
-    });
+    const button = document.getElementById("theme-toggle-button")!;
 
     const themeLabels = {
         light: "Currently Light Mode, Switch to Dark Mode",
@@ -54,9 +51,11 @@ const themes = Object.keys(themeConfig);
         system: "Currently System Preference, Switch to Light Mode",
     };
 
-    const getStoredPreference = (): string => {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        return stored && THEMES.includes(stored) ? stored : "system";
+    const getCurrentPreferenceFromAttribute = (): string => {
+        const preference = document.documentElement.dataset.themePreference;
+        return preference && THEMES.includes(preference)
+            ? preference
+            : "system";
     };
 
     const applyEffectiveTheme = (preference: string): void => {
@@ -64,21 +63,18 @@ const themes = Object.keys(themeConfig);
             preference === "dark" ||
             (preference === "system" &&
                 window.matchMedia("(prefers-color-scheme: dark)").matches);
-
         document.documentElement.dataset.theme = isDark ? "dark" : "light";
     };
 
-    const updateButtonState = (preference: string): void => {
-        if (!button) return;
+    const setPreference = (preference: string): void => {
+        if (!THEMES.includes(preference)) {
+            preference = "system";
+        }
 
-        THEMES.forEach((theme) => {
-            if (icons[theme]) {
-                icons[theme].setAttribute(
-                    "aria-selected",
-                    theme === preference ? "true" : "false",
-                );
-            }
-        });
+        localStorage.setItem(STORAGE_KEY, preference);
+        document.documentElement.dataset.themePreference = preference;
+
+        applyEffectiveTheme(preference);
 
         button.setAttribute(
             "aria-label",
@@ -86,40 +82,42 @@ const themes = Object.keys(themeConfig);
         );
         button.setAttribute("aria-value-text", preference);
     };
-    const setPreference = (preference: string): void => {
-        if (!THEMES.includes(preference)) {
-            preference = "system";
-        }
-
-        localStorage.setItem(STORAGE_KEY, preference);
-
-        applyEffectiveTheme(preference);
-        updateButtonState(preference);
-    };
 
     const cyclePreference = (): void => {
-        const currentPreference = getStoredPreference();
+        const currentPreference = getCurrentPreferenceFromAttribute();
         const currentIndex = THEMES.indexOf(currentPreference);
         const nextIndex = (currentIndex + 1) % THEMES.length;
         setPreference(THEMES[nextIndex]);
     };
 
     const handleSystemChange = (): void => {
-        const currentPreference = getStoredPreference();
+        const currentPreference = getCurrentPreferenceFromAttribute();
         if (currentPreference === "system") {
             applyEffectiveTheme("system");
         }
     };
 
-    const initialPreference = getStoredPreference();
-    setPreference(initialPreference);
+    const initialPreference = getCurrentPreferenceFromAttribute();
+    button.setAttribute(
+        "aria-label",
+        themeLabels[initialPreference] || "Toggle theme",
+    );
+    button.setAttribute("aria-value-text", initialPreference);
 
-    button?.addEventListener("click", cyclePreference);
+    applyEffectiveTheme(initialPreference);
+
+    button.addEventListener("click", cyclePreference);
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     mediaQuery.addEventListener("change", handleSystemChange);
-
-    window.addEventListener("unload", () => {
-        mediaQuery.removeEventListener("change", handleSystemChange);
-    });
 </script>
+
+<style>
+    @reference "../styles/global.css";
+
+    html[data-theme-preference="light"] #theme-icon-light,
+    html[data-theme-preference="dark"] #theme-icon-dark,
+    html[data-theme-preference="system"] #theme-icon-system {
+        @apply pointer-events-auto opacity-100 transition-colors ease-in-out;
+    }
+</style>
