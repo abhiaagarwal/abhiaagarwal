@@ -17,24 +17,24 @@ const { data: hierarchicalData } = Astro.props;
 
 <style is:global>
     #force-graph-svg {
-        .node text {
+        & .node text {
             pointer-events: none;
             user-select: none;
             text-anchor: middle;
         }
 
-        .node,
-        .link {
+        & .node,
+        & .link {
             transition: opacity 0.3s ease-in-out;
         }
 
-        .node.fade,
-        .link.fade {
+        & .node.fade,
+        & .link.fade {
             opacity: 0.15;
         }
 
-        .node:not(.fade),
-        .link:not(.fade) {
+        & .node:not(.fade),
+        & .link:not(.fade) {
             opacity: 1;
         }
     }
@@ -42,15 +42,15 @@ const { data: hierarchicalData } = Astro.props;
 
 <div
     id="graph-container"
-    class="h-150 border-light-gray border-1 rounded-2xl relative w-8/12 m-auto overflow-hidden cursor-default"
+    class="m-auto h-150 max-w-3xl cursor-default overflow-hidden rounded-lg border-1 border-light-gray"
     data-hierarchy-data={JSON.stringify(compress(hierarchicalData))}
 >
-    <svg id="force-graph-svg" class="block w-full h-full"></svg>
+    <svg id="force-graph-svg" class="block h-full w-full"></svg>
 </div>
 
 <script>
-    import * as d3 from "d3";
     import { decompress } from "compress-json";
+    import * as d3 from "d3";
 
     interface NodeData extends d3.SimulationNodeDatum {
         id: string;
