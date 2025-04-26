@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import compress from "astro-compress";
 import expressiveCode from "astro-expressive-code";
 import { defineConfig } from "astro/config";
+import rehypeExternalLinks from "rehype-external-links";
 
 // https://astro.build/config
 export default defineConfig({
@@ -13,6 +14,16 @@ export default defineConfig({
     trailingSlash: "never",
     vite: {
         plugins: [tailwindcss()],
+    },
+    markdown: {
+        rehypePlugins: [
+            [
+                rehypeExternalLinks,
+                {
+                    content: { type: "text", value: "↗" },
+                },
+            ],
+        ],
     },
     integrations: [
         sitemap(),

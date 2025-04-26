@@ -1,0 +1,129 @@
+---
+import Thoughts from "@lucide/astro/icons/cloud";
+import Notebook from "@lucide/astro/icons/notebook";
+import Orbit from "@lucide/astro/icons/orbit";
+import type { CollectionEntry } from "astro:content";
+import Breadcrumbs from "./Breadcrumbs.astro";
+
+type IconKind = "observations" | "thoughts" | "notes";
+
+const IconMapping: Record<IconKind, typeof Orbit> = {
+    observations: Orbit,
+    thoughts: Thoughts,
+    notes: Notebook,
+};
+
+function getIcon(kind: string | undefined) {
+    if (kind && kind in IconMapping) {
+        return IconMapping[kind as IconKind];
+    }
+    return undefined;
+}
+
+interface Props {
+    posts: CollectionEntry<"blog">[];
+}
+const { posts } = Astro.props;
+const kinds = [...new Set(posts.map((post) => post.data.kind))];
+---
+
+<div id="post-listing-container">
+    <div class="mb-8 flex flex-wrap items-center gap-2">
+        {
+            kinds.map((kind) => {
+                const Icon = getIcon(kind);
+                return (
+                    <button
+                        class:list={[
+                            "filter-button",
+                            "flex items-center gap-1 rounded px-2 py-1 text-sm capitalize transition",
+                            "bg-light-gray text-dark hover:bg-gray",
+                        ]}
+                        data-filter={kind}
+                    >
+                        {Icon && <Icon class="inline-block h-4 w-4" />}
+                        {kind}
+                    </button>
+                );
+            })
+        }
+    </div>
+
+    <div id="posts-list">
+        {
+            posts.map((post) => {
+                const breadcrumbs = post.id
+                    .split("/")
+                    .filter((segment) => segment)
+                    .map((segment) => {
+                        return { label: segment, fragment: segment };
+                    });
+                const PostIcon = getIcon(post.data.kind);
+                return (
+                    <div class="post-item mb-12" data-kind={post.data.kind}>
+                        <Breadcrumbs
+                            baseUrl="/posts"
+                            breadcrumbs={[...breadcrumbs]}
+                        />
+                        <div class="-ml-10 flex items-start gap-2 text-2xl">
+                            {PostIcon && (
+                                <PostIcon class="h-8 w-8 stroke-dark" />
+                            )}
+                            <h2 class="font-semibold text-dark">
+                                <a href={`/posts/${post.id}`}>
+                                    {post.data.title ?? "Unknown"}
+                                </a>
+                            </h2>
+                        </div>
+                    </div>
+                );
+            })
+        }
+    </div>
+</div>
+
+<script>
+    const activeClasses = ["bg-primary", "text-light", "hover:bg-secondary"];
+    const inactiveClasses = ["bg-light-gray", "text-dark", "hover:bg-gray"];
+
+    document.addEventListener("astro:page-load", () => {
+        const container = document.getElementById("post-listing-container");
+        const postItems =
+            container?.querySelectorAll<HTMLElement>(".post-item");
+        const filterButtons =
+            container?.querySelectorAll<HTMLButtonElement>(".filter-button");
+        let currentFilter: string | null = null;
+
+        filterButtons?.forEach((button) => {
+            button.addEventListener("click", () => {
+                const filter = button.getAttribute("data-filter");
+                let effectiveFilter: string | null;
+
+                if (button.classList.contains(activeClasses[0])) {
+                    button.classList.remove(...activeClasses);
+                    button.classList.add(...inactiveClasses);
+                    currentFilter = null;
+                    effectiveFilter = null;
+                } else {
+                    filterButtons.forEach((btn) => {
+                        btn.classList.remove(...activeClasses);
+                        btn.classList.add(...inactiveClasses);
+                    });
+                    button.classList.remove(...inactiveClasses);
+                    button.classList.add(...activeClasses);
+                    currentFilter = filter;
+                    effectiveFilter = filter;
+                }
+
+                postItems?.forEach((item) => {
+                    const postKind = item.getAttribute("data-kind");
+                    if (!effectiveFilter || postKind === effectiveFilter) {
+                        item.style.display = "block";
+                    } else {
+                        item.style.display = "none";
+                    }
+                });
+            });
+        });
+    });
+</script>
