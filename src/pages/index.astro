@@ -9,7 +9,7 @@ const posts = (await getCollection("blog")).filter(
 ---
 
 <Layout>
-    <div class="mx-auto w-2xl font-serif">
+    <div class="mx-auto max-w-2xl font-serif">
         <h1 class="mb-6 text-3xl font-semibold text-dark">Latest Posts</h1>
         <Listing posts={posts} />
     </div>
