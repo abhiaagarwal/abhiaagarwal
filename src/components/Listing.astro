@@ -94,43 +94,40 @@ const kinds = [...new Set(posts.map((post) => post.data.kind))];
     const activeClasses = ["bg-primary", "text-light", "hover:bg-secondary"];
     const inactiveClasses = ["bg-light-gray", "text-dark", "hover:bg-gray"];
 
-    document.addEventListener("astro:page-load", () => {
-        const container = document.getElementById("post-listing-container");
-        const postItems =
-            container?.querySelectorAll<HTMLElement>(".post-item");
-        const filterButtons =
-            container?.querySelectorAll<HTMLButtonElement>(".filter-button");
-        let currentFilter: string | null = null;
+    const container = document.getElementById("post-listing-container");
+    const postItems = container?.querySelectorAll<HTMLElement>(".post-item");
+    const filterButtons =
+        container?.querySelectorAll<HTMLButtonElement>(".filter-button");
+    let currentFilter: string | null = null;
 
-        filterButtons?.forEach((button) => {
-            button.addEventListener("click", () => {
-                const filter = button.getAttribute("data-filter");
-                let effectiveFilter: string | null;
+    filterButtons?.forEach((button) => {
+        button.addEventListener("click", () => {
+            const filter = button.getAttribute("data-filter");
+            let effectiveFilter: string | null;
 
-                if (button.classList.contains(activeClasses[0])) {
-                    button.classList.remove(...activeClasses);
-                    button.classList.add(...inactiveClasses);
-                    currentFilter = null;
-                    effectiveFilter = null;
-                } else {
-                    filterButtons.forEach((btn) => {
-                        btn.classList.remove(...activeClasses);
-                        btn.classList.add(...inactiveClasses);
-                    });
-                    button.classList.remove(...inactiveClasses);
-                    button.classList.add(...activeClasses);
-                    currentFilter = filter;
-                    effectiveFilter = filter;
-                }
-
-                postItems?.forEach((item) => {
-                    const postKind = item.getAttribute("data-kind");
-                    if (!effectiveFilter || postKind === effectiveFilter) {
-                        item.style.display = "";
-                    } else {
-                        item.style.display = "none";
-                    }
+            if (button.classList.contains(activeClasses[0])) {
+                button.classList.remove(...activeClasses);
+                button.classList.add(...inactiveClasses);
+                currentFilter = null;
+                effectiveFilter = null;
+            } else {
+                filterButtons.forEach((btn) => {
+                    btn.classList.remove(...activeClasses);
+                    btn.classList.add(...inactiveClasses);
                 });
+                button.classList.remove(...inactiveClasses);
+                button.classList.add(...activeClasses);
+                currentFilter = filter;
+                effectiveFilter = filter;
+            }
+
+            postItems?.forEach((item) => {
+                const postKind = item.getAttribute("data-kind");
+                if (!effectiveFilter || postKind === effectiveFilter) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
             });
         });
     });

@@ -5,7 +5,6 @@ import "@fontsource-variable/fira-code";
 import "../styles/global.css";
 import lora from "@fontsource-variable/lora/files/lora-latin-wght-normal.woff2?url";
 import firaSans from "@fontsource/fira-sans/files/fira-sans-latin-400-normal.woff2?url";
-import { ClientRouter, fade } from "astro:transitions";
 import Footer from "./Footer.astro";
 import Nav from "./Nav.astro";
 ---
@@ -46,7 +45,6 @@ import Nav from "./Nav.astro";
                     : "light";
             }
             applyTheme();
-            document.addEventListener("astro:after-swap", applyTheme);
         </script>
         <link
             rel="preload"
@@ -62,10 +60,8 @@ import Nav from "./Nav.astro";
             crossorigin="anonymous"
             href={firaSans}
         />
-        <ClientRouter />
     </head>
     <body
-        transition:animate={fade({ duration: "0.15s" })}
         class="flex min-h-screen flex-col gap-4 bg-light px-4 py-2 transition-colors md:px-8 md:py-4"
     >
         <Nav />
