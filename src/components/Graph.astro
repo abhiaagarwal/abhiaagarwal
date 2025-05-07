@@ -1,66 +1,27 @@
 ---
-import { compress, trimUndefinedRecursively } from "compress-json";
+import { compress } from "compress-json";
 
-interface HierarchicalNodeFromProps {
-    name: string;
-    path: string;
-    children?: HierarchicalNodeFromProps[];
-    backlinks?: string[];
+interface ClientGraphNode {
+    id: string;
+    isFolder: boolean;
+    initialDepth: number;
+}
+
+interface ClientGraphLink {
+    source: string;
+    target: string;
+    isBacklink: boolean;
 }
 
 interface Props {
-    data: HierarchicalNodeFromProps;
-}
-
-const { data: hierarchicalDataWithPaths } = Astro.props;
-
-interface ClientTreeInputNode {
-    name: string;
-    children?: ClientTreeInputNode[];
-    backlinks?: string[];
-}
-
-function transformTreeForClient(
-    inputNode: HierarchicalNodeFromProps,
-    parentName?: string,
-): ClientTreeInputNode | null {
-    if (parentName && inputNode.name === parentName) {
-        return null;
-    }
-
-    let children: ClientTreeInputNode[] | undefined = undefined;
-    if (inputNode.children) {
-        children = inputNode.children
-            .map((child) => transformTreeForClient(child, inputNode.name))
-            .filter((child) => child !== null) as ClientTreeInputNode[];
-        if (children.length === 0) {
-            children = undefined;
-        }
-    }
-
-    return {
-        name: inputNode.name,
-        backlinks: inputNode.backlinks,
-        children: children,
+    graphData: {
+        nodes: ClientGraphNode[];
+        links: ClientGraphLink[];
     };
 }
 
-const rootHierarchicalNode = hierarchicalDataWithPaths;
-
-let treeForClientSerializationReady: ClientTreeInputNode | null = 
-    transformTreeForClient(rootHierarchicalNode);
-
-if (!treeForClientSerializationReady) {
-    console.error(
-        "Root node was filtered out by transformTreeForClient. " + 
-        "This likely means the top-level item of your data matched a folder note exclusion rule, which is unusual. " + 
-        "Providing a minimal tree to avoid client errors."
-    );
-    return;
-}
-
-trimUndefinedRecursively(treeForClientSerializationReady);
-const compressedTreeForClient = compress(treeForClientSerializationReady);
+const { graphData } = Astro.props;
+const compressedGraphData = compress(graphData);
 ---
 
 <style is:global>
@@ -90,8 +51,8 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
 
 <div
     id="graph-container"
-    class="m-auto h-150 max-w-3xl cursor-default overflow-hidden rounded-lg border-1 border-light-gray"
-    data-client-tree={JSON.stringify(compressedTreeForClient)}
+    class="m-auto h-[calc(100vh-9rem)] max-w-3xl cursor-default overflow-hidden rounded-lg border-1 border-light-gray"
+    data-graph-data={JSON.stringify(compressedGraphData)}
 >
     <svg id="force-graph-svg" class="block h-full w-full"></svg>
 </div>
@@ -100,163 +61,30 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
     import { decompress } from "compress-json";
     import * as d3 from "d3";
 
-    interface ClientTreeInputNode {
-        name: string;
-        children?: ClientTreeInputNode[];
-        backlinks?: string[];
-    }
-
-    interface NodeDataForSim extends d3.SimulationNodeDatum {
+    interface ClientGraphNode {
         id: string;
-        name: string;
+        isFolder: boolean;
         initialDepth: number;
-        isLeaf: boolean;
-        wasInitiallyFixed?: boolean;
     }
 
-    interface InitialLinkData {
+    interface ClientGraphLink {
         source: string;
         target: string;
         isBacklink: boolean;
     }
 
-    interface LinkDataForSim extends d3.SimulationLinkDatum<NodeDataForSim> {
-        isBacklink: boolean;
+    interface GraphData {
+        nodes: ClientGraphNode[];
+        links: ClientGraphLink[];
     }
 
-    function processTreeForD3(rootClientNode: ClientTreeInputNode) {
-        const nodes: NodeDataForSim[] = [];
-        const links: InitialLinkData[] = [];
-        const fullAdjacencyMap = new Map<string, Set<string>>();
-        const nodeMap = new Map<string, NodeDataForSim>();
-
-        interface NodeWithOriginalBacklinks extends NodeDataForSim {
-            originalBacklinks?: string[];
-        }
-
-        function traverseBuild(
-            currentClientNode: ClientTreeInputNode,
-            parentGeneratedPath: string,
-            depth: number,
-        ) {
-            let nodeId: string;
-            if (currentClientNode.name === "Content Root" && depth === 0) {
-                nodeId = "/";
-            } else if (parentGeneratedPath === "/") {
-                nodeId = `/${currentClientNode.name}`;
-            } else {
-                nodeId = parentGeneratedPath
-                    ? `${parentGeneratedPath}/${currentClientNode.name}`
-                    : `/${currentClientNode.name}`;
-                if (
-                    depth === 0 &&
-                    nodeId !== "/" &&
-                    currentClientNode.name !== "Content Root"
-                ) {
-                    nodeId = `/${currentClientNode.name}`;
-                }
-            }
-
-            if (!fullAdjacencyMap.has(nodeId)) {
-                fullAdjacencyMap.set(nodeId, new Set());
-            }
-
-            let newNode: NodeWithOriginalBacklinks;
-            if (!nodeMap.has(nodeId)) {
-                newNode = {
-                    id: nodeId,
-                    name: currentClientNode.name,
-                    initialDepth: depth,
-                    isLeaf:
-                        !currentClientNode.children ||
-                        currentClientNode.children.length === 0,
-                    fx: null,
-                    fy: null,
-                    originalBacklinks: currentClientNode.backlinks,
-                };
-                nodes.push(newNode);
-                nodeMap.set(nodeId, newNode);
-            } else {
-                newNode = nodeMap.get(nodeId)! as NodeWithOriginalBacklinks;
-                newNode.initialDepth = Math.min(newNode.initialDepth, depth);
-                if (currentClientNode.backlinks) {
-                    newNode.originalBacklinks = [
-                        ...new Set([
-                            ...(newNode.originalBacklinks || []),
-                            ...currentClientNode.backlinks,
-                        ]),
-                    ];
-                }
-            }
-
-            if (parentGeneratedPath && depth > 0) {
-                links.push({
-                    source: parentGeneratedPath,
-                    target: nodeId,
-                    isBacklink: false,
-                });
-                fullAdjacencyMap.get(parentGeneratedPath)!.add(nodeId);
-                fullAdjacencyMap.get(nodeId)!.add(parentGeneratedPath);
-            }
-
-            if (currentClientNode.children) {
-                currentClientNode.children.forEach((child) =>
-                    traverseBuild(child, nodeId, depth + 1),
-                );
-            }
-        }
-
-        traverseBuild(rootClientNode, "", 0);
-
-        nodes.forEach((node) => {
-            const tempNode = node as NodeWithOriginalBacklinks;
-            (tempNode.originalBacklinks || []).forEach((targetBacklinkPath) => {
-                if (nodeMap.has(targetBacklinkPath)) {
-                    if (!fullAdjacencyMap.get(node.id))
-                        fullAdjacencyMap.set(node.id, new Set());
-                    if (!fullAdjacencyMap.get(targetBacklinkPath))
-                        fullAdjacencyMap.set(targetBacklinkPath, new Set());
-
-                    fullAdjacencyMap.get(node.id)!.add(targetBacklinkPath);
-                    fullAdjacencyMap.get(targetBacklinkPath)!.add(node.id);
-
-                    const hierarchicalLinkExists = links.some(
-                        (l) =>
-                            !l.isBacklink &&
-                            ((l.source === node.id &&
-                                l.target === targetBacklinkPath) ||
-                                (l.source === targetBacklinkPath &&
-                                    l.target === node.id)),
-                    );
-
-                    if (!hierarchicalLinkExists) {
-                        const backlinkAlreadyAdded = links.some(
-                            (l) =>
-                                l.isBacklink &&
-                                ((l.source === node.id &&
-                                    l.target === targetBacklinkPath) ||
-                                    (l.source === targetBacklinkPath &&
-                                        l.target === node.id)),
-                        );
-                        if (!backlinkAlreadyAdded) {
-                            links.push({
-                                source: node.id,
-                                target: targetBacklinkPath,
-                                isBacklink: true,
-                            });
-                        }
-                    }
-                } else {
-                    console.warn(
-                        `Backlink target path "${targetBacklinkPath}" not found for source "${node.id}".`,
-                    );
-                }
-            });
-            delete tempNode.originalBacklinks;
-        });
-
-        return { nodes, links, fullAdjacencyMap };
+    interface NodeDataForSim extends d3.SimulationNodeDatum, ClientGraphNode {
+        wasInitiallyFixed?: boolean;
     }
+
+    interface LinkDataForSim
+        extends d3.SimulationLinkDatum<NodeDataForSim>,
+            Omit<ClientGraphLink, "source" | "target"> {}
 
     function runSimulation() {
         const BASE_RADIUS = 10;
@@ -264,7 +92,6 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
         const MIN_VISUAL_RADIUS = 3;
         const RADIAL_INCREMENT = 120;
         const RADIAL_STRENGTH = 0.9;
-        const ROOT_NODE_ID = "/";
         const SIM_ALPHA_DECAY = 0.018;
         const SIM_CHARGE_STRENGTH = -1200;
         const DRAG_ALPHA_TARGET = 0.1;
@@ -276,7 +103,7 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
         }
 
         function getLinkKey(linkDatum: unknown) {
-            const link = linkDatum as InitialLinkData;
+            const link = linkDatum as ClientGraphLink;
             const sourceId = link.source;
             const targetId = link.target;
             return sourceId < targetId
@@ -291,47 +118,49 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
         }
         const svg = d3.select<SVGSVGElement, unknown>("#force-graph-svg");
 
-        const rawClientTreeData = container.dataset.clientTree;
-        if (!rawClientTreeData) {
-            console.error("Client tree data not found on container dataset!");
+        const rawGraphData = container.dataset.graphData;
+        if (!rawGraphData) {
+            console.error("Graph data not found on container dataset!");
             return;
         }
-        const clientTree: ClientTreeInputNode = decompress(
-            JSON.parse(rawClientTreeData),
+        const decompressedGraphData: GraphData = decompress(
+            JSON.parse(rawGraphData),
         );
 
-        const {
-            nodes,
-            links: initialLinks,
-            fullAdjacencyMap,
-        } = processTreeForD3(clientTree);
+        const d3Nodes: NodeDataForSim[] = decompressedGraphData.nodes.map(
+            (n) => ({ ...n }),
+        );
+        const d3Links: ClientGraphLink[] = decompressedGraphData.links.map(
+            (l) => ({ ...l }),
+        );
+
+        const fullAdjacencyMap = new Map<string, Set<string>>();
+        d3Nodes.forEach((node) =>
+            fullAdjacencyMap.set(node.id, new Set<string>()),
+        );
+        d3Links.forEach((link) => {
+            fullAdjacencyMap.get(link.source)?.add(link.target);
+            fullAdjacencyMap.get(link.target)?.add(link.source);
+        });
 
         let width = container.clientWidth;
         let height = container.clientHeight;
 
-        const rootNodeForInit = nodes.find((n) => n.id === ROOT_NODE_ID);
-        if (rootNodeForInit) {
-            rootNodeForInit.fx = width / 2;
-            rootNodeForInit.fy = height / 2;
-            rootNodeForInit.wasInitiallyFixed = true;
+        const firstRootNode = d3Nodes.find((n) => n.initialDepth === 0);
+        if (firstRootNode) {
+            firstRootNode.fx = width / 2;
+            firstRootNode.fy = height / 2;
+            firstRootNode.wasInitiallyFixed = true;
         }
 
+        const linkForce = d3.forceLink<NodeDataForSim, LinkDataForSim>(d3Links);
+        linkForce.id((d: NodeDataForSim) => d.id);
+        linkForce.distance((d: LinkDataForSim) => (d.isBacklink ? 90 : 40));
+        linkForce.strength((d: LinkDataForSim) => (d.isBacklink ? 0.1 : 0.9));
+
         let simulation = d3
-            .forceSimulation<NodeDataForSim, LinkDataForSim>(nodes)
-            .force(
-                "link",
-                d3
-                    .forceLink<NodeDataForSim, LinkDataForSim>(
-                        initialLinks as any,
-                    )
-                    .id((d: NodeDataForSim) => d.id!)
-                    .distance((d: LinkDataForSim) => {
-                        return d.isBacklink ? 90 : 15;
-                    })
-                    .strength((d: LinkDataForSim) =>
-                        d.isBacklink ? 0.1 : 0.9,
-                    ),
-            )
+            .forceSimulation<NodeDataForSim, LinkDataForSim>(d3Nodes)
+            .force("link", linkForce)
             .force("charge", d3.forceManyBody().strength(SIM_CHARGE_STRENGTH))
             .force("center", d3.forceCenter(width / 2, height / 2))
             .force(
@@ -376,17 +205,17 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
 
         let linkElements = linkGroup
             .selectAll("line.link")
-            .data<InitialLinkData>(initialLinks, getLinkKey)
+            .data<ClientGraphLink>(d3Links, getLinkKey)
             .join("line")
             .attr(
                 "class",
-                (d: InitialLinkData) =>
-                    `link ${d.isBacklink ? "stroke-gray stroke-1 [stroke-dasharray:3,3]" : "stroke-gray stroke-2"}`,
+                (d: ClientGraphLink) =>
+                    `link stroke-gray ${d.isBacklink ? "stroke-1 [stroke-dasharray:3,3]" : "stroke-2"}`,
             );
 
         let nodeElements = nodeGroup
             .selectAll<SVGGElement, NodeDataForSim>("g.node")
-            .data<NodeDataForSim>(nodes, (d: NodeDataForSim) => d.id!)
+            .data<NodeDataForSim>(d3Nodes, (d: NodeDataForSim) => d.id)
             .join<SVGGElement>("g")
             .attr("class", "node");
 
@@ -396,7 +225,7 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
             .attr(
                 "class",
                 (d: NodeDataForSim) =>
-                    `stroke-dark-gray stroke-1 cursor-pointer ${d.isLeaf ? "fill-primary" : "fill-secondary"}`,
+                    `cursor-pointer ${d.isFolder ? "fill-secondary" : "fill-primary"}`,
             );
 
         nodeElements
@@ -404,7 +233,14 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
             .attr("dy", "0.35em")
             .attr("y", (d: NodeDataForSim) => calculateVisualNodeRadius(d) + 7)
             .attr("class", "text-xs fill-dark")
-            .text((d: NodeDataForSim) => d.name);
+            .text((d: NodeDataForSim) => {
+                const name = d.id.split("/").pop()!;
+                if (name === "") {
+                    return "Home";
+                } else {
+                    return name;
+                }
+            });
 
         const ticked = () => {
             linkElements
@@ -493,6 +329,14 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
         nodeElements.call(dragBehavior);
 
         nodeElements
+            .on("click", (event: MouseEvent, d: NodeDataForSim) => {
+                if (event.defaultPrevented) return;
+                const postPath = d.id;
+                if (postPath === "/") {
+                    window.location.href = "/";
+                }
+                window.location.href = `/posts${postPath}/`;
+            })
             .on(
                 "mouseover",
                 function (
@@ -500,7 +344,7 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
                     event: MouseEvent,
                     d: NodeDataForSim,
                 ) {
-                    const hoveredNodeId = d.id!;
+                    const hoveredNodeId = d.id;
 
                     const neighbors = new Set<string>(
                         fullAdjacencyMap.get(hoveredNodeId) || [],
@@ -509,7 +353,7 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
 
                     nodeElements.classed(
                         "fade",
-                        (n: NodeDataForSim) => !neighbors.has(n.id!),
+                        (n: NodeDataForSim) => !neighbors.has(n.id),
                     );
 
                     d3.select(this).select("circle").classed("highlight", true);
@@ -569,18 +413,28 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
                         );
                 }
 
-                const root = nodes.find((n) => n.id === ROOT_NODE_ID);
-                if (root) {
-                    root.fx = width / 2;
-                    root.fy = height / 2;
+                const currentFirstRootNode = d3Nodes.find(
+                    (n) => n.initialDepth === 0,
+                );
+                if (currentFirstRootNode) {
+                    currentFirstRootNode.fx = width / 2;
+                    currentFirstRootNode.fy = height / 2;
                 }
 
                 simulation.alpha(0.4).restart();
 
                 setTimeout(() => {
-                    if (root && !root.wasInitiallyFixed) {
-                        root.fx = null;
-                        root.fy = null;
+                    if (
+                        currentFirstRootNode &&
+                        !currentFirstRootNode.wasInitiallyFixed
+                    ) {
+                        currentFirstRootNode.fx = null;
+                        currentFirstRootNode.fy = null;
+                    } else if (
+                        currentFirstRootNode &&
+                        currentFirstRootNode.wasInitiallyFixed
+                    ) {
+                        // For now, let's assume it can be released if we re-fix on every resize
                     }
                     simulation.alphaTarget(0);
                 }, 1500);
@@ -590,11 +444,13 @@ const compressedTreeForClient = compress(treeForClientSerializationReady);
 
         simulation.alpha(1).restart();
         setTimeout(() => {
-            const rootNode = nodes.find((n) => n.id === ROOT_NODE_ID);
-            if (rootNode && rootNode.wasInitiallyFixed) {
-                rootNode.fx = null;
-                rootNode.fy = null;
-                rootNode.wasInitiallyFixed = false;
+            const currentFirstRootNode = d3Nodes.find(
+                (n) => n.initialDepth === 0 && n.wasInitiallyFixed,
+            );
+            if (currentFirstRootNode) {
+                currentFirstRootNode.fx = null;
+                currentFirstRootNode.fy = null;
+                currentFirstRootNode.wasInitiallyFixed = false;
             }
             simulation.alphaTarget(0);
         }, 2000);

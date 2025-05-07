@@ -1,71 +1,156 @@
 import { getCollection, render, type CollectionEntry } from "astro:content";
 
-interface PostLinkInfo {
+/**
+ * Represents a node in the hierarchical structure of the blog.
+ *
+ * @property {string} id - The unique identifier of the node, e.g., `path/to/file` or `path/to/folder`.
+ * @property {string} slug - The slug of the node, e.g., `path/to/file` or `path/to/folder`.
+ * @property {string} title - The title of the node.
+ * @property {boolean} isFolder - Indicates if the node represents a folder.
+ * @property {boolean} isFolderNote - Indicates if the node represents the content for its parent folder.
+ * @property {(string|undefined)} filePath - The path to the actual markdown file, present if not a synthetic folder node.
+ * @property {(CollectionEntry<"blog">["data"]|undefined)} data - The frontmatter from the markdown file, if applicable.
+ * @property {(string|undefined)} parent - The id of the parent node.
+ * @property {string[]} children - The ids of child nodes.
+ * @property {string[]} outgoingLinks - The ids of linked posts/pages.
+ * @property {string[]} backlinks - The ids of posts/pages linking to this one.
+ * @property {(string|undefined)} contentPath - If `isFolderNote`, this is the `id` of the node that provides its content.
+ */
+export interface HierarchicalBlogNode {
     id: string;
+    slug: string;
     title: string;
-    data: CollectionEntry<"blog">["data"];
+    isFolder: boolean;
+    isFolderNote: boolean;
+    filePath?: string;
+    data?: CollectionEntry<"blog">["data"];
+    parent?: string;
+    children: string[];
     outgoingLinks: string[];
-}
-
-export interface PostIndexEntry extends PostLinkInfo {
     backlinks: string[];
+    contentPath?: string;
 }
 
-async function createBlogIndex(): Promise<Map<string, PostIndexEntry>> {
+async function createBlogIndex(): Promise<Map<string, HierarchicalBlogNode>> {
     const blogEntries = await getCollection("blog");
+    const hierarchicalIndex = new Map<string, HierarchicalBlogNode>();
 
-    const postsWithOutgoingLinks: PostLinkInfo[] = await Promise.all(
-        blogEntries.map(async (post) => {
-            const { remarkPluginFrontmatter } = await render(post);
+    for (const post of blogEntries) {
+        const { remarkPluginFrontmatter } = await render(post);
 
-            const internalLinks: string[] =
-                remarkPluginFrontmatter.internalLinks.map((post) =>
-                    post.slice("/posts/".length),
-                );
+        const slug = post.id;
 
-            return {
-                id: post.id,
-                title:
-                    post.data.title ||
-                    post.id.split("/").pop() ||
-                    "Untitled Post",
-                data: post.data,
-                outgoingLinks: internalLinks,
-            };
-        }),
-    );
+        const pathSegments = slug.split("/");
+        let currentPath = "";
+        let parentId: string | undefined = undefined;
 
-    const blogIndex = new Map<string, PostIndexEntry>();
+        for (let i = 0; i < pathSegments.length - 1; i++) {
+            const segment = pathSegments[i];
+            currentPath = currentPath ? `${currentPath}/${segment}` : segment;
 
-    for (const postInfo of postsWithOutgoingLinks) {
-        if (postInfo.id) {
-            blogIndex.set(postInfo.id, {
-                ...postInfo,
-                backlinks: [],
-            });
-        } else {
-            console.warn(
-                "[BlogIndex] Found a post without an ID:",
-                postInfo.title,
-            );
+            if (!hierarchicalIndex.has(currentPath)) {
+                hierarchicalIndex.set(currentPath, {
+                    id: currentPath,
+                    slug: currentPath,
+                    title: segment,
+                    isFolder: true,
+                    isFolderNote: false,
+                    children: [],
+                    parent: parentId,
+                    outgoingLinks: [],
+                    backlinks: [],
+                });
+            }
+            if (
+                parentId &&
+                !hierarchicalIndex.get(parentId)?.children.includes(currentPath)
+            ) {
+                hierarchicalIndex.get(parentId)?.children.push(currentPath);
+            }
+            parentId = currentPath;
         }
-    }
 
-    for (const sourcePost of postsWithOutgoingLinks) {
-        if (!sourcePost.id) continue;
+        const postTitle =
+            post.data.title ??
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            slug.split("/").pop()!;
 
-        for (const linkedId of sourcePost.outgoingLinks) {
-            const targetPostEntry = blogIndex.get(linkedId);
-            if (targetPostEntry) {
-                if (!targetPostEntry.backlinks.includes(sourcePost.id)) {
-                    targetPostEntry.backlinks.push(sourcePost.id);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const internalLinks: string[] =
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+            remarkPluginFrontmatter.internalLinks.map((link: string) =>
+                link.startsWith("/posts/")
+                    ? link.slice("/posts/".length)
+                    : link,
+            ) ?? [];
+
+        const postNode: HierarchicalBlogNode = {
+            id: slug,
+            slug: slug,
+            title: postTitle,
+            isFolder: false,
+            isFolderNote: false,
+            filePath: slug,
+            data: post.data,
+            parent: parentId,
+            children: [],
+            outgoingLinks: internalLinks,
+            backlinks: [],
+        };
+
+        hierarchicalIndex.set(slug, postNode);
+
+        if (parentId) {
+            const parentNode = hierarchicalIndex.get(parentId);
+            if (parentNode && !parentNode.children.includes(slug)) {
+                parentNode.children.push(slug);
+            }
+        }
+
+        if (parentId) {
+            const parentFolderNode = hierarchicalIndex.get(parentId);
+            const slugSegments = slug.split("/");
+            const postSlugLastSegment = slugSegments.pop();
+
+            const parentFolderName = parentId.split("/").pop();
+
+            if (parentFolderNode && postSlugLastSegment === parentFolderName) {
+                parentFolderNode.isFolderNote = true;
+                parentFolderNode.contentPath = slug;
+
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                const thisPostNode = hierarchicalIndex.get(slug)!;
+                thisPostNode.isFolderNote = true;
+
+                const childIndex = parentFolderNode.children.indexOf(slug);
+                if (childIndex > -1) {
+                    parentFolderNode.children.splice(childIndex, 1);
                 }
             }
         }
     }
 
-    return blogIndex;
+    for (const [sourceId, sourceNode] of hierarchicalIndex) {
+        for (const linkedId of sourceNode.outgoingLinks) {
+            const targetNode = hierarchicalIndex.get(linkedId);
+            if (targetNode) {
+                if (!targetNode.backlinks.includes(sourceId)) {
+                    targetNode.backlinks.push(sourceId);
+                }
+            } else {
+                // console.warn(`[BlogIndex] Dangling link: ${sourceId} links to ${linkedId}, which does not exist.`);
+            }
+        }
+    }
+
+    for (const node of hierarchicalIndex.values()) {
+        if (node.isFolder) {
+            node.children.sort();
+        }
+    }
+
+    return hierarchicalIndex;
 }
 
-export const blogIndex: Promise<Map<string, PostIndexEntry>> =
+export const blogIndex: Promise<Map<string, HierarchicalBlogNode>> =
     createBlogIndex();

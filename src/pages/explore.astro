@@ -1,92 +1,195 @@
 ---
-import { getCollection } from "astro:content";
 import {
     blogIndex as blogIndexPromise,
-    type PostIndexEntry,
+    type HierarchicalBlogNode,
 } from "../blogIndex";
 import Graph from "../components/Graph.astro";
 import Layout from "../layouts/Base.astro";
 
-interface HierarchicalNode {
-    name: string;
-    path: string;
-    title?: string;
-    children?: HierarchicalNode[];
-    backlinks?: string[];
-    outgoingLinks?: string[];
+interface ClientGraphNode {
+    id: string;
+    isFolder: boolean;
+    initialDepth: number;
 }
 
-const allPostsIndex = await blogIndexPromise;
+interface ClientGraphLink {
+    source: string;
+    target: string;
+    isBacklink: boolean;
+}
 
-const root: HierarchicalNode = {
-    name: "Content Root",
-    path: "/",
-    children: [],
-};
+const SYNTHETIC_ROOT_ID = "/";
 
-function findOrCreateNode(
-    segments: string[],
-    parent: HierarchicalNode,
-    fullPath: string,
-    postEntry?: PostIndexEntry,
-): void {
-    let currentLevel = parent.children!;
-    let currentPath = "";
+const allNodesMap: Map<string, HierarchicalBlogNode> = await blogIndexPromise;
 
-    for (let i = 0; i < segments.length; i++) {
-        const segment = segments[i];
-        currentPath = currentPath ? `${currentPath}/${segment}` : `/${segment}`;
+const clientNodes: ClientGraphNode[] = [];
+const clientLinks: ClientGraphLink[] = [];
+const visitedDepths = new Map<string, number>();
 
-        let node = currentLevel.find(
-            (child) => child.name === segment && child.path === currentPath,
+clientNodes.push({
+    id: SYNTHETIC_ROOT_ID,
+    isFolder: true,
+    initialDepth: 0,
+});
+visitedDepths.set(SYNTHETIC_ROOT_ID, 0);
+
+const queue: { nodeId: string; depth: number }[] = [];
+for (const node of allNodesMap.values()) {
+    if (!node.parent) {
+        const actualNodeIdWithSlash = "/" + node.id;
+        clientLinks.push({
+            source: SYNTHETIC_ROOT_ID,
+            target: actualNodeIdWithSlash,
+            isBacklink: false,
+        });
+        if (!visitedDepths.has(actualNodeIdWithSlash)) {
+            queue.push({ nodeId: node.id, depth: 1 });
+            visitedDepths.set(actualNodeIdWithSlash, 1);
+        }
+    }
+}
+
+let head = 0;
+while (head < queue.length) {
+    const { nodeId, depth } = queue[head++];
+    const blogNode = allNodesMap.get(nodeId);
+    if (!blogNode) continue;
+    if (blogNode.children.length > 0) {
+        for (const childId of blogNode.children) {
+            const actualChildIdWithSlash = "/" + childId;
+            if (!visitedDepths.has(actualChildIdWithSlash)) {
+                visitedDepths.set(actualChildIdWithSlash, depth + 1);
+                queue.push({ nodeId: childId, depth: depth + 1 });
+            }
+        }
+    }
+}
+
+function getEffectiveGraphId(originalId: string): string {
+    const hNode = allNodesMap.get(originalId);
+    if (hNode && hNode.isFolderNote && !hNode.isFolder && hNode.parent) {
+        return "/" + hNode.parent;
+    }
+    return "/" + originalId;
+}
+
+const linkSet = new Set<string>();
+clientLinks.forEach((link) => {
+    if (link.source === SYNTHETIC_ROOT_ID) {
+        linkSet.add([link.source, link.target].sort().join("--"));
+    }
+});
+
+for (const node of allNodesMap.values()) {
+    if (!node.isFolder && node.data?.draft) {
+        continue;
+    }
+
+    if (node.isFolderNote && !node.isFolder) {
+        continue;
+    }
+
+    const actualNodeIdWithSlash = "/" + node.id;
+    const depth = visitedDepths.get(actualNodeIdWithSlash);
+
+    if (depth === undefined) {
+        console.warn(
+            `Node ${actualNodeIdWithSlash} (original ID: ${node.id}) has undefined depth and will be skipped for the graph.`,
         );
+        continue;
+    }
 
-        if (!node) {
-            node = {
-                name: segment,
-                path: currentPath,
-                children: [],
-            };
-            currentLevel.push(node);
-        }
+    if (!clientNodes.find((cn) => cn.id === actualNodeIdWithSlash)) {
+        clientNodes.push({
+            id: actualNodeIdWithSlash,
+            isFolder: node.isFolder,
+            initialDepth: depth,
+        });
+    }
 
-        if (i === segments.length - 1) {
-            if (postEntry) {
-                node.title = postEntry.title;
-                node.backlinks = postEntry.backlinks.map((slug) => "/" + slug);
-                node.outgoingLinks = postEntry.outgoingLinks.map(
-                    (slug) => slug,
-                );
-                delete node.children;
+    if (node.children.length > 0) {
+        for (const childId of node.children) {
+            const childHNode = allNodesMap.get(childId);
+            if (
+                childHNode &&
+                !(!childHNode.isFolder && childHNode.data?.draft)
+            ) {
+                // Not a draft file
+                const sourceGraphId = getEffectiveGraphId(node.id);
+                const targetGraphId = getEffectiveGraphId(childId);
+
+                const linkKey = [sourceGraphId, targetGraphId]
+                    .sort()
+                    .join("--");
+                if (!linkSet.has(linkKey)) {
+                    clientLinks.push({
+                        source: sourceGraphId,
+                        target: targetGraphId,
+                        isBacklink: false,
+                    });
+                    linkSet.add(linkKey);
+                }
             }
-        } else {
-            if (!node.children) {
-                node.children = [];
+        }
+    }
+
+    if (node.backlinks.length > 0) {
+        for (const backlinkerId of node.backlinks) {
+            const backlinkerHNode = allNodesMap.get(backlinkerId);
+            if (
+                backlinkerHNode &&
+                !(!backlinkerHNode.isFolder && backlinkerHNode.data?.draft)
+            ) {
+                // Not a draft file
+                const sourceGraphId = getEffectiveGraphId(backlinkerId);
+                const targetGraphId = getEffectiveGraphId(node.id);
+
+                if (sourceGraphId === targetGraphId) continue;
+
+                let isHierarchicalAlready = false;
+                if (
+                    node.parent === backlinkerId ||
+                    backlinkerHNode.parent === node.id
+                ) {
+                    const hierarchicalKey = [sourceGraphId, targetGraphId]
+                        .sort()
+                        .join("--");
+                    if (
+                        clientLinks.some(
+                            (l) =>
+                                !l.isBacklink &&
+                                [l.source, l.target].sort().join("--") ===
+                                    hierarchicalKey,
+                        )
+                    ) {
+                        isHierarchicalAlready = true;
+                    }
+                }
+                const isToSyntheticRoot =
+                    sourceGraphId === SYNTHETIC_ROOT_ID ||
+                    targetGraphId === SYNTHETIC_ROOT_ID;
+
+                if (!isHierarchicalAlready && !isToSyntheticRoot) {
+                    const linkKey = [sourceGraphId, targetGraphId]
+                        .sort()
+                        .join("--");
+                    if (!linkSet.has(linkKey)) {
+                        clientLinks.push({
+                            source: sourceGraphId,
+                            target: targetGraphId,
+                            isBacklink: true,
+                        });
+                        linkSet.add(linkKey);
+                    }
+                }
             }
-            currentLevel = node.children;
         }
     }
 }
 
-for (const postEntry of allPostsIndex.values()) {
-    if (postEntry.data.draft === true) continue;
-
-    const slug = postEntry.id;
-    const segments = slug.split("/").filter(Boolean);
-    if (segments.length > 0) {
-        findOrCreateNode(segments, root, slug, postEntry);
-    }
-}
-
-function sortChildren(node: HierarchicalNode): void {
-    if (node.children) {
-        node.children.sort((a, b) => a.name.localeCompare(b.name));
-        node.children.forEach(sortChildren);
-    }
-}
-sortChildren(root);
-
-const hierarchicalData = root;
+const hierarchicalData = { nodes: clientNodes, links: clientLinks };
 ---
 
-<Layout><Graph data={hierarchicalData} /></Layout>
+<Layout>
+    <Graph graphData={hierarchicalData} />
+</Layout>
