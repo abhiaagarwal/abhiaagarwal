@@ -22,20 +22,45 @@ interface ClientTreeInputNode {
 
 function transformTreeForClient(
     inputNode: HierarchicalNodeFromProps,
-): ClientTreeInputNode {
+    parentName?: string,
+): ClientTreeInputNode | null {
+    if (parentName && inputNode.name === parentName) {
+        return null;
+    }
+
+    let children: ClientTreeInputNode[] | undefined = undefined;
+    if (inputNode.children) {
+        children = inputNode.children
+            .map((child) => transformTreeForClient(child, inputNode.name))
+            .filter((child) => child !== null) as ClientTreeInputNode[];
+        if (children.length === 0) {
+            children = undefined;
+        }
+    }
+
     return {
         name: inputNode.name,
         backlinks: inputNode.backlinks,
-        children: inputNode.children?.map(transformTreeForClient),
+        children: children,
     };
 }
 
-const treeForClientSerialization = transformTreeForClient(
-    hierarchicalDataWithPaths,
-);
-trimUndefinedRecursively(treeForClientSerialization);
-console.log(treeForClientSerialization);
-const compressedTreeForClient = compress(treeForClientSerialization);
+const rootHierarchicalNode = hierarchicalDataWithPaths;
+
+let treeForClientSerializationReady: ClientTreeInputNode | null = 
+    transformTreeForClient(rootHierarchicalNode);
+
+if (!treeForClientSerializationReady) {
+    console.error(
+        "Root node was filtered out by transformTreeForClient. " + 
+        "This likely means the top-level item of your data matched a folder note exclusion rule, which is unusual. " + 
+        "Providing a minimal tree to avoid client errors."
+    );
+    return;
+}
+
+trimUndefinedRecursively(treeForClientSerializationReady);
+const compressedTreeForClient = compress(treeForClientSerializationReady);
 ---
 
 <style is:global>
@@ -238,10 +263,10 @@ const compressedTreeForClient = compress(treeForClientSerialization);
         const VISUAL_RADIUS_SCALE_FACTOR = 0.8;
         const MIN_VISUAL_RADIUS = 3;
         const RADIAL_INCREMENT = 120;
-        const RADIAL_STRENGTH = 0.7;
+        const RADIAL_STRENGTH = 0.9;
         const ROOT_NODE_ID = "/";
         const SIM_ALPHA_DECAY = 0.018;
-        const SIM_CHARGE_STRENGTH = -800;
+        const SIM_CHARGE_STRENGTH = -1200;
         const DRAG_ALPHA_TARGET = 0.1;
 
         function calculateVisualNodeRadius(node: NodeDataForSim) {
@@ -301,10 +326,10 @@ const compressedTreeForClient = compress(treeForClientSerialization);
                     )
                     .id((d: NodeDataForSim) => d.id!)
                     .distance((d: LinkDataForSim) => {
-                        return d.isBacklink ? 65 : 50;
+                        return d.isBacklink ? 90 : 15;
                     })
                     .strength((d: LinkDataForSim) =>
-                        d.isBacklink ? 0.15 : 0.7,
+                        d.isBacklink ? 0.1 : 0.9,
                     ),
             )
             .force("charge", d3.forceManyBody().strength(SIM_CHARGE_STRENGTH))
@@ -320,8 +345,8 @@ const compressedTreeForClient = compress(treeForClientSerialization);
             )
             .force(
                 "radial",
-                // @ts-ignore
                 d3
+                    // @ts-ignore
                     .forceRadial<NodeDataForSim>()
                     .radius((d: NodeDataForSim) =>
                         isFinite(d.initialDepth)
