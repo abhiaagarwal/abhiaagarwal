@@ -1,11 +1,10 @@
-// @ts-check
 import preact from "@astrojs/preact";
 import sitemap from "@astrojs/sitemap";
+import remarkWikiLink from "@portaljs/remark-wiki-link";
 import tailwindcss from "@tailwindcss/vite";
-import compress from "astro-compress";
 import expressiveCode from "astro-expressive-code";
 import { defineConfig } from "astro/config";
-import rehypeExternalLinks from "rehype-external-links";
+import { remarkExtractWikiLinks } from "./src/plugins/remark-extract-wikilinks";
 
 // https://astro.build/config
 export default defineConfig({
@@ -16,19 +15,22 @@ export default defineConfig({
         plugins: [tailwindcss()],
     },
     markdown: {
-        rehypePlugins: [
+        remarkPlugins: [
             [
-                rehypeExternalLinks,
+                remarkWikiLink,
                 {
-                    content: { type: "text", value: "↗" },
+                    pathFormat: "obsidian-absolute",
+                    wikiLinkResolver: (slug) => [
+                        "posts/" + slug.slice("Content/".length),
+                    ],
                 },
             ],
+            remarkExtractWikiLinks,
         ],
     },
     integrations: [
         sitemap(),
         preact(),
-        compress(),
         expressiveCode({
             themes: ["catppuccin-mocha"],
             frames: false,

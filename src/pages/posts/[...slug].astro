@@ -1,5 +1,6 @@
 ---
 import { getCollection, render } from "astro:content";
+import { blogIndex as blogIndexPromise } from "../../blogIndex";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import Prose from "../../components/Prose.astro";
 import Base from "../../layouts/Base.astro";
@@ -14,24 +15,85 @@ export async function getStaticPaths() {
     }));
 }
 
+const { slug } = Astro.params;
 const { post } = Astro.props;
+
 const { Content } = await render(post);
 
-const breadcrumbs = post.id
+const allPostsIndex = await blogIndexPromise;
+const currentPostIndexData = allPostsIndex.get(slug!);
+
+let backlinkData: { url: string; title: string }[] = [];
+let outgoingLinkData: { url: string; title: string }[] = [];
+
+if (currentPostIndexData) {
+    backlinkData = currentPostIndexData.backlinks
+        .map((backlinkSlug) => {
+            const backlinkPost = allPostsIndex.get(backlinkSlug);
+            return {
+                url: `/posts/${backlinkSlug}/`,
+                title: backlinkPost?.title || backlinkSlug,
+            };
+        })
+        .filter((link) => link.title);
+
+    outgoingLinkData = currentPostIndexData.outgoingLinks
+        .map((outgoingSlug) => {
+            const outgoingPost = allPostsIndex.get(outgoingSlug);
+            return {
+                url: `/posts/${outgoingSlug}/`,
+                title: outgoingPost?.title || outgoingSlug,
+            };
+        })
+        .filter((link) => link.title);
+}
+
+const breadcrumbSegments = slug!
     .split("/")
-    .filter((segment) => segment)
-    .map((segment) => {
-        return { label: segment, fragment: segment };
+    .filter((segment: string) => segment)
+    .map((segment: string, index: number, arr: string[]) => {
+        const path = arr.slice(0, index + 1).join("/");
+        return { label: segment, fragment: path };
     });
+
+const postTitle =
+    currentPostIndexData?.title || post.data.title || slug!.split("/").pop();
 ---
 
 <Base>
     <div class="m-auto max-w-2xl">
-        <Breadcrumbs baseUrl="/posts" breadcrumbs={[...breadcrumbs]} />
-        <Prose
-            ><h1 class="mt-2 text-dark">
-                {post.data.title ?? post.id.split("/").pop()}
-            </h1><Content /></Prose
-        >
+        <Breadcrumbs baseUrl="/posts" breadcrumbs={[...breadcrumbSegments]} />
+        <Prose>
+            <h1 class="mt-2 text-dark">
+                {postTitle}
+            </h1>
+            <Content />
+        </Prose>
+
+        {
+            (backlinkData.length > 0 || outgoingLinkData.length > 0) && (
+                <div class="mt-8 border-t pt-4">
+                    {backlinkData.length > 0 && (
+                        <div class="mb-6">
+                            <h2 class="mb-2 text-xl font-semibold">
+                                Backlinks
+                            </h2>
+                            <ul class="list-disc space-y-1 pl-5">
+                                {backlinkData.map((link) => (
+                                    <li>
+                                        <a
+                                            href={link.url}
+                                            class="text-dark-grey"
+                                        >
+                                            {link.title}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                </div>
+            )
+        }
     </div>
 </Base>

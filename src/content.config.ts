@@ -1,4 +1,4 @@
-import { defineCollection, getCollection, z } from "astro:content";
+import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
 const kind = z.enum(["observations", "notes", "thoughts"]);

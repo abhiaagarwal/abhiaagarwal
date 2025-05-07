@@ -1,124 +1,92 @@
 ---
+import { getCollection } from "astro:content";
+import {
+    blogIndex as blogIndexPromise,
+    type PostIndexEntry,
+} from "../blogIndex";
 import Graph from "../components/Graph.astro";
 import Layout from "../layouts/Base.astro";
 
-const hierarchicalData = {
-    name: "Blog Root",
+interface HierarchicalNode {
+    name: string;
+    path: string;
+    title?: string;
+    children?: HierarchicalNode[];
+    backlinks?: string[];
+    outgoingLinks?: string[];
+}
+
+const allPostsIndex = await blogIndexPromise;
+
+const root: HierarchicalNode = {
+    name: "Content Root",
     path: "/",
-    children: [
-        {
-            name: "notes",
-            path: "/notes",
-            children: [
-                {
-                    name: "daily",
-                    path: "/notes/daily",
-                    children: [
-                        {
-                            name: "2025-04-23.md",
-                            path: "/notes/daily/2025-04-23.md",
-                            backlinks: ["/notes/ideas.md"],
-                        },
-                        {
-                            name: "2025-04-22.md",
-                            path: "/notes/daily/2025-04-22.md",
-                        },
-                    ],
-                },
-                {
-                    name: "ideas.md",
-                    path: "/notes/ideas.md",
-                    backlinks: [
-                        "/programming/tools.md",
-                        "/notes/daily/2025-04-23.md",
-                    ],
-                },
-                {
-                    name: "research",
-                    path: "/notes/research",
-                    children: [
-                        {
-                            name: "d3-examples.txt",
-                            path: "/notes/research/d3-examples.txt",
-                        },
-                        {
-                            name: "astro-links.url",
-                            path: "/notes/research/astro-links.url",
-                        },
-                    ],
-                },
-            ],
-        },
-        {
-            name: "programming",
-            path: "/programming",
-            children: [
-                {
-                    name: "language",
-                    path: "/programming/language",
-                    children: [
-                        {
-                            name: "python_tricks.py",
-                            path: "/programming/language/python_tricks.py",
-                        },
-                        {
-                            name: "js_snippets.js",
-                            path: "/programming/language/js_snippets.js",
-                        },
-                    ],
-                },
-                {
-                    name: "webdev",
-                    path: "/programming/webdev",
-                    children: [
-                        {
-                            name: "css_grid.html",
-                            path: "/programming/webdev/css_grid.html",
-                        },
-                        {
-                            name: "tailwind_config.js",
-                            path: "/programming/webdev/tailwind_config.js",
-                        },
-                    ],
-                },
-                {
-                    name: "tools.md",
-                    path: "/programming/tools.md",
-                    backlinks: ["/notes/ideas.md"],
-                },
-            ],
-        },
-        {
-            name: "personal",
-            path: "/personal",
-            children: [
-                {
-                    name: "foo",
-                    path: "/personal/foo",
-                    children: [
-                        {
-                            name: "journal_entry_1.txt",
-                            path: "/personal/foo/journal_entry_1.txt",
-                        },
-                    ],
-                },
-                {
-                    name: "bar",
-                    path: "/personal/bar",
-                    children: [
-                        {
-                            name: "recipe_ideas.md",
-                            path: "/personal/bar/recipe_ideas.md",
-                        },
-                    ],
-                },
-                { name: "thoughts.md", path: "/personal/thoughts.md" },
-            ],
-        },
-        { name: "about.md", path: "/about.md" },
-        { name: "contact.html", path: "/contact.html" },
-    ],
+    children: [],
 };
+
+function findOrCreateNode(
+    segments: string[],
+    parent: HierarchicalNode,
+    fullPath: string,
+    postEntry?: PostIndexEntry,
+): void {
+    let currentLevel = parent.children!;
+    let currentPath = "";
+
+    for (let i = 0; i < segments.length; i++) {
+        const segment = segments[i];
+        currentPath = currentPath ? `${currentPath}/${segment}` : `/${segment}`;
+
+        let node = currentLevel.find(
+            (child) => child.name === segment && child.path === currentPath,
+        );
+
+        if (!node) {
+            node = {
+                name: segment,
+                path: currentPath,
+                children: [],
+            };
+            currentLevel.push(node);
+        }
+
+        if (i === segments.length - 1) {
+            if (postEntry) {
+                node.title = postEntry.title;
+                node.backlinks = postEntry.backlinks.map((slug) => "/" + slug);
+                node.outgoingLinks = postEntry.outgoingLinks.map(
+                    (slug) => slug,
+                );
+                delete node.children;
+            }
+        } else {
+            if (!node.children) {
+                node.children = [];
+            }
+            currentLevel = node.children;
+        }
+    }
+}
+
+for (const postEntry of allPostsIndex.values()) {
+    if (postEntry.data.draft === true) continue;
+
+    const slug = postEntry.id;
+    const segments = slug.split("/").filter(Boolean);
+    if (segments.length > 0) {
+        findOrCreateNode(segments, root, slug, postEntry);
+    }
+}
+
+function sortChildren(node: HierarchicalNode): void {
+    if (node.children) {
+        node.children.sort((a, b) => a.name.localeCompare(b.name));
+        node.children.forEach(sortChildren);
+    }
+}
+sortChildren(root);
+
+const hierarchicalData = root;
 ---
 
 <Layout><Graph data={hierarchicalData} /></Layout>

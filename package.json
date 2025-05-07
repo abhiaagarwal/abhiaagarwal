@@ -10,36 +10,41 @@
         "format": "prettier --write ."
     },
     "dependencies": {
-        "@astrojs/preact": "^4.0.10",
+        "@astrojs/preact": "^4.0.11",
         "@astrojs/sitemap": "^3.3.1",
-        "@fontsource-variable/fira-code": "^5.2.5",
+        "@fontsource-variable/fira-code": "^5.2.6",
         "@fontsource-variable/lora": "^5.2.5",
         "@fontsource/fira-sans": "^5.2.5",
         "@lucide/astro": "^0.503.0",
+        "@portaljs/remark-wiki-link": "^1.2.0",
         "@tailwindcss/typography": "^0.5.16",
-        "astro": "^5.7.5",
+        "astro": "^5.7.11",
         "astro-expressive-code": "^0.41.2",
         "compress-json": "^3.1.1",
         "d3": "^7.9.0",
-        "preact": "^10.26.5",
+        "preact": "^10.26.6",
         "rehype-external-links": "^3.0.0",
-        "tailwindcss": "^4.1.4",
-        "zod": "^3.24.3"
+        "tailwindcss": "^4.1.5",
+        "unist-util-visit": "^5.0.0",
+        "zod": "^3.24.4"
     },
     "devDependencies": {
-        "@eslint/js": "^9.25.1",
+        "@eslint/js": "^9.26.0",
         "@ianvs/prettier-plugin-sort-imports": "^4.4.1",
-        "@tailwindcss/vite": "^4.1.4",
-        "@types/bun": "^1.2.10",
+        "@tailwindcss/vite": "^4.1.5",
+        "@types/bun": "^1.2.12",
         "@types/d3": "^7.4.3",
-        "@types/node": "^22.15.2",
+        "@types/node": "^22.15.14",
         "astro-compress": "^2.3.8",
-        "eslint": "^9.25.1",
+        "eslint": "^9.26.0",
         "eslint-plugin-astro": "^1.3.1",
         "prettier": "^3.5.3",
         "prettier-plugin-astro": "^0.14.1",
         "prettier-plugin-tailwindcss": "^0.6.11",
         "typescript": "^5.8.3",
-        "typescript-eslint": "^8.31.0"
+        "typescript-eslint": "^8.32.0"
+    },
+    "patchedDependencies": {
+        "@portaljs/remark-wiki-link@1.2.0": "patches/@portaljs%2Fremark-wiki-link@1.2.0.patch"
     }
 }
