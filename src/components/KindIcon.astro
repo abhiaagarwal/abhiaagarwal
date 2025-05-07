@@ -1,0 +1,33 @@
+---
+import Thoughts from "@lucide/astro/icons/cloud";
+import FolderIcon from "@lucide/astro/icons/folder";
+import Notebook from "@lucide/astro/icons/notebook";
+import Orbit from "@lucide/astro/icons/orbit";
+
+type SpecificIconKind = "observations" | "thoughts" | "notes";
+
+const KindIconMapping: Record<SpecificIconKind, typeof Orbit> = {
+    observations: Orbit,
+    thoughts: Thoughts,
+    notes: Notebook,
+};
+
+interface Props {
+    kind: string | undefined;
+    isFolder?: boolean;
+    class?: string;
+}
+
+const { kind, isFolder, class: iconClass } = Astro.props;
+
+let IconComponent;
+if (isFolder) {
+    IconComponent = FolderIcon;
+} else if (kind && kind in KindIconMapping) {
+    IconComponent = KindIconMapping[kind as SpecificIconKind];
+} else {
+    IconComponent = undefined;
+}
+---
+
+{IconComponent && <IconComponent class={iconClass} />}

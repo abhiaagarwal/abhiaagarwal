@@ -1,54 +1,103 @@
 ---
 import { getCollection, render } from "astro:content";
-import { blogIndex as blogIndexPromise } from "../../blogIndex";
+import type { AstroComponentFactory } from "astro/runtime/server/index.js";
+import {
+    blogIndex as blogIndexPromise,
+    type HierarchicalBlogNode,
+} from "../../blogIndex";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import KindIcon from "../../components/KindIcon.astro";
+import Listing from "../../components/Listing.astro";
 import Prose from "../../components/Prose.astro";
 import Base from "../../layouts/Base.astro";
 
 export async function getStaticPaths() {
-    const posts = (await getCollection("blog")).filter(
-        (post) => post.data.draft !== true,
-    );
-    return posts.map((post) => ({
-        params: { slug: post.id },
-        props: { post },
-    }));
+    const allNodesMap = await blogIndexPromise;
+    const allBlogEntries = await getCollection("blog");
+
+    const paths = [];
+
+    for (const node of allNodesMap.values()) {
+        if (node.isFolder) {
+            paths.push({
+                params: { slug: node.id },
+                props: { currentNode: node },
+            });
+        } else {
+            const originalEntry = allBlogEntries.find(
+                (entry) => entry.id === node.filePath,
+            );
+            if (originalEntry && node.filePath && !originalEntry.data.draft) {
+                paths.push({
+                    params: { slug: node.id },
+                    props: { currentNode: node },
+                });
+            }
+        }
+    }
+    return paths;
 }
 
 const { slug } = Astro.params;
-const { post } = Astro.props;
+const { currentNode } = Astro.props as { currentNode: HierarchicalBlogNode };
 
-const { Content } = await render(post);
+const allNodesMap = await blogIndexPromise;
+const allBlogEntries = await getCollection("blog");
 
-const allPostsIndex = await blogIndexPromise;
-const currentPostIndexData = allPostsIndex.get(slug!);
+let PostContentComponent: AstroComponentFactory | null = null;
+let FolderNoteContentComponent: AstroComponentFactory | null = null;
+let childrenForListing: HierarchicalBlogNode[] = [];
 
-let backlinkData: { url: string; title: string }[] = [];
-let outgoingLinkData: { url: string; title: string }[] = [];
+if (currentNode.isFolder) {
+    if (currentNode.contentPath) {
+        const contentNode = allNodesMap.get(currentNode.contentPath);
+        if (contentNode?.filePath) {
+            const folderNoteEntry = allBlogEntries.find(
+                (entry) => entry.id === contentNode.filePath,
+            );
+            if (folderNoteEntry) {
+                const { Content: RenderedFolderNoteContent } =
+                    await render(folderNoteEntry);
+                FolderNoteContentComponent = RenderedFolderNoteContent;
+            }
+        }
+    }
 
-if (currentPostIndexData) {
-    backlinkData = currentPostIndexData.backlinks
-        .map((backlinkSlug) => {
-            const backlinkPost = allPostsIndex.get(backlinkSlug);
-            return {
-                url: `/posts/${backlinkSlug}/`,
-                title: backlinkPost?.title || backlinkSlug,
-            };
-        })
-        .filter((link) => link.title);
-
-    outgoingLinkData = currentPostIndexData.outgoingLinks
-        .map((outgoingSlug) => {
-            const outgoingPost = allPostsIndex.get(outgoingSlug);
-            return {
-                url: `/posts/${outgoingSlug}/`,
-                title: outgoingPost?.title || outgoingSlug,
-            };
-        })
-        .filter((link) => link.title);
+    childrenForListing = currentNode.children
+        .map((childId: string) => allNodesMap.get(childId))
+        .filter(
+            (
+                childNode?: HierarchicalBlogNode,
+            ): childNode is HierarchicalBlogNode => childNode !== undefined,
+        )
+        .filter((childNode: HierarchicalBlogNode) => {
+            if (childNode.isFolder) return true;
+            const originalEntry = allBlogEntries.find(
+                (entry) => entry.id === childNode.filePath,
+            );
+            return originalEntry && !originalEntry.data.draft;
+        });
+} else {
+    if (currentNode.filePath) {
+        const actualPostEntry = allBlogEntries.find(
+            (p) => p.id === currentNode.filePath,
+        );
+        if (actualPostEntry) {
+            const { Content: RenderedPostContent } =
+                await render(actualPostEntry);
+            PostContentComponent = RenderedPostContent;
+        } else {
+            console.error(
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                `[...slug].astro: Could not find CollectionEntry for filePath: ${currentNode.filePath} (slug: ${slug!})`,
+            );
+        }
+    }
 }
 
-const breadcrumbSegments = slug!
+const pageTitle = currentNode.title;
+
+const breadcrumbSegments = currentNode.id
     .split("/")
     .filter((segment: string) => segment)
     .map((segment: string, index: number, arr: string[]) => {
@@ -56,22 +105,65 @@ const breadcrumbSegments = slug!
         return { label: segment, fragment: path };
     });
 
-const postTitle =
-    currentPostIndexData?.title || post.data.title || slug!.split("/").pop();
+const backlinkData = currentNode.backlinks
+    .map((backlinkId: string) => {
+        const backlinkNode = allNodesMap.get(backlinkId);
+        if (!backlinkNode) return null;
+        if (!backlinkNode.isFolder) {
+            const originalEntry = allBlogEntries.find(
+                (entry) => entry.id === backlinkNode.filePath,
+            );
+            if (originalEntry?.data.draft) return null;
+        }
+        return {
+            url: `/posts/${backlinkId}/`,
+            title: backlinkNode.title || backlinkId,
+        };
+    })
+    .filter((link) => link !== null) as { url: string; title: string }[];
 ---
 
 <Base>
     <div class="m-auto max-w-2xl">
-        <Breadcrumbs baseUrl="/posts" breadcrumbs={[...breadcrumbSegments]} />
+        <div class="flex flex-row items-center gap-1">
+            <KindIcon
+                kind={currentNode.data?.kind}
+                isFolder={currentNode.isFolder}
+                class="h-4 w-4 stroke-dark-gray"
+            />
+            <Breadcrumbs
+                baseUrl="/posts"
+                breadcrumbs={[...breadcrumbSegments]}
+            />
+        </div>
         <Prose>
             <h1 class="mt-2 text-dark">
-                {postTitle}
+                {pageTitle}
             </h1>
-            <Content />
+            {FolderNoteContentComponent && <FolderNoteContentComponent />}
+
+            {
+                !currentNode.isFolder && PostContentComponent && (
+                    <PostContentComponent />
+                )
+            }
         </Prose>
 
         {
-            (backlinkData.length > 0 || outgoingLinkData.length > 0) && (
+            currentNode.isFolder && childrenForListing.length > 0 && (
+                <div
+                    class:list={[
+                        "mt-8",
+                        { "border-t pt-4": !!FolderNoteContentComponent },
+                    ]}
+                >
+                    <Listing posts={childrenForListing} />
+                </div>
+            )
+        }
+
+        {
+            backlinkData.length > 0 && (
                 <div class="mt-8 border-t pt-4">
                     {backlinkData.length > 0 && (
                         <div class="mb-6">

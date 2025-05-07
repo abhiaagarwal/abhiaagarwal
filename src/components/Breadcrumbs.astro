@@ -13,25 +13,22 @@ interface Props {
 
 const { baseUrl, breadcrumbs } = Astro.props;
 
-const breadcrumbsWithUrls = breadcrumbs.map((crumb, index, arr) => {
-    const pathSegments = arr.slice(0, index + 1).map((c) => c.fragment);
-    const url = `${baseUrl}/${pathSegments.join("/")}`;
+const breadcrumbsWithUrls = breadcrumbs.map((crumb) => {
+    const url = `${baseUrl}/${crumb.fragment}${crumb.fragment ? "/" : ""}`;
     return { ...crumb, url };
 });
 ---
 
 <nav aria-label="Breadcrumb" class="font-sans text-sm text-dark-gray">
-    <ol class="flex flex-wrap">
+    <ol class="flex flex-wrap items-center">
         {
             breadcrumbsWithUrls.map((crumb, index) => (
                 <li class="flex items-center">
-                    {index > 0 && (
-                        <ChevronRight class="h-4 w-4 text-dark-gray" />
-                    )}
-                    {index < breadcrumbsWithUrls.length ? (
+                    <ChevronRight class="h-4 w-4 text-dark-gray" />
+                    {index < breadcrumbsWithUrls.length - 1 ? (
                         <a href={crumb.url}>{crumb.label}</a>
                     ) : (
-                        <span class="font-medium">{crumb.label}</span>
+                        <span class="font-medium text-dark">{crumb.label}</span>
                     )}
                 </li>
             ))

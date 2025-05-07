@@ -1,86 +1,84 @@
 ---
-import Thoughts from "@lucide/astro/icons/cloud";
-import Notebook from "@lucide/astro/icons/notebook";
-import Orbit from "@lucide/astro/icons/orbit";
-import type { CollectionEntry } from "astro:content";
+import { type HierarchicalBlogNode } from "../blogIndex";
 import Breadcrumbs from "./Breadcrumbs.astro";
-
-type IconKind = "observations" | "thoughts" | "notes";
-
-const IconMapping: Record<IconKind, typeof Orbit> = {
-    observations: Orbit,
-    thoughts: Thoughts,
-    notes: Notebook,
-};
-
-function getIcon(kind: string | undefined) {
-    if (kind && kind in IconMapping) {
-        return IconMapping[kind as IconKind];
-    }
-    return undefined;
-}
+import KindIcon from "./KindIcon.astro";
 
 interface Props {
-    posts: CollectionEntry<"blog">[];
+    posts: HierarchicalBlogNode[];
 }
 const { posts } = Astro.props;
-const kinds = [...new Set(posts.map((post) => post.data.kind))];
+const kinds = [
+    ...new Set(
+        posts
+            .map((node) => node.data?.kind)
+            .filter((kind) => kind !== undefined),
+    ),
+];
 ---
 
 <div id="post-listing-container">
-    <div class="mb-8 flex flex-wrap items-center gap-2">
-        {
-            kinds.map((kind) => {
-                const Icon = getIcon(kind);
-                return (
-                    <button
-                        class:list={[
-                            "filter-button",
-                            "flex items-center gap-1 rounded px-2 py-1 text-sm capitalize transition",
-                            "bg-light-gray text-dark hover:bg-gray",
-                        ]}
-                        data-filter={kind}
-                    >
-                        {Icon && <Icon class="inline-block h-4 w-4" />}
-                        {kind}
-                    </button>
-                );
-            })
-        }
-    </div>
+    {
+        kinds.length > 0 && (
+            <div class="mb-8 flex flex-wrap items-center gap-2">
+                {kinds.map((kind) => {
+                    return (
+                        <button
+                            class:list={[
+                                "filter-button",
+                                "flex items-center gap-1 rounded px-2 py-1 text-sm capitalize transition",
+                                "bg-light-gray text-dark hover:bg-gray",
+                            ]}
+                            data-filter={kind}
+                        >
+                            <KindIcon
+                                kind={kind}
+                                class="inline-block h-4 w-4"
+                            />
+                            {kind}
+                        </button>
+                    );
+                })}
+            </div>
+        )
+    }
 
     <div id="posts-list" class="flex flex-col gap-12">
         {
-            posts.map((post) => {
-                const breadcrumbs = post.id
-                    .split("/")
-                    .filter((segment) => segment)
-                    .map((segment) => {
-                        return { label: segment, fragment: segment };
-                    });
-                const PostIcon = getIcon(post.data.kind);
+            posts.map((node) => {
+                const itemKind = node.data?.kind;
+
+                const pathParts = node.id.split("/").filter((s) => s);
+                const itemBreadcrumbs = pathParts.map((segment, index, arr) => {
+                    const fragment = arr.slice(0, index + 1).join("/");
+                    return { label: segment, fragment: fragment };
+                });
+
                 return (
                     <div
                         class="post-item flex flex-col gap-1"
-                        data-kind={post.data.kind}
+                        data-kind={itemKind}
                     >
                         <div class="flex flex-row items-center gap-1">
-                            {PostIcon && (
-                                <PostIcon class="h-4 items-end stroke-dark-gray" />
-                            )}
-                            <Breadcrumbs
-                                baseUrl="/posts"
-                                breadcrumbs={[...breadcrumbs]}
+                            <KindIcon
+                                kind={itemKind}
+                                isFolder={node.isFolder}
+                                class="h-4 w-4 stroke-dark-gray"
                             />
+                            {itemBreadcrumbs.length > 0 && (
+                                <Breadcrumbs
+                                    baseUrl="/posts"
+                                    breadcrumbs={itemBreadcrumbs}
+                                />
+                            )}
                         </div>
-                        <h2 class="text-2xl font-semibold text-dark">
-                            <a href={`/posts/${post.id}`}>
-                                {post.data.title ?? post.id.split("/").pop()}
-                            </a>
+
+                        <h2 class="font-serif text-2xl font-semibold text-dark">
+                            <a href={`/posts/${node.id}/`}>{node.title}</a>
                         </h2>
-                        {post.data.description && (
+
+                        {node.data?.description && !node.isFolder && (
                             <span class="font-sans text-sm/snug text-dark-gray italic">
-                                {post.data.description}
+                                {node.data.description}
                             </span>
                         )}
                     </div>
@@ -100,35 +98,41 @@ const kinds = [...new Set(posts.map((post) => post.data.kind))];
         container?.querySelectorAll<HTMLButtonElement>(".filter-button");
     let currentFilter: string | null = null;
 
-    filterButtons?.forEach((button) => {
-        button.addEventListener("click", () => {
-            const filter = button.getAttribute("data-filter");
-            let effectiveFilter: string | null;
+    if (filterButtons && filterButtons.length > 0) {
+        filterButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const filter = button.getAttribute("data-filter");
+                let effectiveFilter: string | null;
 
-            if (button.classList.contains(activeClasses[0])) {
-                button.classList.remove(...activeClasses);
-                button.classList.add(...inactiveClasses);
-                currentFilter = null;
-                effectiveFilter = null;
-            } else {
-                filterButtons.forEach((btn) => {
-                    btn.classList.remove(...activeClasses);
-                    btn.classList.add(...inactiveClasses);
-                });
-                button.classList.remove(...inactiveClasses);
-                button.classList.add(...activeClasses);
-                currentFilter = filter;
-                effectiveFilter = filter;
-            }
-
-            postItems?.forEach((item) => {
-                const postKind = item.getAttribute("data-kind");
-                if (!effectiveFilter || postKind === effectiveFilter) {
-                    item.style.display = "";
+                if (button.classList.contains(activeClasses[0])) {
+                    button.classList.remove(...activeClasses);
+                    button.classList.add(...inactiveClasses);
+                    currentFilter = null;
+                    effectiveFilter = null;
                 } else {
-                    item.style.display = "none";
+                    filterButtons.forEach((btn) => {
+                        btn.classList.remove(...activeClasses);
+                        btn.classList.add(...inactiveClasses);
+                    });
+                    button.classList.remove(...inactiveClasses);
+                    button.classList.add(...activeClasses);
+                    currentFilter = filter;
+                    effectiveFilter = filter;
                 }
+
+                postItems?.forEach((item) => {
+                    const postKind = item.getAttribute("data-kind");
+                    if (
+                        !effectiveFilter ||
+                        postKind === effectiveFilter ||
+                        !postKind
+                    ) {
+                        item.style.display = "flex";
+                    } else {
+                        item.style.display = "none";
+                    }
+                });
             });
         });
-    });
+    }
 </script>

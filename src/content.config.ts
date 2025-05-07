@@ -11,7 +11,7 @@ const baseSchema = z
         draft: z.boolean().default(false),
     })
     .transform((data) => {
-        const parsedKind = kind.safeParse(data.tags?.[0]);
+        const parsedKind = kind.safeParse(data.tags[0]);
         return {
             ...data,
             kind: parsedKind.success ? parsedKind.data : undefined,

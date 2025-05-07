@@ -10,7 +10,7 @@ import { remarkExtractWikiLinks } from "./src/plugins/remark-extract-wikilinks";
 export default defineConfig({
     site: "https://abhi.rodeo",
     prefetch: true,
-    trailingSlash: "never",
+    trailingSlash: "always",
     vite: {
         plugins: [tailwindcss()],
     },
@@ -21,7 +21,7 @@ export default defineConfig({
                 {
                     pathFormat: "obsidian-absolute",
                     wikiLinkResolver: (slug) => [
-                        "posts/" + slug.slice("Content/".length),
+                        `posts/${slug.slice("Content/".length)}`,
                     ],
                 },
             ],
