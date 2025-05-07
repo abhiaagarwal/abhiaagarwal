@@ -321,7 +321,8 @@ const compressedTreeForClient = compress(treeForClientSerialization);
             .force(
                 "radial",
                 // @ts-ignore
-                d3.forceRadial<NodeDataForSim>()
+                d3
+                    .forceRadial<NodeDataForSim>()
                     .radius((d: NodeDataForSim) =>
                         isFinite(d.initialDepth)
                             ? d.initialDepth * RADIAL_INCREMENT
@@ -576,7 +577,5 @@ const compressedTreeForClient = compress(treeForClientSerialization);
         ticked();
     }
 
-    document.addEventListener("astro:page-load", () => {
-        runSimulation();
-    });
+    runSimulation();
 </script>
