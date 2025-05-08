@@ -1,9 +1,11 @@
 import preact from "@astrojs/preact";
 import sitemap from "@astrojs/sitemap";
 import remarkWikiLink from "@portaljs/remark-wiki-link";
+import remarkCallout from "@r4ai/remark-callout";
 import tailwindcss from "@tailwindcss/vite";
 import expressiveCode from "astro-expressive-code";
 import { defineConfig } from "astro/config";
+import rehypeShiftHeading from "rehype-shift-heading";
 import { remarkExtractWikiLinks } from "./src/plugins/remark-extract-wikilinks";
 
 // https://astro.build/config
@@ -26,6 +28,15 @@ export default defineConfig({
                 },
             ],
             remarkExtractWikiLinks,
+            remarkCallout,
+        ],
+        rehypePlugins: [
+            [
+                rehypeShiftHeading,
+                {
+                    shift: 1,
+                },
+            ],
         ],
     },
     integrations: [
