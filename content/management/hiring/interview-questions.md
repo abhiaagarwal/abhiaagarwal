@@ -20,7 +20,7 @@ tags: [notes]
   - "Tell me about a time you _identified_ a problem and solved it."
     - I'm not interested in measuring a person's ability to problem solve tasks given to them, but rather, their ability to identify a _new_ problem, triage it, and then solve it.
   - Python
-    - [[interview-question|When should you pick threading, multiprocessing, or asyncio]]?
+    - [[Content/programming/languages/python/asyncio/interview-question|When should you pick threading, multiprocessing, or asyncio]]?
     - What are your favorite libraries?
       - My brownie points:
         - Pydantic

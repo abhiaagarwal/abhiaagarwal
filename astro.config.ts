@@ -1,4 +1,3 @@
-import preact from "@astrojs/preact";
 import sitemap from "@astrojs/sitemap";
 import remarkWikiLink from "@portaljs/remark-wiki-link";
 import remarkCallout from "@r4ai/remark-callout";
@@ -50,7 +49,6 @@ export default defineConfig({
     },
     integrations: [
         sitemap(),
-        preact(),
         expressiveCode({
             themes: ["catppuccin-mocha"],
             frames: false,
