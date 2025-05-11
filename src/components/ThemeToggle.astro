@@ -43,8 +43,6 @@ const themes = Object.keys(themeConfig);
 </button>
 
 <script>
-    const STORAGE_KEY = "theme-preference";
-    const THEMES = ["light", "dark", "system"];
     const button = document.getElementById("theme-toggle-button")!;
 
     const themeLabels = {
@@ -55,58 +53,34 @@ const themes = Object.keys(themeConfig);
 
     const getCurrentPreferenceFromAttribute = (): string => {
         const preference = document.documentElement.dataset.themePreference;
-        return preference && THEMES.includes(preference)
+        return preference && window.THEMES.includes(preference as any)
             ? preference
             : "system";
     };
 
-    const applyEffectiveTheme = (preference: string): void => {
-        const isDark =
-            preference === "dark" ||
-            (preference === "system" &&
-                window.matchMedia("(prefers-color-scheme: dark)").matches);
-        document.documentElement.dataset.theme = isDark ? "dark" : "light";
-    };
-
-    const setPreference = (preference: string): void => {
-        if (!THEMES.includes(preference)) {
-            preference = "system";
-        }
-
-        localStorage.setItem(STORAGE_KEY, preference);
-        document.documentElement.dataset.themePreference = preference;
-
-        applyEffectiveTheme(preference);
-
-        button.setAttribute(
-            "aria-label",
-            themeLabels[preference] || "Toggle theme",
-        );
-        button.setAttribute("aria-value-text", preference);
-    };
-
     const cyclePreference = (): void => {
         const currentPreference = getCurrentPreferenceFromAttribute();
-        const currentIndex = THEMES.indexOf(currentPreference);
-        const nextIndex = (currentIndex + 1) % THEMES.length;
-        setPreference(THEMES[nextIndex]);
+        const currentIndex = window.THEMES.indexOf(currentPreference as any);
+        const nextIndex = (currentIndex + 1) % window.THEMES.length;
+        window.setThemePreference(window.THEMES[nextIndex]);
     };
 
     const handleSystemChange = (): void => {
         const currentPreference = getCurrentPreferenceFromAttribute();
         if (currentPreference === "system") {
-            applyEffectiveTheme("system");
+            window.applyEffectiveTheme("system");
         }
     };
 
     const initialPreference = getCurrentPreferenceFromAttribute();
     button.setAttribute(
         "aria-label",
-        themeLabels[initialPreference] || "Toggle theme",
+        themeLabels[initialPreference as keyof typeof themeLabels] ||
+            "Toggle theme",
     );
     button.setAttribute("aria-value-text", initialPreference);
 
-    applyEffectiveTheme(initialPreference);
+    window.applyEffectiveTheme(initialPreference);
 
     button.addEventListener("click", cyclePreference);
 

@@ -1,10 +1,8 @@
 ---
-import "@fontsource/fira-sans";
 import "@fontsource-variable/lora";
 import "@fontsource-variable/fira-code";
+import "@fontsource-variable/open-sans";
 import "../styles/global.css";
-import lora from "@fontsource-variable/lora/files/lora-latin-wght-normal.woff2?url";
-import firaSans from "@fontsource/fira-sans/files/fira-sans-latin-400-normal.woff2?url";
 import Footer from "./Footer.astro";
 import Nav from "./Nav.astro";
 ---
@@ -21,45 +19,34 @@ import Nav from "./Nav.astro";
         <meta name="generator" content={Astro.generator} />
         <title>Abhi Agarwal</title>
         <script>
-            function applyTheme() {
-                const STORAGE_KEY = "theme-preference";
-                const THEMES = ["light", "dark", "system"];
+            window.THEME_KEY = "theme-preference";
+            window.THEMES = ["light", "dark", "system"];
 
-                const storedPreference = localStorage.getItem(STORAGE_KEY);
+            window.applyEffectiveTheme = (theme: string) => {
+                const isDark =
+                    theme === "dark" ||
+                    (theme === "system" &&
+                        window.matchMedia("(prefers-color-scheme: dark)")
+                            .matches);
+                document.documentElement.dataset.theme = isDark
+                    ? "dark"
+                    : "light";
+            };
+
+            window.setThemePreference = (theme: string | null) => {
                 const initialPreference =
-                    storedPreference && THEMES.includes(storedPreference)
-                        ? storedPreference
+                    theme && window.THEMES.includes(theme as any)
+                        ? theme
                         : "system";
 
                 document.documentElement.dataset.themePreference =
                     initialPreference;
 
-                const isDark =
-                    initialPreference === "dark" ||
-                    (initialPreference === "system" &&
-                        window.matchMedia("(prefers-color-scheme: dark)")
-                            .matches);
-
-                document.documentElement.dataset.theme = isDark
-                    ? "dark"
-                    : "light";
-            }
-            applyTheme();
+                window.applyEffectiveTheme(initialPreference);
+            };
+            const storedPreference = localStorage.getItem(window.THEME_KEY);
+            window.setThemePreference(storedPreference);
         </script>
-        <link
-            rel="preload"
-            as="font"
-            type="font/woff2"
-            crossorigin="anonymous"
-            href={lora}
-        />
-        <link
-            rel="preload"
-            as="font"
-            type="font/woff2"
-            crossorigin="anonymous"
-            href={firaSans}
-        />
     </head>
     <body
         class="flex min-h-screen flex-col gap-4 bg-light px-4 py-2 transition-colors md:px-8 md:py-4"
