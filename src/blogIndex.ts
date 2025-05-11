@@ -8,12 +8,11 @@ import { getCollection, render, type CollectionEntry } from "astro:content";
  * @property {string} title - The title of the node.
  * @property {boolean} isFolder - Indicates if the node represents a folder.
  * @property {boolean} isFolderNote - Indicates if the node represents the content for its parent folder.
- * @property {(string|undefined)} filePath - The path to the actual markdown file, present if not a synthetic folder node.
  * @property {(CollectionEntry<"blog">["data"]|undefined)} data - The frontmatter from the markdown file, if applicable.
  * @property {(string|undefined)} parent - The id of the parent node.
- * @property {string[]} children - The ids of child nodes.
- * @property {string[]} outgoingLinks - The ids of linked posts/pages.
- * @property {string[]} backlinks - The ids of posts/pages linking to this one.
+ * @property {Set<string>} children - The ids of child nodes.
+ * @property {Set<string>} outgoingLinks - The ids of linked posts/pages.
+ * @property {Set<string>} backlinks - The ids of posts/pages linking to this one.
  * @property {(string|undefined)} contentPath - If `isFolderNote`, this is the `id` of the node that provides its content.
  */
 export interface HierarchicalBlogNode {
@@ -22,12 +21,11 @@ export interface HierarchicalBlogNode {
     title: string;
     isFolder: boolean;
     isFolderNote: boolean;
-    filePath?: string;
     data?: CollectionEntry<"blog">["data"];
     parent?: string;
-    children: string[];
-    outgoingLinks: string[];
-    backlinks: string[];
+    children: Set<string>;
+    outgoingLinks: Set<string>;
+    backlinks: Set<string>;
     contentPath?: string;
 }
 
@@ -55,17 +53,14 @@ async function createBlogIndex(): Promise<Map<string, HierarchicalBlogNode>> {
                     title: segment,
                     isFolder: true,
                     isFolderNote: false,
-                    children: [],
+                    children: new Set(),
                     parent: parentId,
-                    outgoingLinks: [],
-                    backlinks: [],
+                    outgoingLinks: new Set(),
+                    backlinks: new Set(),
                 });
             }
-            if (
-                parentId &&
-                !hierarchicalIndex.get(parentId)?.children.includes(currentPath)
-            ) {
-                hierarchicalIndex.get(parentId)?.children.push(currentPath);
+            if (parentId) {
+                hierarchicalIndex.get(parentId)?.children.add(currentPath);
             }
             parentId = currentPath;
         }
@@ -90,20 +85,19 @@ async function createBlogIndex(): Promise<Map<string, HierarchicalBlogNode>> {
             title: postTitle,
             isFolder: false,
             isFolderNote: false,
-            filePath: slug,
             data: post.data,
             parent: parentId,
-            children: [],
-            outgoingLinks: internalLinks,
-            backlinks: [],
+            children: new Set(),
+            outgoingLinks: new Set(internalLinks),
+            backlinks: new Set(),
         };
 
         hierarchicalIndex.set(slug, postNode);
 
         if (parentId) {
             const parentNode = hierarchicalIndex.get(parentId);
-            if (parentNode && !parentNode.children.includes(slug)) {
-                parentNode.children.push(slug);
+            if (parentNode) {
+                parentNode.children.add(slug);
             }
         }
 
@@ -121,11 +115,7 @@ async function createBlogIndex(): Promise<Map<string, HierarchicalBlogNode>> {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const thisPostNode = hierarchicalIndex.get(slug)!;
                 thisPostNode.isFolderNote = true;
-
-                const childIndex = parentFolderNode.children.indexOf(slug);
-                if (childIndex > -1) {
-                    parentFolderNode.children.splice(childIndex, 1);
-                }
+                parentFolderNode.children.delete(slug);
             }
         }
     }
@@ -134,18 +124,10 @@ async function createBlogIndex(): Promise<Map<string, HierarchicalBlogNode>> {
         for (const linkedId of sourceNode.outgoingLinks) {
             const targetNode = hierarchicalIndex.get(linkedId);
             if (targetNode) {
-                if (!targetNode.backlinks.includes(sourceId)) {
-                    targetNode.backlinks.push(sourceId);
-                }
+                targetNode.backlinks.add(sourceId);
             } else {
                 // console.warn(`[BlogIndex] Dangling link: ${sourceId} links to ${linkedId}, which does not exist.`);
             }
-        }
-    }
-
-    for (const node of hierarchicalIndex.values()) {
-        if (node.isFolder) {
-            node.children.sort();
         }
     }
 

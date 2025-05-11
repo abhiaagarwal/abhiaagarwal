@@ -54,7 +54,7 @@ while (head < queue.length) {
     const { nodeId, depth } = queue[head++];
     const blogNode = allNodesMap.get(nodeId);
     if (!blogNode) continue;
-    if (blogNode.children.length > 0) {
+    if (blogNode.children.size > 0) {
         for (const childId of blogNode.children) {
             const actualChildIdWithSlash = "/" + childId;
             if (!visitedDepths.has(actualChildIdWithSlash)) {
@@ -107,7 +107,7 @@ for (const node of allNodesMap.values()) {
         });
     }
 
-    if (node.children.length > 0) {
+    if (node.children.size > 0) {
         for (const childId of node.children) {
             const childHNode = allNodesMap.get(childId);
             if (
@@ -133,7 +133,7 @@ for (const node of allNodesMap.values()) {
         }
     }
 
-    if (node.backlinks.length > 0) {
+    if (node.backlinks.size > 0) {
         for (const backlinkerId of node.backlinks) {
             const backlinkerHNode = allNodesMap.get(backlinkerId);
             if (
