@@ -222,10 +222,11 @@ const compressedGraphData = compress(graphData);
         nodeElements
             .append("circle")
             .attr("r", (d: NodeDataForSim) => calculateVisualNodeRadius(d))
+            .attr("class", "cursor-pointer")
             .attr(
-                "class",
-                (d: NodeDataForSim) =>
-                    `cursor-pointer ${d.isFolder ? "fill-secondary" : "fill-primary"}`,
+                "style",
+                (d) =>
+                    `fill: color-mix(in oklch, var(--color-secondary), var(--color-primary) ${(100 / (d.initialDepth + 1) ** 0.6).toFixed(2)}%)`,
             );
 
         nodeElements
@@ -234,7 +235,7 @@ const compressedGraphData = compress(graphData);
             .attr("y", (d: NodeDataForSim) => calculateVisualNodeRadius(d) + 7)
             .attr("class", "text-xs fill-dark")
             .text((d: NodeDataForSim) => {
-                const name = d.id.split("/").pop()!;
+                const name = d.id.split("/").pop() ?? "";
                 if (name === "") {
                     return "Home";
                 } else {

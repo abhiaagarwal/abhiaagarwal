@@ -8,6 +8,17 @@ import { defineConfig } from "astro/config";
 import rehypeShiftHeading from "rehype-shift-heading";
 import { remarkExtractWikiLinks } from "./src/plugins/remark-extract-wikilinks";
 
+const resolveSlug = (slug: string) => {
+    let splitSlug = slug.split("/");
+    if (splitSlug[0] === "Content") {
+        splitSlug = splitSlug.slice(1);
+    }
+    if (splitSlug.at(-1) === splitSlug.at(-2)) {
+        splitSlug = splitSlug.slice(0, -1);
+    }
+    return splitSlug.join("/");
+};
+
 // https://astro.build/config
 export default defineConfig({
     site: "https://abhi.rodeo",
@@ -22,9 +33,7 @@ export default defineConfig({
                 remarkWikiLink,
                 {
                     pathFormat: "obsidian-absolute",
-                    wikiLinkResolver: (slug) => [
-                        `posts/${slug.slice("Content/".length)}`,
-                    ],
+                    wikiLinkResolver: (slug: string) => [[resolveSlug(slug)]],
                 },
             ],
             remarkExtractWikiLinks,
