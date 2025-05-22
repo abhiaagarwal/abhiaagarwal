@@ -3,9 +3,10 @@ import remarkWikiLink from "@portaljs/remark-wiki-link";
 import remarkCallout from "@r4ai/remark-callout";
 import tailwindcss from "@tailwindcss/vite";
 import expressiveCode from "astro-expressive-code";
-import { defineConfig } from "astro/config";
+import { defineConfig, fontProviders } from "astro/config";
 import rehypeShiftHeading from "rehype-shift-heading";
 import { remarkExtractWikiLinks } from "./src/plugins/remark-extract-wikilinks";
+
 
 const resolveSlug = (slug: string) => {
     let splitSlug = slug.split("/");
@@ -25,6 +26,28 @@ export default defineConfig({
     trailingSlash: "always",
     vite: {
         plugins: [tailwindcss()],
+    },
+    experimental: {
+        fonts: [
+            {
+                provider: fontProviders.fontsource(),
+                name: "Lora",
+                cssVariable: "--font-lora",
+                weights: ["300 600"],
+            },
+            {
+                provider: fontProviders.fontsource(),
+                name: "Fira Code",
+                cssVariable: "--font-fira-code",
+                weights: ["300 600"],
+            },
+            {
+                provider: fontProviders.fontsource(),
+                name: "Open Sans",
+                cssVariable: "--font-open-sans",
+                weights: ["300 600"],
+            }
+        ],
     },
     markdown: {
         remarkPlugins: [

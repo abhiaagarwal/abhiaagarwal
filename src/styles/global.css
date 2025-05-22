@@ -41,8 +41,8 @@
     }
 }
 
-@theme {
-    --font-sans: "Open Sans Variable", sans-serif;
-    --font-mono: "Fira Code Variable", monospace;
-    --font-serif: "Lora Variable", serif;
+@theme inline {
+    --font-sans: var(--font-open-sans);
+    --font-mono: var(--font-fira-code);
+    --font-serif: var(--font-lora);
 }
