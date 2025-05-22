@@ -35,6 +35,7 @@ export default defineConfig({
                 cssVariable: "--font-lora",
                 weights: ["300 600"],
                 fallbacks: ["serif"],
+                subsets: ["latin"],
             },
             {
                 provider: fontProviders.fontsource(),
@@ -42,6 +43,7 @@ export default defineConfig({
                 cssVariable: "--font-fira-code",
                 weights: ["300 600"],
                 fallbacks: ["monospace"],
+                subsets: ["latin"],
             },
             {
                 provider: fontProviders.fontsource(),
@@ -49,6 +51,7 @@ export default defineConfig({
                 cssVariable: "--font-open-sans",
                 weights: ["300 600"],
                 fallbacks: ["sans-serif"],
+                subsets: ["latin"],
             }
         ],
     },
