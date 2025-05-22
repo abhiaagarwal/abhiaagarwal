@@ -11,9 +11,6 @@
     },
     "dependencies": {
         "@astrojs/sitemap": "^3.4.0",
-        "@fontsource-variable/fira-code": "^5.2.6",
-        "@fontsource-variable/lora": "^5.2.5",
-        "@fontsource-variable/open-sans": "^5.2.5",
         "@lucide/astro": "^0.503.0",
         "@nanostores/persistent": "^1.0.0",
         "@portaljs/remark-wiki-link": "^1.2.0",

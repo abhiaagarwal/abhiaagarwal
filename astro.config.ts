@@ -34,18 +34,21 @@ export default defineConfig({
                 name: "Lora",
                 cssVariable: "--font-lora",
                 weights: ["300 600"],
+                fallbacks: ["serif"],
             },
             {
                 provider: fontProviders.fontsource(),
                 name: "Fira Code",
                 cssVariable: "--font-fira-code",
                 weights: ["300 600"],
+                fallbacks: ["monospace"],
             },
             {
                 provider: fontProviders.fontsource(),
                 name: "Open Sans",
                 cssVariable: "--font-open-sans",
                 weights: ["300 600"],
+                fallbacks: ["sans-serif"],
             }
         ],
     },
