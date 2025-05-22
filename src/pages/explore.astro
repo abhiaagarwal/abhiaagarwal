@@ -4,192 +4,301 @@ import {
     type HierarchicalBlogNode,
 } from "../blogIndex";
 import Graph from "../components/Graph.astro";
+import type {
+    IndexedGraphNode,
+    OptimizedGraphData,
+} from "../components/Graph.types";
 import Layout from "../layouts/Base.astro";
-
-interface ClientGraphNode {
-    id: string;
-    isFolder: boolean;
-    initialDepth: number;
-}
-
-interface ClientGraphLink {
-    source: string;
-    target: string;
-    isBacklink: boolean;
-}
 
 const SYNTHETIC_ROOT_ID = "/";
 
-const allNodesMap: Map<string, HierarchicalBlogNode> = await blogIndexPromise;
-
-const clientNodes: ClientGraphNode[] = [];
-const clientLinks: ClientGraphLink[] = [];
-const visitedDepths = new Map<string, number>();
-
-clientNodes.push({
-    id: SYNTHETIC_ROOT_ID,
-    isFolder: true,
-    initialDepth: 0,
-});
-visitedDepths.set(SYNTHETIC_ROOT_ID, 0);
-
-const queue: { nodeId: string; depth: number }[] = [];
-for (const node of allNodesMap.values()) {
-    if (!node.parent) {
-        const actualNodeIdWithSlash = "/" + node.id;
-        clientLinks.push({
-            source: SYNTHETIC_ROOT_ID,
-            target: actualNodeIdWithSlash,
-            isBacklink: false,
-        });
-        if (!visitedDepths.has(actualNodeIdWithSlash)) {
-            queue.push({ nodeId: node.id, depth: 1 });
-            visitedDepths.set(actualNodeIdWithSlash, 1);
-        }
-    }
+/**
+ * Checks if a node should be included in the graph (not a draft)
+ */
+function shouldIncludeNode(node: HierarchicalBlogNode): boolean {
+    return node.isFolder || !node.data?.draft;
 }
 
-let head = 0;
-while (head < queue.length) {
-    const { nodeId, depth } = queue[head++];
-    const blogNode = allNodesMap.get(nodeId);
-    if (!blogNode) continue;
-    if (blogNode.children.size > 0) {
-        for (const childId of blogNode.children) {
-            const actualChildIdWithSlash = "/" + childId;
-            if (!visitedDepths.has(actualChildIdWithSlash)) {
-                visitedDepths.set(actualChildIdWithSlash, depth + 1);
-                queue.push({ nodeId: childId, depth: depth + 1 });
-            }
-        }
-    }
-}
-
-function getEffectiveGraphId(originalId: string): string {
-    const hNode = allNodesMap.get(originalId);
-    if (hNode && hNode.isFolderNote && !hNode.isFolder && hNode.parent) {
-        return "/" + hNode.parent;
+/**
+ * Gets the effective graph ID for a node, handling folder notes
+ */
+function getEffectiveGraphId(
+    originalId: string,
+    allNodesMap: Map<string, HierarchicalBlogNode>,
+): string {
+    const node = allNodesMap.get(originalId);
+    if (node?.isFolderNote && !node.isFolder && node.parent) {
+        return "/" + node.parent;
     }
     return "/" + originalId;
 }
 
-const linkSet = new Set<string>();
-clientLinks.forEach((link) => {
-    if (link.source === SYNTHETIC_ROOT_ID) {
-        linkSet.add([link.source, link.target].sort().join("--"));
-    }
-});
+/**
+ * Calculates depths for all nodes using recursive traversal
+ */
+function calculateNodeDepths(
+    allNodesMap: Map<string, HierarchicalBlogNode>,
+): Map<string, number> {
+    const depths = new Map<string, number>();
+    depths.set(SYNTHETIC_ROOT_ID, 0);
+    const rootNodes = Array.from(allNodesMap.values()).filter(
+        (node) => !node.parent,
+    );
 
-for (const node of allNodesMap.values()) {
-    if (!node.isFolder && node.data?.draft) {
-        continue;
-    }
+    function setDepthRecursively(nodeId: string, depth: number): void {
+        const graphId = "/" + nodeId;
+        if (depths.has(graphId)) return;
+        depths.set(graphId, depth);
 
-    if (node.isFolderNote && !node.isFolder) {
-        continue;
-    }
-
-    const actualNodeIdWithSlash = "/" + node.id;
-    const depth = visitedDepths.get(actualNodeIdWithSlash);
-
-    if (depth === undefined) {
-        console.warn(
-            `Node ${actualNodeIdWithSlash} (original ID: ${node.id}) has undefined depth and will be skipped for the graph.`,
-        );
-        continue;
-    }
-
-    if (!clientNodes.find((cn) => cn.id === actualNodeIdWithSlash)) {
-        clientNodes.push({
-            id: actualNodeIdWithSlash,
-            isFolder: node.isFolder,
-            initialDepth: depth,
-        });
-    }
-
-    if (node.children.size > 0) {
-        for (const childId of node.children) {
-            const childHNode = allNodesMap.get(childId);
-            if (
-                childHNode &&
-                !(!childHNode.isFolder && childHNode.data?.draft)
-            ) {
-                // Not a draft file
-                const sourceGraphId = getEffectiveGraphId(node.id);
-                const targetGraphId = getEffectiveGraphId(childId);
-
-                const linkKey = [sourceGraphId, targetGraphId]
-                    .sort()
-                    .join("--");
-                if (!linkSet.has(linkKey)) {
-                    clientLinks.push({
-                        source: sourceGraphId,
-                        target: targetGraphId,
-                        isBacklink: false,
-                    });
-                    linkSet.add(linkKey);
-                }
+        const node = allNodesMap.get(nodeId);
+        if (node) {
+            for (const childId of node.children) {
+                setDepthRecursively(childId, depth + 1);
             }
         }
     }
 
-    if (node.backlinks.size > 0) {
-        for (const backlinkerId of node.backlinks) {
-            const backlinkerHNode = allNodesMap.get(backlinkerId);
-            if (
-                backlinkerHNode &&
-                !(!backlinkerHNode.isFolder && backlinkerHNode.data?.draft)
-            ) {
-                // Not a draft file
-                const sourceGraphId = getEffectiveGraphId(backlinkerId);
-                const targetGraphId = getEffectiveGraphId(node.id);
-
-                if (sourceGraphId === targetGraphId) continue;
-
-                let isHierarchicalAlready = false;
-                if (
-                    node.parent === backlinkerId ||
-                    backlinkerHNode.parent === node.id
-                ) {
-                    const hierarchicalKey = [sourceGraphId, targetGraphId]
-                        .sort()
-                        .join("--");
-                    if (
-                        clientLinks.some(
-                            (l) =>
-                                !l.isBacklink &&
-                                [l.source, l.target].sort().join("--") ===
-                                    hierarchicalKey,
-                        )
-                    ) {
-                        isHierarchicalAlready = true;
-                    }
-                }
-                const isToSyntheticRoot =
-                    sourceGraphId === SYNTHETIC_ROOT_ID ||
-                    targetGraphId === SYNTHETIC_ROOT_ID;
-
-                if (!isHierarchicalAlready && !isToSyntheticRoot) {
-                    const linkKey = [sourceGraphId, targetGraphId]
-                        .sort()
-                        .join("--");
-                    if (!linkSet.has(linkKey)) {
-                        clientLinks.push({
-                            source: sourceGraphId,
-                            target: targetGraphId,
-                            isBacklink: true,
-                        });
-                        linkSet.add(linkKey);
-                    }
-                }
-            }
-        }
+    for (const rootNode of rootNodes) {
+        setDepthRecursively(rootNode.id, 1);
     }
+
+    return depths;
 }
 
-const hierarchicalData = { nodes: clientNodes, links: clientLinks };
+/**
+ * Creates optimized indexed nodes directly from blog data
+ */
+function createOptimizedNodes(
+    allNodesMap: Map<string, HierarchicalBlogNode>,
+    depths: Map<string, number>,
+): {
+    nodes: IndexedGraphNode[];
+    nodeIdToIndex: Map<string, number>;
+    rootIndex: number;
+} {
+    const nodes: IndexedGraphNode[] = [];
+    const nodeIdToIndex = new Map<string, number>();
+    let currentIndex = 0;
+
+    nodes.push({
+        index: currentIndex,
+        name: "Home",
+        isFolder: true,
+        initialDepth: 0,
+    });
+    nodeIdToIndex.set(SYNTHETIC_ROOT_ID, currentIndex);
+    const rootIndex = currentIndex;
+    currentIndex++;
+
+    const validNodes: {
+        node: HierarchicalBlogNode;
+        graphId: string;
+        depth: number;
+    }[] = [];
+
+    for (const node of allNodesMap.values()) {
+        if (!shouldIncludeNode(node)) continue;
+
+        if (node.isFolderNote && !node.isFolder) continue;
+
+        const graphId = getEffectiveGraphId(node.id, allNodesMap);
+        const depth = depths.get(graphId);
+
+        if (depth === undefined) {
+            console.warn(
+                `Node ${graphId} has undefined depth and will be skipped.`,
+            );
+            continue;
+        }
+
+        if (nodeIdToIndex.has(graphId)) continue;
+
+        validNodes.push({ node, graphId, depth });
+    }
+
+    validNodes.sort(
+        (a, b) => a.graphId.split("/").length - b.graphId.split("/").length,
+    );
+
+    for (const { node, graphId, depth } of validNodes) {
+        const name =
+            graphId === "/" ? "Home" : (graphId.split("/").pop() ?? "Unknown");
+
+        const parentIndex = (() => {
+            if (graphId === "/") return undefined;
+            const pathSegments = graphId.split("/").filter(Boolean);
+            if (pathSegments.length > 1) {
+                const parentPath = "/" + pathSegments.slice(0, -1).join("/");
+                return nodeIdToIndex.get(parentPath);
+            }
+            return nodeIdToIndex.get("/");
+        })();
+
+        nodes.push({
+            index: currentIndex,
+            name,
+            isFolder: node.isFolder,
+            initialDepth: depth,
+            parentIndex,
+        });
+        nodeIdToIndex.set(graphId, currentIndex);
+        currentIndex++;
+    }
+
+    return { nodes, nodeIdToIndex, rootIndex };
+}
+
+/**
+ * Creates hierarchical links using indices
+ */
+function createOptimizedHierarchicalLinks(
+    allNodesMap: Map<string, HierarchicalBlogNode>,
+    nodeIdToIndex: Map<string, number>,
+): [number, number][] {
+    const links: [number, number][] = [];
+    const processedLinks = new Set<string>();
+
+    for (const node of allNodesMap.values()) {
+        if (!shouldIncludeNode(node)) continue;
+
+        const sourceGraphId = getEffectiveGraphId(node.id, allNodesMap);
+        const sourceIndex = nodeIdToIndex.get(sourceGraphId);
+
+        if (sourceIndex === undefined) continue;
+
+        if (!node.parent) {
+            const rootIndex = nodeIdToIndex.get(SYNTHETIC_ROOT_ID);
+            if (rootIndex !== undefined) {
+                const linkKey = `${rootIndex.toString()}->${sourceIndex.toString()}`;
+                if (!processedLinks.has(linkKey)) {
+                    links.push([rootIndex, sourceIndex]);
+                    processedLinks.add(linkKey);
+                }
+            }
+        }
+
+        for (const childId of node.children) {
+            const childNode = allNodesMap.get(childId);
+            if (childNode && shouldIncludeNode(childNode)) {
+                const targetGraphId = getEffectiveGraphId(childId, allNodesMap);
+                const targetIndex = nodeIdToIndex.get(targetGraphId);
+
+                if (targetIndex !== undefined && sourceIndex !== targetIndex) {
+                    const linkKey = `${sourceIndex.toString()}->${targetIndex.toString()}`;
+                    if (!processedLinks.has(linkKey)) {
+                        links.push([sourceIndex, targetIndex]);
+                        processedLinks.add(linkKey);
+                    }
+                }
+            }
+        }
+    }
+
+    return links;
+}
+
+/**
+ * Creates backlinks using indices
+ */
+function createOptimizedBacklinks(
+    allNodesMap: Map<string, HierarchicalBlogNode>,
+    nodeIdToIndex: Map<string, number>,
+    hierarchicalLinks: [number, number][],
+): [number, number][] {
+    const backlinks: [number, number][] = [];
+    const processedLinks = new Set<string>();
+
+    const hierarchicalKeys = new Set<string>();
+    for (const [sourceIndex, targetIndex] of hierarchicalLinks) {
+        hierarchicalKeys.add(
+            `${sourceIndex.toString()}->${targetIndex.toString()}`,
+        );
+        hierarchicalKeys.add(
+            `${targetIndex.toString()}->${sourceIndex.toString()}`,
+        );
+    }
+
+    for (const node of allNodesMap.values()) {
+        if (!shouldIncludeNode(node)) continue;
+
+        const targetGraphId = getEffectiveGraphId(node.id, allNodesMap);
+        const targetIndex = nodeIdToIndex.get(targetGraphId);
+
+        if (targetIndex === undefined) continue;
+
+        for (const backlinkerId of node.backlinks) {
+            const backlinkerNode = allNodesMap.get(backlinkerId);
+            if (!backlinkerNode || !shouldIncludeNode(backlinkerNode)) continue;
+
+            const sourceGraphId = getEffectiveGraphId(
+                backlinkerId,
+                allNodesMap,
+            );
+            const sourceIndex = nodeIdToIndex.get(sourceGraphId);
+            const rootIndex = nodeIdToIndex.get(SYNTHETIC_ROOT_ID);
+
+            if (
+                sourceIndex === undefined ||
+                sourceIndex === targetIndex ||
+                sourceIndex === rootIndex ||
+                targetIndex === rootIndex
+            )
+                continue;
+
+            const linkKey1 = `${sourceIndex.toString()}->${targetIndex.toString()}`;
+            const linkKey2 = `${targetIndex.toString()}->${sourceIndex.toString()}`;
+
+            if (
+                hierarchicalKeys.has(linkKey1) ||
+                hierarchicalKeys.has(linkKey2)
+            )
+                continue;
+
+            if (processedLinks.has(linkKey1) || processedLinks.has(linkKey2))
+                continue;
+
+            backlinks.push([sourceIndex, targetIndex]);
+            processedLinks.add(linkKey1);
+            processedLinks.add(linkKey2);
+        }
+    }
+
+    return backlinks;
+}
+
+/**
+ * Main function to build optimized graph data directly
+ */
+function buildOptimizedGraphData(
+    allNodesMap: Map<string, HierarchicalBlogNode>,
+): OptimizedGraphData {
+    const depths = calculateNodeDepths(allNodesMap);
+    const { nodes, nodeIdToIndex, rootIndex } = createOptimizedNodes(
+        allNodesMap,
+        depths,
+    );
+    const hierarchicalLinks = createOptimizedHierarchicalLinks(
+        allNodesMap,
+        nodeIdToIndex,
+    );
+    const backlinks = createOptimizedBacklinks(
+        allNodesMap,
+        nodeIdToIndex,
+        hierarchicalLinks,
+    );
+
+    return {
+        nodes,
+        hierarchicalLinks,
+        backlinks,
+        rootIndex,
+    };
+}
+
+const allNodesMap: Map<string, HierarchicalBlogNode> = await blogIndexPromise;
+const optimizedGraphData = buildOptimizedGraphData(allNodesMap);
 ---
 
 <Layout>
-    <Graph graphData={hierarchicalData} />
+    <Graph graphData={optimizedGraphData} />
 </Layout>

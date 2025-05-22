@@ -23,6 +23,8 @@ export async function getStaticPaths() {
                 props: { currentNode: node },
             });
         } else {
+            if (node.isFolderNote) continue;
+
             const originalEntry = await getEntry("blog", node.id);
             if (originalEntry && !originalEntry.data.draft) {
                 paths.push({
