@@ -7,7 +7,6 @@ import { defineConfig, fontProviders } from "astro/config";
 import rehypeShiftHeading from "rehype-shift-heading";
 import { remarkExtractWikiLinks } from "./src/plugins/remark-extract-wikilinks";
 
-
 const resolveSlug = (slug: string) => {
     let splitSlug = slug.split("/");
     if (splitSlug[0] === "Content") {
@@ -52,7 +51,7 @@ export default defineConfig({
                 weights: ["300 600"],
                 fallbacks: ["sans-serif"],
                 subsets: ["latin"],
-            }
+            },
         ],
     },
     markdown: {

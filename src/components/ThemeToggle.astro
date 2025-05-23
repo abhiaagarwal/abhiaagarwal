@@ -80,10 +80,7 @@ const themes = Object.keys(themeConfig);
     );
     button.setAttribute("aria-value-text", initialPreference);
 
-    window.applyEffectiveTheme(initialPreference);
-
     button.addEventListener("click", cyclePreference);
-
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     mediaQuery.addEventListener("change", handleSystemChange);
 </script>

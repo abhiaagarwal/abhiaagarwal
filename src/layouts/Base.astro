@@ -15,40 +15,15 @@ import { Font } from 'astro:assets';
             rel="icon"
             href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤠</text></svg>"
         />
-        <meta name="generator" content={Astro.generator} />
         <title>Abhi Agarwal</title>
+        {/* This script was purposefully not bundled to prevent FOUC. I minified it with terser manually. Refer to util/theme-switch.ts for the source. */}
+        <script is:inline>
+window.THEME_KEY="theme-preference",window.THEMES=["light","dark","system"],window.applyEffectiveTheme=e=>{const t="dark"===e||"system"===e&&window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=t?"dark":"light"},window.setThemePreference=e=>{const t=e&&window.THEMES.includes(e)?e:"system";document.documentElement.dataset.themePreference=t,window.applyEffectiveTheme(t)};const e=localStorage.getItem(window.THEME_KEY);window.setThemePreference(e)
+        </script>
         <Font cssVariable="--font-lora" preload />
         <Font cssVariable="--font-fira-code" preload />
         <Font cssVariable="--font-open-sans" preload />
-        <script>
-            window.THEME_KEY = "theme-preference";
-            window.THEMES = ["light", "dark", "system"];
-
-            window.applyEffectiveTheme = (theme: string) => {
-                const isDark =
-                    theme === "dark" ||
-                    (theme === "system" &&
-                        window.matchMedia("(prefers-color-scheme: dark)")
-                            .matches);
-                document.documentElement.dataset.theme = isDark
-                    ? "dark"
-                    : "light";
-            };
-
-            window.setThemePreference = (theme: string | null) => {
-                const initialPreference =
-                    theme && window.THEMES.includes(theme as any)
-                        ? theme
-                        : "system";
-
-                document.documentElement.dataset.themePreference =
-                    initialPreference;
-
-                window.applyEffectiveTheme(initialPreference);
-            };
-            const storedPreference = localStorage.getItem(window.THEME_KEY);
-            window.setThemePreference(storedPreference);
-        </script>
+        <meta name="generator" content={Astro.generator} />
     </head>
     <body
         class="flex min-h-screen flex-col gap-4 bg-light px-4 py-2 transition-colors md:px-8 md:py-4"
