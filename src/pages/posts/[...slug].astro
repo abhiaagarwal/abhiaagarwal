@@ -85,6 +85,13 @@ if (currentNode.isFolder) {
 
 const pageTitle = currentNode.title;
 
+const seoTitle = pageTitle;
+const seoDescription =
+    currentNode.data?.description ??
+    `${currentNode.isFolder ? "Explore" : "Read"} ${pageTitle} on Abhi Agarwal's blog`;
+const seoType = currentNode.isFolder ? "website" : "article";
+const seoTags = currentNode.data?.tags ?? [];
+
 const breadcrumbSegments = currentNode.id
     .split("/")
     .filter((segment: string) => segment)
@@ -111,7 +118,12 @@ const backlinkData = Array.from(currentNode.backlinks)
     .filter((link) => link !== null) as { url: string; title: string }[];
 ---
 
-<Base>
+<Base
+    title={seoTitle}
+    description={seoDescription}
+    type={seoType}
+    tags={seoTags}
+>
     <div class="m-auto max-w-2xl">
         <div class="flex flex-row items-center gap-1">
             <KindIcon

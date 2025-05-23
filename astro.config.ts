@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import expressiveCode from "astro-expressive-code";
 import { defineConfig, fontProviders } from "astro/config";
 import rehypeShiftHeading from "rehype-shift-heading";
+import { loadEnv } from "vite";
 import { remarkExtractWikiLinks } from "./src/plugins/remark-extract-wikilinks";
 
 const resolveSlug = (slug: string) => {
@@ -18,9 +19,12 @@ const resolveSlug = (slug: string) => {
     return splitSlug.join("/");
 };
 
+// @ts-expect-error - loadEnv is not typed
+const { PUBLIC_SITE_URL } = loadEnv(process.env.NODE_ENV, process.cwd(), "");
+
 // https://astro.build/config
 export default defineConfig({
-    site: "https://abhi.rodeo",
+    site: PUBLIC_SITE_URL ?? "http://localhost:4321",
     prefetch: true,
     trailingSlash: "always",
     vite: {

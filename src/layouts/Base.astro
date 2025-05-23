@@ -1,9 +1,88 @@
 ---
+import { SEO } from "astro-seo";
 import "../styles/global.css";
 import Footer from "./Footer.astro";
 import Nav from "./Nav.astro";
 
 import { Font } from 'astro:assets';
+
+export interface Props {
+    title?: string;
+    description?: string;
+    image?: string;
+    noindex?: boolean;
+    type?: "website" | "article";
+    publishedTime?: string;
+    modifiedTime?: string;
+    tags?: string[];
+    author?: string;
+    canonical?: string;
+}
+
+const {
+    title = "Abhi Agarwal",
+    description = "Software Engineer & Writer.",
+    image,
+    noindex = false,
+    type = "website",
+    publishedTime,
+    modifiedTime,
+    tags = [],
+    author = "Abhi Agarwal",
+    canonical,
+} = Astro.props;
+
+const siteTitle = title === "Abhi Agarwal" ? title : `${title} | Abhi Agarwal`;
+const siteUrl = Astro.site?.toString() ?? "";
+const currentUrl = new URL(Astro.url.pathname, siteUrl).toString();
+
+const getOgImagePath = () => {
+    const pathname = Astro.url.pathname;
+    
+    if (pathname.startsWith("/posts/")) {
+        const slug = pathname.slice("/posts/".length).replace(/\/$/, "");
+        return `posts/og/${slug}`;
+    } else {
+        return null;
+    }
+};
+
+const ogImagePath = getOgImagePath();
+const defaultOgImage = `${siteUrl}opengraph/default.png`;
+const ogImage = image ?? (ogImagePath ? `${siteUrl}${ogImagePath}.png` : defaultOgImage);
+
+const structuredData = type === "article" ? {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": title,
+    "description": description,
+    "author": {
+        "@type": "Person",
+        "name": author,
+        "url": siteUrl
+    },
+    "publisher": {
+        "@type": "Person",
+        "name": "Abhi Agarwal",
+        "url": siteUrl
+    },
+    "url": currentUrl,
+    "datePublished": publishedTime,
+    "dateModified": modifiedTime ?? publishedTime,
+    "image": ogImage,
+    "keywords": tags.join(", ")
+} : {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Abhi Agarwal",
+    "description": description,
+    "url": siteUrl,
+    "author": {
+        "@type": "Person",
+        "name": "Abhi Agarwal",
+        "url": siteUrl
+    }
+};
 ---
 
 <!doctype html>
@@ -11,11 +90,68 @@ import { Font } from 'astro:assets';
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+        <SEO
+            title={siteTitle}
+            description={description}
+            canonical={canonical ?? currentUrl}
+            noindex={noindex}
+            nofollow={noindex}
+            openGraph={{
+                basic: {
+                    title: siteTitle,
+                    type: type,
+                    image: ogImage,
+                    url: currentUrl,
+                },
+                optional: {
+                    description: description,
+                    siteName: "Abhi Agarwal",
+                    locale: "en_US",
+                },
+                image: {
+                    url: ogImage,
+                    type: "image/png",
+                    width: 1200,
+                    height: 630,
+                    alt: `${title} - Abhi Agarwal`,
+                },
+                article: type === "article" ? {
+                    publishedTime: publishedTime,
+                    modifiedTime: modifiedTime ?? publishedTime,
+                    authors: [author],
+                    section: "Technology",
+                    tags: tags,
+                } : undefined,
+            }}
+            twitter={{
+                card: "summary_large_image",
+                site: "@abhiaagarwal",
+                creator: "@abhiaagarwal",
+                title: siteTitle,
+                description: description,
+                image: ogImage,
+                imageAlt: `${title} - Abhi Agarwal`,
+            }}
+            extend={{
+                link: [
+                    { rel: "sitemap", href: "/sitemap-index.xml" },
+                ],
+                meta: [
+                    { name: "author", content: author },
+                    { name: "theme-color", content: "#18181b" },
+                    { name: "color-scheme", content: "dark light" },
+                    { property: "article:author", content: author },
+                    ...(tags.length > 0 ? [{ name: "keywords", content: tags.join(", ") }] : []),
+                ],
+            }}
+        />
+        
         <link
             rel="icon"
             href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤠</text></svg>"
         />
-        <title>Abhi Agarwal</title>
+        <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
         {/* This script was purposefully not bundled to prevent FOUC. I minified it with terser manually. Refer to util/theme-switch.ts for the source. */}
         <script is:inline>
 window.THEME_KEY="theme-preference",window.THEMES=["light","dark","system"],window.applyEffectiveTheme=e=>{const t="dark"===e||"system"===e&&window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=t?"dark":"light"},window.setThemePreference=e=>{const t=e&&window.THEMES.includes(e)?e:"system";document.documentElement.dataset.themePreference=t,window.applyEffectiveTheme(t)};const e=localStorage.getItem(window.THEME_KEY);window.setThemePreference(e)

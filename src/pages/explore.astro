@@ -299,6 +299,10 @@ const allNodesMap: Map<string, HierarchicalBlogNode> = await blogIndexPromise;
 const optimizedGraphData = buildOptimizedGraphData(allNodesMap);
 ---
 
-<Layout>
+<Layout
+    title="Explore"
+    description="Interactive knowledge graph visualization of Abhi Agarwal's blog posts, notes, and thoughts."
+    type="website"
+>
     <Graph graphData={optimizedGraphData} />
 </Layout>
