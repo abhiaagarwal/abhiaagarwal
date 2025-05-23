@@ -127,12 +127,17 @@ function handleFolderNote(
 function processInternalLinks(
     remarkPluginFrontmatter: RemarkPluginFrontmatter,
 ): string[] {
-    const internalLinks: string[] =
-        remarkPluginFrontmatter.internalLinks?.map((link: string) =>
-            link.startsWith("/posts/") ? link.slice("/posts/".length) : link,
-        ) ?? [];
-
-    return internalLinks;
+    return (
+        remarkPluginFrontmatter.internalLinks?.map((link: string) => {
+            if (link.startsWith("/posts/")) {
+                return link.slice("/posts/".length);
+            }
+            if (link.startsWith("/")) {
+                return link.slice(1);
+            }
+            return link;
+        }) ?? []
+    );
 }
 
 function setupBacklinks(
