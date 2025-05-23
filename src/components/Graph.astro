@@ -49,10 +49,10 @@ const compressedGraphData = compress(keyCompressedData);
 <script>
     import { decompress } from "compress-json";
     import * as d3 from "d3";
-    import type { 
-        IndexedGraphNode, 
-        OptimizedGraphData, 
-        CompressedOptimizedGraphData 
+    import type {
+        CompressedOptimizedGraphData,
+        IndexedGraphNode,
+        OptimizedGraphData,
     } from "./Graph.types";
     import { decompressGraphData } from "./Graph.types";
 
@@ -318,7 +318,7 @@ const compressedGraphData = compress(keyCompressedData);
 
         nodeElements
             .append("circle")
-            .attr("r", computeNodeVisualRadius)
+            .attr("r", (d) => computeNodeVisualRadius(d).toFixed(2))
             .attr("class", "cursor-pointer")
             .attr(
                 "style",
@@ -329,7 +329,9 @@ const compressedGraphData = compress(keyCompressedData);
         nodeElements
             .append("text")
             .attr("dy", "0.35em")
-            .attr("y", (d: NodeDataForSim) => (computeNodeVisualRadius(d) + 7).toFixed(2))
+            .attr("y", (d: NodeDataForSim) =>
+                (computeNodeVisualRadius(d) + 7).toFixed(2),
+            )
             .attr("class", "text-xs fill-dark")
             .text((d: NodeDataForSim) => d.name);
 
@@ -477,26 +479,23 @@ const compressedGraphData = compress(keyCompressedData);
     ) {
         return () => {
             linkElements
-                .attr(
-                    "x1",
-                    (d: LinkDataForSim) => (d.source as NodeDataForSim).x ?? 0,
+                .attr("x1", (d: LinkDataForSim) =>
+                    ((d.source as NodeDataForSim).x ?? 0).toFixed(2),
                 )
-                .attr(
-                    "y1",
-                    (d: LinkDataForSim) => (d.source as NodeDataForSim).y ?? 0,
+                .attr("y1", (d: LinkDataForSim) =>
+                    ((d.source as NodeDataForSim).y ?? 0).toFixed(2),
                 )
-                .attr(
-                    "x2",
-                    (d: LinkDataForSim) => (d.target as NodeDataForSim).x ?? 0,
+                .attr("x2", (d: LinkDataForSim) =>
+                    ((d.target as NodeDataForSim).x ?? 0).toFixed(2),
                 )
-                .attr(
-                    "y2",
-                    (d: LinkDataForSim) => (d.target as NodeDataForSim).y ?? 0,
+                .attr("y2", (d: LinkDataForSim) =>
+                    ((d.target as NodeDataForSim).y ?? 0).toFixed(2),
                 );
 
             nodeElements.attr(
                 "transform",
-                (d: NodeDataForSim) => `translate(${d.x ?? 0},${d.y ?? 0})`,
+                (d: NodeDataForSim) =>
+                    `translate(${(d.x ?? 0).toFixed(2)},${(d.y ?? 0).toFixed(2)})`,
             );
         };
     }
@@ -580,7 +579,8 @@ const compressedGraphData = compress(keyCompressedData);
         const compressedData: CompressedOptimizedGraphData = decompress(
             JSON.parse(rawGraphData),
         );
-        const optimizedData: OptimizedGraphData = decompressGraphData(compressedData);
+        const optimizedData: OptimizedGraphData =
+            decompressGraphData(compressedData);
         const { nodes, links } = prepareSimulationData(optimizedData);
 
         nodes.forEach(computeNodeVisualRadius);
