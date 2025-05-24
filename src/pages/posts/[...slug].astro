@@ -1,6 +1,8 @@
 ---
 import { getCollection, getEntry, render } from "astro:content";
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import {
     blogIndex as blogIndexPromise,
     type HierarchicalBlogNode,
@@ -8,8 +10,11 @@ import {
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import KindIcon from "../../components/KindIcon.astro";
 import Listing from "../../components/Listing.astro";
+import PostDates from "../../components/PostDates.astro";
 import Prose from "../../components/Prose.astro";
 import Base from "../../layouts/Base.astro";
+
+dayjs.extend(utc);
 
 export async function getStaticPaths() {
     const allNodesMap = await blogIndexPromise;
@@ -125,20 +130,34 @@ const backlinkData = Array.from(currentNode.backlinks)
     tags={seoTags}
 >
     <div class="m-auto max-w-2xl">
-        <div class="flex flex-row items-center gap-1">
-            <KindIcon
-                kind={currentNode.data?.kind}
-                isFolder={currentNode.isFolder}
-                class="h-4 w-4 stroke-dark-gray"
-            />
-            <Breadcrumbs
-                baseUrl="/posts"
-                breadcrumbs={[...breadcrumbSegments]}
-            />
+        <div class="flex flex-col gap-2 mb-6">
+            <div class="flex flex-row items-center gap-1">
+                <KindIcon
+                    kind={currentNode.data?.kind}
+                    isFolder={currentNode.isFolder}
+                    class="h-4 w-4 stroke-dark-gray"
+                />
+                <Breadcrumbs
+                    baseUrl="/posts"
+                    breadcrumbs={[...breadcrumbSegments]}
+                />
+            </div>
+            <h1 class="font-serif text-3xl font-semibold text-dark">
+                {pageTitle}
+            </h1>
+            {
+                !currentNode.isFolder && (
+                    <PostDates
+                        createdTime={currentNode.createdTime}
+                        lastModified={currentNode.lastModified}
+                        iconSize="md"
+                        textSize="sm"
+                        layout="horizontal"
+                        className="text-dark-gray"
+                    />
+                )
+            }
         </div>
-        <h1 class="mt-2 mb-6 font-serif text-3xl font-semibold text-dark">
-            {pageTitle}
-        </h1>
         <Prose>
             {FolderNoteContentComponent && <FolderNoteContentComponent />}
             {

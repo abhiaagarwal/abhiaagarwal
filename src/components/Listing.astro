@@ -2,6 +2,7 @@
 import { type HierarchicalBlogNode } from "../blogIndex";
 import Breadcrumbs from "./Breadcrumbs.astro";
 import KindIcon from "./KindIcon.astro";
+import PostDates from "./PostDates.astro";
 
 interface Props {
     posts: HierarchicalBlogNode[];
@@ -62,7 +63,7 @@ const kinds = [
                             <KindIcon
                                 kind={itemKind}
                                 isFolder={node.isFolder}
-                                class="h-4 w-4 stroke-dark-gray"
+                                class="size-4 stroke-dark-gray"
                             />
                             {itemBreadcrumbs.length > 0 && (
                                 <Breadcrumbs
@@ -80,6 +81,16 @@ const kinds = [
                             <span class="font-sans text-sm/snug text-dark-gray italic">
                                 {node.data.description}
                             </span>
+                        )}
+
+                        {!node.isFolder && (
+                            <PostDates
+                                createdTime={node.createdTime}
+                                lastModified={node.lastModified}
+                                iconSize="sm"
+                                textSize="xs"
+                                layout="horizontal"
+                            />
                         )}
                     </div>
                 );
