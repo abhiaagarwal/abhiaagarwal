@@ -130,10 +130,7 @@ function processInternalLinks(
     return (
         remarkPluginFrontmatter.internalLinks?.map((link: string) => {
             if (link.startsWith("/posts/")) {
-                return link.slice("/posts/".length);
-            }
-            if (link.startsWith("/")) {
-                return link.slice(1);
+                return link.slice("/posts/".length, -1);
             }
             return link;
         }) ?? []

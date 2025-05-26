@@ -112,14 +112,14 @@ const backlinkData = Array.from(currentNode.backlinks)
             const originalEntry = allBlogEntries.find(
                 (entry) => entry.id === backlinkNode.id,
             );
-            if (originalEntry?.data.published !== undefined) return null;
+            if (!originalEntry) return null;
         }
         return {
             url: `/posts/${backlinkId}/`,
             title: backlinkNode.title || backlinkId,
         };
     })
-    .filter((link) => link !== null) as { url: string; title: string }[];
+    .filter((link) => link !== null);
 ---
 
 <Base
