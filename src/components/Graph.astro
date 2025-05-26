@@ -47,6 +47,7 @@ const compressedGraphData = compress(keyCompressedData);
 </div>
 
 <script>
+    import { prefetch } from "astro:prefetch";
     import { decompress } from "compress-json";
     import * as d3 from "d3";
     import type {
@@ -433,6 +434,7 @@ const compressedGraphData = compress(keyCompressedData);
                     event: MouseEvent,
                     d: NodeDataForSim,
                 ) {
+                    prefetch(d.fullPath, { eagerness: "moderate" });
                     const neighbors = new Set(adjacencyMap.get(d.index) || []);
                     neighbors.add(d.index);
 

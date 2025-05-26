@@ -22,6 +22,7 @@ const links: { href: string; text: string }[] = [
                         pathname === link.href && "text-primary",
                     ]}
                     href={link.href}
+                    data-astro-prefetch
                 >
                     {link.text}
                 </a>
