@@ -1,4 +1,5 @@
 ---
+import dayjs from "dayjs";
 import Layout from "../layouts/Base.astro";
 ---
 
@@ -6,6 +7,7 @@ import Layout from "../layouts/Base.astro";
     title="About"
     description="Learn more about Abhi Agarwal."
     type="website"
+    publishedTime={dayjs()}
 >
     <div class="m-auto max-w-2xl font-serif text-dark">
         <h1 class="mb-6 text-3xl font-semibold">Abhi Agarwal</h1>

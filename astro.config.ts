@@ -16,7 +16,7 @@ const resolveSlug = (slug: string) => {
     if (splitSlug.at(-1) === splitSlug.at(-2)) {
         splitSlug = splitSlug.slice(0, -1);
     }
-    return splitSlug.join("/");
+    return "posts/" + splitSlug.join("/") + "/";
 };
 
 // @ts-expect-error - loadEnv is not typed
@@ -31,6 +31,7 @@ export default defineConfig({
         plugins: [tailwindcss()],
     },
     experimental: {
+        clientPrerender: true,
         fonts: [
             {
                 provider: fontProviders.fontsource(),

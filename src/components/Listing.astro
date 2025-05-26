@@ -78,7 +78,9 @@ const kinds = [
                         </div>
 
                         <h2 class="font-serif text-2xl font-semibold text-dark">
-                            <a href={`/posts/${node.id}/`}>{node.title}</a>
+                            <a href={`/posts/${node.id}/`} data-astro-prefetch>
+                                {node.title}
+                            </a>
                         </h2>
 
                         {node.data?.description && !node.isFolder && (

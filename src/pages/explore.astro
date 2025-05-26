@@ -1,4 +1,5 @@
 ---
+import dayjs from "dayjs";
 import {
     blogIndex as blogIndexPromise,
     type HierarchicalBlogNode,
@@ -303,6 +304,7 @@ const optimizedGraphData = buildOptimizedGraphData(allNodesMap);
     title="Explore"
     description="Interactive knowledge graph visualization of Abhi Agarwal's blog posts, notes, and thoughts."
     type="website"
+    publishedTime={dayjs()}
 >
     <Graph graphData={optimizedGraphData} />
 </Layout>

@@ -3,6 +3,7 @@ import { SEO } from "astro-seo";
 import "../global.css";
 import Footer from "./Footer.astro";
 import Nav from "./Nav.astro";
+import type { Dayjs } from "dayjs";
 
 import { Font } from 'astro:assets';
 
@@ -12,8 +13,8 @@ export interface Props {
     image?: string;
     noindex?: boolean;
     type?: "website" | "article";
-    publishedTime?: string;
-    modifiedTime?: string;
+    publishedTime: Dayjs;
+    modifiedTime?: Dayjs;
     tags?: string[];
     author?: string;
     canonical?: string;
@@ -32,7 +33,6 @@ const {
     canonical,
 } = Astro.props;
 
-const siteTitle = title === "Abhi Agarwal" ? title : `${title} | Abhi Agarwal`;
 const siteUrl = Astro.site?.toString() ?? "";
 const currentUrl = new URL(Astro.url.pathname, siteUrl).toString();
 
@@ -41,7 +41,7 @@ const getOgImagePath = () => {
     
     if (pathname.startsWith("/posts/")) {
         const slug = pathname.slice("/posts/".length).replace(/\/$/, "");
-        return `posts/og/${slug}`;
+        return `opengraph/${slug}`;
     } else {
         return null;
     }
@@ -50,6 +50,9 @@ const getOgImagePath = () => {
 const ogImagePath = getOgImagePath();
 const defaultOgImage = `${siteUrl}opengraph/default.png`;
 const ogImage = image ?? (ogImagePath ? `${siteUrl}${ogImagePath}.png` : defaultOgImage);
+
+const publishedTimeString = publishedTime.toISOString();
+const modifiedTimeString = modifiedTime?.toISOString() ?? publishedTimeString;
 
 const structuredData = type === "article" ? {
     "@context": "https://schema.org",
@@ -67,8 +70,8 @@ const structuredData = type === "article" ? {
         "url": siteUrl
     },
     "url": currentUrl,
-    "datePublished": publishedTime,
-    "dateModified": modifiedTime ?? publishedTime,
+    "datePublished": publishedTimeString,
+    "dateModified": modifiedTimeString,
     "image": ogImage,
     "keywords": tags.join(", ")
 } : {
@@ -83,6 +86,7 @@ const structuredData = type === "article" ? {
         "url": siteUrl
     }
 };
+
 ---
 
 <!doctype html>
@@ -92,14 +96,15 @@ const structuredData = type === "article" ? {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         
         <SEO
-            title={siteTitle}
+            title={title}
+            titleTemplate="%s | Abhi Agarwal"
             description={description}
             canonical={canonical ?? currentUrl}
             noindex={noindex}
             nofollow={noindex}
             openGraph={{
                 basic: {
-                    title: siteTitle,
+                    title: title,
                     type: type,
                     image: ogImage,
                     url: currentUrl,
@@ -117,8 +122,8 @@ const structuredData = type === "article" ? {
                     alt: `${title} - Abhi Agarwal`,
                 },
                 article: type === "article" ? {
-                    publishedTime: publishedTime,
-                    modifiedTime: modifiedTime ?? publishedTime,
+                    publishedTime: publishedTimeString,
+                    modifiedTime: modifiedTimeString,
                     authors: [author],
                     section: "Technology",
                     tags: tags,
@@ -128,7 +133,7 @@ const structuredData = type === "article" ? {
                 card: "summary_large_image",
                 site: "@abhiaagarwal",
                 creator: "@abhiaagarwal",
-                title: siteTitle,
+                title: title,
                 description: description,
                 image: ogImage,
                 imageAlt: `${title} - Abhi Agarwal`,
@@ -140,13 +145,12 @@ const structuredData = type === "article" ? {
                 meta: [
                     { name: "author", content: author },
                     { name: "theme-color", content: "#18181b" },
-                    { name: "color-scheme", content: "dark light" },
+                    { name: "color-scheme", content: "light dark" },
                     { property: "article:author", content: author },
                     ...(tags.length > 0 ? [{ name: "keywords", content: tags.join(", ") }] : []),
                 ],
             }}
         />
-        
         <link
             rel="icon"
             href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤠</text></svg>"
@@ -159,7 +163,6 @@ window.THEME_KEY="theme-preference",window.THEMES=["light","dark","system"],wind
         <Font cssVariable="--font-lora" preload />
         <Font cssVariable="--font-fira-code" preload />
         <Font cssVariable="--font-open-sans" preload />
-        <meta name="generator" content={Astro.generator} />
     </head>
     <body
         class="flex min-h-screen flex-col gap-4 bg-light px-4 py-2 transition-colors md:px-8 md:py-4"
