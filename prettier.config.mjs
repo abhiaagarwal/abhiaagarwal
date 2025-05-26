@@ -20,7 +20,7 @@ const config = {
             },
         },
     ],
-    tailwindStylesheet: "./src/styles/global.css",
+    tailwindStylesheet: "./src/global.css",
 };
 
 export default config;

@@ -20,15 +20,15 @@ const breadcrumbsWithUrls = breadcrumbs.map((crumb) => {
 ---
 
 <nav aria-label="Breadcrumb" class="font-sans text-sm text-dark-gray">
-    <ol class="flex flex-wrap items-center">
+    <ol class="flex flex-wrap items-center align-middle">
         {
             breadcrumbsWithUrls.map((crumb, index) => (
                 <li class="flex items-center">
-                    <ChevronRight class="h-4 w-4 text-dark-gray" />
+                    <ChevronRight class="size-4" />
                     {index < breadcrumbsWithUrls.length - 1 ? (
                         <a href={crumb.url}>{crumb.label}</a>
                     ) : (
-                        <span class="font-medium text-dark">{crumb.label}</span>
+                        <span class="font-medium lowercase">{crumb.label}</span>
                     )}
                 </li>
             ))

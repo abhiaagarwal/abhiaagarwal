@@ -8,20 +8,20 @@
 
     --color-primary: oklch(0.61 0.14 309.8);
     --color-secondary: oklch(0.64 0.15 350);
-    --color-light: oklch(0.98 0.016 334.6);
+    --color-light: oklch(0.973 0.007 324.6);
     --color-light-gray: oklch(0.92 0.02 325);
     --color-gray: oklch(0.75 0.02 325);
     --color-dark-gray: oklch(0.45 0.02 325);
-    --color-dark: oklch(0.19 0.0268 323.48);
+    --color-dark: oklch(0.1596 0.0268 323.48);
 }
 
 @layer base {
     @variant dark {
-        --color-light: oklch(0.19 0.0268 323.48);
+        --color-light: oklch(0.1596 0.0268 323.48);
         --color-light-gray: oklch(0.35 0.02 325);
         --color-gray: oklch(0.55 0.02 325);
         --color-dark-gray: oklch(0.85 0.02 325);
-        --color-dark: oklch(0.98 0.016 334.6);
+        --color-dark: oklch(0.973 0.007 324.6);
     }
 
     ::-moz-selection {

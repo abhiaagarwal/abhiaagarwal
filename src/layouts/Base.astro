@@ -1,6 +1,6 @@
 ---
 import { SEO } from "astro-seo";
-import "../styles/global.css";
+import "../global.css";
 import Footer from "./Footer.astro";
 import Nav from "./Nav.astro";
 
@@ -154,7 +154,7 @@ const structuredData = type === "article" ? {
         <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
         {/* This script was purposefully not bundled to prevent FOUC. I minified it with terser manually. Refer to util/theme-switch.ts for the source. */}
         <script is:inline>
-window.THEME_KEY="theme-preference",window.THEMES=["light","dark","system"],window.applyEffectiveTheme=e=>{const t="dark"===e||"system"===e&&window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=t?"dark":"light"},window.setThemePreference=e=>{const t=e&&window.THEMES.includes(e)?e:"system";document.documentElement.dataset.themePreference=t,window.applyEffectiveTheme(t)};const e=localStorage.getItem(window.THEME_KEY);window.setThemePreference(e)
+window.THEME_KEY="theme-preference",window.THEMES=["light","dark","system"],window.applyEffectiveTheme=e=>{const t="dark"===e||"system"===e&&window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=t?"dark":"light"},window.setThemePreference=e=>{const t=e&&window.THEMES.includes(e)?e:"system";document.documentElement.dataset.themePreference=t,localStorage.setItem(window.THEME_KEY,t),window.applyEffectiveTheme(t)};const e=localStorage.getItem(window.THEME_KEY);window.setThemePreference(e)
         </script>
         <Font cssVariable="--font-lora" preload />
         <Font cssVariable="--font-fira-code" preload />
