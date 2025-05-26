@@ -56,17 +56,12 @@ let FolderNoteContentComponent: AstroComponentFactory | null = null;
 let childrenForListing: HierarchicalBlogNode[] = [];
 
 if (currentNode.isFolder) {
-    if (currentNode.contentPath) {
-        const contentNode = allNodesMap.get(currentNode.contentPath);
-        if (contentNode?.id) {
-            const folderNoteEntry = allBlogEntries.find(
-                (entry) => entry.id === contentNode.id,
-            );
-            if (folderNoteEntry) {
-                const { Content: RenderedFolderNoteContent } =
-                    await render(folderNoteEntry);
-                FolderNoteContentComponent = RenderedFolderNoteContent;
-            }
+    if (currentNode.contentPath !== undefined) {
+        const folderNoteEntry = await getEntry("blog", currentNode.contentPath);
+        if (folderNoteEntry) {
+            const { Content: RenderedFolderNoteContent } =
+                await render(folderNoteEntry);
+            FolderNoteContentComponent = RenderedFolderNoteContent;
         }
     }
 

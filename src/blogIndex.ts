@@ -156,6 +156,39 @@ function setupBacklinks(
     }
 }
 
+/**
+ * Recursively prunes empty folders from the hierarchical index.
+ * A folder is considered empty if it has no children and is not a folder note.
+ */
+function pruneEmptyFolders(
+    hierarchicalIndex: Map<string, HierarchicalBlogNode>,
+): void {
+    let hasChanges = true;
+
+    while (hasChanges) {
+        hasChanges = false;
+        const foldersToRemove: string[] = [];
+
+        for (const [nodeId, node] of hierarchicalIndex) {
+            if (node.isFolder && node.children.size === 0) {
+                foldersToRemove.push(nodeId);
+                hasChanges = true;
+            }
+        }
+
+        for (const folderId of foldersToRemove) {
+            const folderNode = hierarchicalIndex.get(folderId);
+            if (folderNode?.parent) {
+                const parentNode = hierarchicalIndex.get(folderNode.parent);
+                if (parentNode) {
+                    parentNode.children.delete(folderId);
+                }
+            }
+            hierarchicalIndex.delete(folderId);
+        }
+    }
+}
+
 async function createBlogIndex(): Promise<Map<string, HierarchicalBlogNode>> {
     const blogEntries = await getCollection("blog");
     const hierarchicalIndex = new Map<string, HierarchicalBlogNode>();
@@ -165,18 +198,21 @@ async function createBlogIndex(): Promise<Map<string, HierarchicalBlogNode>> {
         const slug = post.id;
 
         const parentId = ensureFolderHierarchy(slug, hierarchicalIndex);
-
         const internalLinks = processInternalLinks(remarkPluginFrontmatter);
 
         const postNode = createPostNode(post, internalLinks, parentId);
-        hierarchicalIndex.set(slug, postNode);
 
-        if (parentId) {
-            hierarchicalIndex.get(parentId)?.children.add(slug);
+        if (post.data.published !== undefined) {
+            hierarchicalIndex.set(slug, postNode);
+            if (parentId) {
+                hierarchicalIndex.get(parentId)?.children.add(slug);
+            }
         }
 
         handleFolderNote(postNode, hierarchicalIndex);
     }
+
+    pruneEmptyFolders(hierarchicalIndex);
 
     setupBacklinks(hierarchicalIndex);
 
