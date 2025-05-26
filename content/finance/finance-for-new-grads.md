@@ -1,8 +1,6 @@
 ---
 title: '"I just graduated! What the hell am I supposed to do with all this money?"'
-tags:
-  - observations
-draft: true
+tags: [observations]
 ---
 
 > [!warning] Disclaimer

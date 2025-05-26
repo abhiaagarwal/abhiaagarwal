@@ -1,9 +1,9 @@
 ---
 title: The case for writing almost everything in Typescript
-description: I was skeptical a year ago. But having more experience as a developer and using modern Typescript frameworks, I'm convinced that we should be writing almost all of our code in Typescript.
-tags:
-  - observations
+description: "I was skeptical a year ago. But having more experience as a developer and using modern Typescript frameworks, I'm convinced that we should be writing almost all of our code in Typescript."
+tags: [observations]
 ---
+
 It feels almost sacrilegious to say this and feel this. But I think we need to be writing more typescript. I think almost _everything_ should be written in Typescript.
 
 One of my first coding memories was back in 8th grade in 2015, when I wrote my first Javascript in a Google Sheets in 8th grade science to calculate sunrise/sunset. This was the code:

@@ -1,7 +1,6 @@
 ---
 title: Installing CUDA/Nvidia Drivers on a host to be shared with Linux Container(s)
-tags:
-  - observations
+tags: [observations]
 ---
 
 I have a Proxmox server with an RTX 4090. I want to share the GPU across multiple lightweight Linux Containers (LXCs), of which they might share them with Docker containers, which could theoretically share... whatever, you get it. I want access to `nvcc` on LXCs for development. I also want access to the drivers so applications that use hardware acceleration (such as [Jellyfin](https://github.com/jellyfin/jellyfin)) can... accelerate.

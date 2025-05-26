@@ -8,7 +8,7 @@ const baseSchema = z
         title: z.string().optional(),
         description: z.string().optional(),
         tags: z.array(z.string()).default([]),
-        draft: z.boolean().default(false),
+        published: z.coerce.date().optional(),
     })
     .transform((data) => {
         const parsedKind = kind.safeParse(data.tags[0]);

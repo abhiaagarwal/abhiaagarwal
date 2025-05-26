@@ -1,6 +1,5 @@
 ---
 title: Running a bunch of python futures in a safely
-draft: true
 tags: [observations]
 ---
 

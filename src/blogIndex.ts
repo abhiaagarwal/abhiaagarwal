@@ -1,13 +1,7 @@
 import { getCollection, render, type CollectionEntry } from "astro:content";
-import dayjs, { type Dayjs } from "dayjs";
-import utc from "dayjs/plugin/utc";
-
-dayjs.extend(utc);
 
 interface RemarkPluginFrontmatter {
     internalLinks?: string[];
-    createdTime?: string;
-    lastModified?: string;
 }
 
 /**
@@ -24,8 +18,6 @@ interface RemarkPluginFrontmatter {
  * @property {Set<string>} outgoingLinks - The ids of linked posts/pages.
  * @property {Set<string>} backlinks - The ids of posts/pages linking to this one.
  * @property {(string|undefined)} contentPath - If `isFolderNote`, this is the `id` of the node that provides its content.
- * @property {Dayjs} createdTime - The git creation time as a dayjs object.
- * @property {Dayjs} lastModified - The git last modified time as a dayjs object.
  */
 export interface HierarchicalBlogNode {
     id: string;
@@ -39,8 +31,6 @@ export interface HierarchicalBlogNode {
     outgoingLinks: Set<string>;
     backlinks: Set<string>;
     contentPath?: string;
-    createdTime: Dayjs;
-    lastModified?: Dayjs;
 }
 
 /**
@@ -59,9 +49,6 @@ function ensureFolderHierarchy(
         currentPath = currentPath ? `${currentPath}/${segment}` : segment;
 
         if (!hierarchicalIndex.has(currentPath)) {
-            // Folders don't have git times, so we use current time as default
-            const defaultTime = new Date().toISOString();
-
             hierarchicalIndex.set(currentPath, {
                 id: currentPath,
                 slug: currentPath,
@@ -72,8 +59,6 @@ function ensureFolderHierarchy(
                 parent: parentId,
                 outgoingLinks: new Set(),
                 backlinks: new Set(),
-                createdTime: dayjs(defaultTime),
-                lastModified: dayjs(defaultTime),
             });
         }
 
@@ -95,29 +80,9 @@ function createPostNode(
     post: CollectionEntry<"blog">,
     internalLinks: string[],
     parentId: string | undefined,
-    remarkPluginFrontmatter: RemarkPluginFrontmatter,
 ): HierarchicalBlogNode {
     const slug = post.id;
     const postTitle = post.data.title ?? slug.split("/").pop() ?? "Untitled";
-
-    const createdTime = remarkPluginFrontmatter.createdTime;
-    const lastModified = remarkPluginFrontmatter.lastModified;
-
-    if (createdTime === undefined) {
-        throw new Error(`Git times missing for post: ${slug}.`);
-    }
-
-    const createdDayjs = dayjs(createdTime);
-    const lastModifiedDayjs = lastModified ? dayjs(lastModified) : undefined;
-
-    if (
-        !createdDayjs.isValid() ||
-        (lastModifiedDayjs && !lastModifiedDayjs.isValid())
-    ) {
-        throw new Error(
-            `Invalid git times for post: ${slug}. Created: ${createdTime}, Modified: ${lastModified ?? "undefined"}`,
-        );
-    }
 
     return {
         id: slug,
@@ -130,8 +95,6 @@ function createPostNode(
         children: new Set(),
         outgoingLinks: new Set(internalLinks),
         backlinks: new Set(),
-        createdTime: createdDayjs,
-        lastModified: lastModifiedDayjs,
     };
 }
 
@@ -205,12 +168,7 @@ async function createBlogIndex(): Promise<Map<string, HierarchicalBlogNode>> {
 
         const internalLinks = processInternalLinks(remarkPluginFrontmatter);
 
-        const postNode = createPostNode(
-            post,
-            internalLinks,
-            parentId,
-            remarkPluginFrontmatter,
-        );
+        const postNode = createPostNode(post, internalLinks, parentId);
         hierarchicalIndex.set(slug, postNode);
 
         if (parentId) {

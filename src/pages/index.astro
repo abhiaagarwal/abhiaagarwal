@@ -1,22 +1,21 @@
 ---
-import {
-    blogIndex as blogIndexPromise,
-    type HierarchicalBlogNode,
-} from "../blogIndex";
+import dayjs from "dayjs";
+import { blogIndex as blogIndexPromise } from "../blogIndex";
 import Listing from "../components/Listing.astro";
 import Layout from "../layouts/Base.astro";
 
 const allNodesMap = await blogIndexPromise;
 
-const postsForHomepage: HierarchicalBlogNode[] = Array.from(
-    allNodesMap.values(),
-).filter(
-    (node) =>
-        !node.isFolder &&
-        node.data &&
-        !node.data.draft &&
-        node.data.kind !== undefined,
-);
+const postsForHomepage = Array.from(allNodesMap.values())
+    .filter(
+        (node) =>
+            !node.isFolder &&
+            node.data?.published !== undefined &&
+            node.data.kind !== undefined,
+    )
+    .sort((a, b) => {
+        return dayjs(b.data?.published).diff(dayjs(a.data?.published));
+    });
 ---
 
 <Layout

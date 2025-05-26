@@ -1,8 +1,8 @@
 ---
 title: Global (database) dependencies in FastAPI, done right with lifespans
 description: Globals are the root of all evil, and Python is more than happy to let you indulge. FastAPI provides an alternative mechanism, but it's not well-known.
-tags:
-  - observations
+tags: [observations]
+published: '2025-01-01'
 ---
 
 As much as I love python, it also makes you fight _hard_ to avoid doing the wrong things. The wrong thing in this case being global state.
@@ -168,7 +168,7 @@ The downside of this approach is that you can't use the database outside of Fast
 
 > [!example]- How to do periodic tasks
 > If you wanted to do this, here's a quick example of how this is possible with the `asyncio.TaskGroup` abstraction:
->
+> 
 > ```python
 > import asyncio
 >
@@ -189,7 +189,7 @@ The downside of this approach is that you can't use the database outside of Fast
 >         yield
 >         shutdown_event.set()
 > ```
->
+> 
 > The upside of this design being that your TaskGroup will now clean itself up when the lifespan exits. You can additionally pass an object from the lifespan into the defined `periodic_task` (like a database engine), meaning we keep the lifespan philosophy intact.
 
 # Appendix: Database dependencies, done right

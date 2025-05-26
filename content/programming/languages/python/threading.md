@@ -1,6 +1,6 @@
 ---
-tags:
-  - notes
+tags: [notes]
+published: '2024-04-07'
 ---
 
 - Python threading by default is the worst of both words. In its current form, it sucks, completely.

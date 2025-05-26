@@ -1,7 +1,7 @@
 ---
-title: Jamal Murray's game-winner against the Lakers, April 22nd, 2024
-tags:
-  - thoughts
+title: "Jamal Murray's game-winner against the Lakers, April 22nd, 2024"
+tags: [thoughts]
+published: '2024-04-30'
 ---
 
 I'm a closeted fan of the Denver Nuggets. Nikola Jokic is my favorite player, ever, and I will confidently argue that he's currently in the greatest offensive peak ever. I love Denver and Colorado broadly, it's pretty much my ideal place to live.

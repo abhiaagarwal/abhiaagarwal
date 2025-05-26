@@ -1,8 +1,7 @@
 ---
-tags:
-  - thoughts
 title: Basketball makes me really emotional
 description: My attempt to articulate why Basketball as a sport speaks deeply to me.
+tags: [thoughts]
 ---
 
 I saw this tweet the other day.

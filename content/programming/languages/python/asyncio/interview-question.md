@@ -1,7 +1,7 @@
 ---
 title: The only python interview question you will ever need
-tags:
-  - thoughts
+tags: [thoughts]
+published: '2025-01-11'
 ---
 
 I've been thinking recently about Python API design (as one does, in their mid 20s). I'm someone who cares deeply writing performant code, so I often turn to [[Content/programming/languages/python/threading|threading, multiprocessing]] or asyncio when dealing with IO-bound work (which is the majority of python applications).
@@ -91,7 +91,7 @@ This isn't a particularly esoteric question or anything, but I wanted to see wha
 > > Like most things, Claude gives a great, concise answer. I especially like the example.
 
 > [!example]- ChatGPT o1
-> A convenient way to think about it is that **the `asyncio` world and the `concurrent.futures` world solve “concurrency” in very different ways**, with very different constraints. They _look_ somewhat similar (both submit “tasks” that run concurrently), but under the hood they’re operating in different paradigms:
+> A convenient way to think about it is that **the `asyncio` world and the `concurrent.futures` world solve "concurrency" in very different ways**, with very different constraints. They _look_ somewhat similar (both submit "tasks" that run concurrently), but under the hood they’re operating in different paradigms:
 > 
 > 1. **`asyncio` uses an event loop and coroutines**
 > 
@@ -128,7 +128,7 @@ This isn't a particularly esoteric question or anything, but I wanted to see wha
 > 
 >    - `ThreadPoolExecutor` / `ProcessPoolExecutor`: CPU-bound or blocking tasks, run in separate threads/processes.
 >    - `asyncio`: IO-bound tasks that _cooperatively_ yield.
->    - It’s not just syntax sugar—`asyncio` is built around the concept that a function returns immediately as a “cold” coroutine object. In `concurrent.futures`, you must supply a “plain old Python function” that hasn’t been invoked yet (because it will be invoked _in another thread or process_).
+>    - It’s not just syntax sugar—`asyncio` is built around the concept that a function returns immediately as a "cold" coroutine object. In `concurrent.futures`, you must supply a "plain old Python function" that hasn’t been invoked yet (because it will be invoked _in another thread or process_).
 > 
 > ---
 > 
@@ -142,7 +142,7 @@ This isn't a particularly esoteric question or anything, but I wanted to see wha
 >     task = tg.create_task(myasyncfunc(5, keyword_arg=10))
 > ```
 > 
-> - You are constructing a coroutine object `myasyncfunc(5, keyword_arg=10)` in the current thread, and telling the event loop: “Whenever you get a chance, run this coroutine.”
+> - You are constructing a coroutine object `myasyncfunc(5, keyword_arg=10)` in the current thread, and telling the event loop: "Whenever you get a chance, run this coroutine."
 > 
 > But when you do:
 > 

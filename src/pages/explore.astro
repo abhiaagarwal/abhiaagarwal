@@ -16,7 +16,7 @@ const SYNTHETIC_ROOT_ID = "/";
  * Checks if a node should be included in the graph (not a draft)
  */
 function shouldIncludeNode(node: HierarchicalBlogNode): boolean {
-    return node.isFolder || !node.data?.draft;
+    return node.isFolder || node.data?.published !== undefined;
 }
 
 /**

@@ -1,7 +1,7 @@
 ---
 title: The art of writing fast
-tags:
-  - thoughts
+tags: [thoughts]
+published: '2025-01-01'
 ---
 
 I really want to become a better writer. My whole life, I've been paralyzed by my own poor prose, jealous of people who can communicate, and desperate to be one of them. I started this mini-blog as a way to develop those writing skills.

@@ -1,7 +1,7 @@
 ---
-tags:
-  - thoughts
-title: "`basic_fstream` will sometimes fail. And it won't tell you."
+title: '`basic_fstream` will sometimes fail. And it won''t tell you.'
+tags: [thoughts]
+published: '2024-04-30'
 ---
 
 I have a file that I'm streaming from a gRPC endpoint as stream of bytes (that could be of arbitrary size, but I aligned to 1024kb). I want to replicate those bytes on the filesystem.

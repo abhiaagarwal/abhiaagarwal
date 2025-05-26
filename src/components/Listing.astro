@@ -1,8 +1,12 @@
 ---
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { type HierarchicalBlogNode } from "../blogIndex";
 import Breadcrumbs from "./Breadcrumbs.astro";
 import KindIcon from "./KindIcon.astro";
 import PostDates from "./PostDates.astro";
+
+dayjs.extend(utc);
 
 interface Props {
     posts: HierarchicalBlogNode[];
@@ -85,8 +89,8 @@ const kinds = [
 
                         {!node.isFolder && (
                             <PostDates
-                                createdTime={node.createdTime}
-                                lastModified={node.lastModified}
+                                createdTime={dayjs(node.data?.published)}
+                                lastModified={dayjs(node.data?.published)}
                                 iconSize="sm"
                                 textSize="xs"
                                 layout="horizontal"

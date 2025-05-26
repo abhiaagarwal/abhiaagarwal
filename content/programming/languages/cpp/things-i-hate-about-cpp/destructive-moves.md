@@ -1,7 +1,7 @@
 ---
-title: C++ doesn't have destructive moves.
-tags:
-  - thoughts
+title: "C++ doesn't have destructive moves."
+tags: [thoughts]
+published: '2024-04-30'
 ---
 
 C++'s greatest innovation is RAII, "Resource Acquisition is Initialization." Despite its name, RAII has little to do with initialization, but rather destruction. In a RAII paradigm, an objects lifetime is tied to its scope, and its destructor is called when the scope ends. This is immensely helpful, as anyone who has seriously written C can tell you that a solid 90% of C code is just cleanup.

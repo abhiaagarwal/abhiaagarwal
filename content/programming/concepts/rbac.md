@@ -1,7 +1,6 @@
 ---
-tags:
-  - notes
 title: Role-based access control
+tags: [notes]
 ---
 
 - Sources:

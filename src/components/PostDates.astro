@@ -1,7 +1,11 @@
 ---
 import CalendarPlus from "@lucide/astro/icons/calendar-plus";
 import Pen from "@lucide/astro/icons/pen";
-import type { Dayjs } from "dayjs";
+import  dayjs, { type Dayjs } from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
+
 
 interface Props {
     createdTime: Dayjs;

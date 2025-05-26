@@ -7,7 +7,6 @@ import { defineConfig, fontProviders } from "astro/config";
 import rehypeShiftHeading from "rehype-shift-heading";
 import { loadEnv } from "vite";
 import { remarkExtractWikiLinks } from "./src/plugins/remark-extract-wikilinks";
-import { remarkGitTimes } from "./src/plugins/remark-git-times";
 
 const resolveSlug = (slug: string) => {
     let splitSlug = slug.split("/");
@@ -69,7 +68,6 @@ export default defineConfig({
                 },
             ],
             remarkExtractWikiLinks,
-            remarkGitTimes,
             remarkCallout,
         ],
         rehypePlugins: [

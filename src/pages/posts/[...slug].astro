@@ -16,6 +16,10 @@ import Base from "../../layouts/Base.astro";
 
 dayjs.extend(utc);
 
+interface Props {
+    currentNode: HierarchicalBlogNode;
+}
+
 export async function getStaticPaths() {
     const allNodesMap = await blogIndexPromise;
 
@@ -31,7 +35,7 @@ export async function getStaticPaths() {
             if (node.isFolderNote) continue;
 
             const originalEntry = await getEntry("blog", node.id);
-            if (originalEntry && !originalEntry.data.draft) {
+            if (originalEntry?.data.published !== undefined) {
                 paths.push({
                     params: { slug: node.id },
                     props: { currentNode: node },
@@ -42,7 +46,7 @@ export async function getStaticPaths() {
     return paths;
 }
 
-const { currentNode } = Astro.props as { currentNode: HierarchicalBlogNode };
+const { currentNode } = Astro.props;
 
 const allNodesMap = await blogIndexPromise;
 const allBlogEntries = await getCollection("blog");
@@ -78,7 +82,7 @@ if (currentNode.isFolder) {
             const originalEntry = allBlogEntries.find(
                 (entry) => entry.id === childNode.id,
             );
-            return originalEntry && !originalEntry.data.draft;
+            return originalEntry?.data.published !== undefined;
         });
 } else {
     const actualPostEntry = allBlogEntries.find((p) => p.id === currentNode.id);
@@ -113,7 +117,7 @@ const backlinkData = Array.from(currentNode.backlinks)
             const originalEntry = allBlogEntries.find(
                 (entry) => entry.id === backlinkNode.id,
             );
-            if (originalEntry?.data.draft) return null;
+            if (originalEntry?.data.published !== undefined) return null;
         }
         return {
             url: `/posts/${backlinkId}/`,
@@ -148,8 +152,8 @@ const backlinkData = Array.from(currentNode.backlinks)
             {
                 !currentNode.isFolder && (
                     <PostDates
-                        createdTime={currentNode.createdTime}
-                        lastModified={currentNode.lastModified}
+                        createdTime={dayjs(currentNode.data?.published)}
+                        lastModified={dayjs(currentNode.data?.published)}
                         iconSize="md"
                         textSize="sm"
                         layout="horizontal"

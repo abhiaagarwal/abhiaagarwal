@@ -1,7 +1,5 @@
 ---
-tags:
-  - thoughts
-draft: true
+tags: [thoughts]
 ---
 
 I grew up watching anime, but in recent years, I really fell out of love with the genre. It probably came with age, and my realization that most anime is kinda gross? It pushes some weird ideas. I don't like seeing non-consenting women being sexualized for "jokes".
