@@ -3,7 +3,7 @@
 ---
 
 <article
-    class="prose max-w-full prose-headings:font-serif prose-headings:font-semibold prose-headings:text-dark prose-p:text-base/normal prose-p:text-dark prose-a:font-[weight:inherit] prose-a:text-primary prose-strong:font-bold prose-strong:text-secondary prose-code:font-mono prose-code:text-sm prose-code:font-[weight:inherit] prose-code:text-inherit prose-ol:text-base/snug prose-ol:text-dark prose-ul:text-base/snug prose-ul:text-dark prose-li:text-base/snug prose-li:text-dark prose-img:rounded-xl"
+    class="prose max-w-full prose-headings:font-serif prose-headings:font-semibold prose-headings:text-dark prose-p:text-base/normal prose-p:text-dark prose-a:font-[weight:inherit] prose-a:text-primary prose-strong:font-bold prose-strong:text-secondary prose-code:rounded-xs prose-code:bg-light-gray prose-code:font-mono prose-code:text-sm prose-code:font-[weight:inherit] prose-code:text-inherit prose-ol:text-base/snug prose-ol:text-dark prose-ul:text-base/snug prose-ul:text-dark prose-li:text-base/snug prose-li:text-dark prose-img:rounded-xl"
 >
     <slot />
 </article>
@@ -11,6 +11,10 @@
 <style is:global>
     /* https://github.com/r4ai/remark-callout/blob/40d857e9885d335ca0c688d6eb2755e54dd2567b/packages/website/src/pages/playground/_callout.css#L1-L384 */
     @reference "../global.css";
+
+    .prose .expressive-code > pre {
+        @apply md:mx-[-1.35rem];
+    }
 
     .prose {
         [data-callout] {
