@@ -1,8 +1,10 @@
 ---
 import dayjs from "dayjs";
 import { blogIndex as blogIndexPromise } from "../blogIndex";
+import FeedIcons from "../components/FeedIcons.astro";
 import Listing from "../components/Listing.astro";
 import Layout from "../layouts/Base.astro";
+import { feedConfigToLinks, generateFeedUrls } from "../util/feeds";
 
 const allNodesMap = await blogIndexPromise;
 
@@ -16,6 +18,10 @@ const postsForHomepage = Array.from(allNodesMap.values())
     .sort((a, b) => {
         return dayjs(b.data?.published).diff(dayjs(a.data?.published));
     });
+
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const siteUrl = Astro.site!.toString();
+const feeds = generateFeedUrls(siteUrl);
 ---
 
 <Layout
@@ -23,11 +29,15 @@ const postsForHomepage = Array.from(allNodesMap.values())
     description="Software Engineer. I build things and write about them."
     type="website"
     publishedTime={dayjs()}
+    feeds={feeds}
 >
     <div class="mx-auto max-w-2xl">
-        <h1 class="mb-6 font-serif text-3xl font-semibold text-dark">
-            Latest Posts
-        </h1>
+        <div class="mb-6 flex items-center justify-between">
+            <h1 class="font-serif text-3xl font-semibold text-dark">
+                Latest Posts
+            </h1>
+            <FeedIcons feeds={feedConfigToLinks(feeds)} size="md" />
+        </div>
         <Listing posts={postsForHomepage} />
     </div>
 </Layout>

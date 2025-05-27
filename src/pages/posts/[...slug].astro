@@ -8,12 +8,14 @@ import {
     type HierarchicalBlogNode,
 } from "../../blogIndex";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import FeedIcons from "../../components/FeedIcons.astro";
 import Giscus from "../../components/Giscus.astro";
 import KindIcon from "../../components/KindIcon.astro";
 import Listing from "../../components/Listing.astro";
 import PostDates from "../../components/PostDates.astro";
 import Prose from "../../components/Prose.astro";
 import Base from "../../layouts/Base.astro";
+import { feedConfigToLinks, generateFeedUrls } from "../../util/feeds";
 
 dayjs.extend(utc);
 
@@ -121,6 +123,12 @@ const backlinkData = Array.from(currentNode.backlinks)
         };
     })
     .filter((link) => link !== null);
+
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const siteUrl = Astro.site!.toString();
+const feeds = currentNode.isFolder
+    ? generateFeedUrls(siteUrl, currentNode.id)
+    : undefined;
 ---
 
 <Base
@@ -129,6 +137,7 @@ const backlinkData = Array.from(currentNode.backlinks)
     type={seoType}
     tags={seoTags}
     publishedTime={dayjs(currentNode.data?.published)}
+    feeds={feeds}
 >
     <div class="m-auto flex max-w-2xl flex-col gap-6">
         <div class="flex flex-col gap-2">
@@ -143,9 +152,19 @@ const backlinkData = Array.from(currentNode.backlinks)
                     breadcrumbs={[...breadcrumbSegments]}
                 />
             </div>
-            <h1 class="font-serif text-3xl font-semibold text-dark">
-                {pageTitle}
-            </h1>
+            <div class="flex items-center justify-between">
+                <h1 class="font-serif text-3xl font-semibold text-dark">
+                    {pageTitle}
+                </h1>
+                {
+                    currentNode.isFolder && feeds && (
+                        <FeedIcons
+                            feeds={feedConfigToLinks(feeds, currentNode.title)}
+                            size="md"
+                        />
+                    )
+                }
+            </div>
             {
                 !currentNode.isFolder && (
                     <PostDates

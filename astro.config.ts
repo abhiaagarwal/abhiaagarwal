@@ -26,7 +26,7 @@ const { PUBLIC_SITE_URL } = loadEnv(process.env.NODE_ENV, process.cwd(), "");
 export default defineConfig({
     site: PUBLIC_SITE_URL ?? "http://localhost:4321",
     prefetch: true,
-    trailingSlash: "always",
+    //trailingSlash: "always",
     vite: {
         plugins: [tailwindcss()],
     },

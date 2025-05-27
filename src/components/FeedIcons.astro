@@ -1,0 +1,42 @@
+---
+import Braces from "@lucide/astro/icons/braces";
+import FileText from "@lucide/astro/icons/file-text";
+import Rss from "@lucide/astro/icons/rss";
+import type { FeedLink } from "../util/feeds";
+
+interface Props {
+    feeds: FeedLink[];
+    size?: "sm" | "md";
+    className?: string;
+}
+
+const { feeds, size = "sm", className = "" } = Astro.props;
+
+const iconSize = size === "sm" ? "size-4" : "size-5";
+
+const getIcon = (type: string) => {
+    switch (type) {
+        case "rss":
+            return Rss;
+        case "atom":
+            return FileText;
+        case "json":
+            return Braces;
+        default:
+            return Rss;
+    }
+};
+---
+
+<div class:list={["flex items-center gap-1", className]}>
+    {
+        feeds.map((feed) => {
+            const IconComponent = getIcon(feed.type);
+            return (
+                <a href={feed.href} title={feed.title} class="text-dark-gray">
+                    <IconComponent class={iconSize} />
+                </a>
+            );
+        })
+    }
+</div>
