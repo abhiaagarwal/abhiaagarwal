@@ -8,6 +8,7 @@ import {
     type HierarchicalBlogNode,
 } from "../../blogIndex";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import Giscus from "../../components/Giscus.astro";
 import KindIcon from "../../components/KindIcon.astro";
 import Listing from "../../components/Listing.astro";
 import PostDates from "../../components/PostDates.astro";
@@ -129,8 +130,8 @@ const backlinkData = Array.from(currentNode.backlinks)
     tags={seoTags}
     publishedTime={dayjs(currentNode.data?.published)}
 >
-    <div class="m-auto max-w-2xl">
-        <div class="mb-6 flex flex-col gap-2">
+    <div class="m-auto flex max-w-2xl flex-col gap-6">
+        <div class="flex flex-col gap-2">
             <div class="flex flex-row items-center gap-1">
                 <KindIcon
                     kind={currentNode.data?.kind}
@@ -168,40 +169,34 @@ const backlinkData = Array.from(currentNode.backlinks)
         </Prose>
         {
             currentNode.isFolder && childrenForListing.length > 0 && (
-                <div
-                    class:list={[
-                        "mt-8",
-                        { "border-t pt-4": !!FolderNoteContentComponent },
-                    ]}
-                >
+                <>
+                    <hr />
                     <Listing posts={childrenForListing} />
-                </div>
+                </>
             )
         }
         {
             backlinkData.length > 0 && (
-                <div class="mt-8 border-t pt-4 text-dark">
-                    {backlinkData.length > 0 && (
-                        <>
-                            <h2 class="mb-2 font-serif text-xl font-semibold">
-                                Backlinks
-                            </h2>
-                            <ul class="list-disc pl-5">
-                                {backlinkData.map((link) => (
-                                    <li>
-                                        <a
-                                            href={link.url}
-                                            class="text-dark-grey"
-                                        >
-                                            {link.title}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </>
-                    )}
-                </div>
+                <>
+                    <hr />
+                    <h2 class="mb-2 font-serif text-xl font-semibold">
+                        Backlinks
+                    </h2>
+                    <ul class="list-disc pl-5">
+                        {backlinkData.map((link) => (
+                            <li>
+                                <a href={link.url} class="text-dark-grey">
+                                    {link.title}
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </>
             )
         }
+        <>
+            <hr />
+            <Giscus />
+        </>
     </div>
 </Base>
