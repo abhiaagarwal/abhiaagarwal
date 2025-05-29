@@ -3,6 +3,7 @@ import eslintPluginAstro from "eslint-plugin-astro";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
+    ...eslintPluginAstro.configs.recommended,
     eslint.configs.recommended,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,
@@ -14,5 +15,7 @@ export default tseslint.config(
             },
         },
     },
-    ...eslintPluginAstro.configs.recommended,
+    {
+        ignores: ["dist"],
+    },
 );

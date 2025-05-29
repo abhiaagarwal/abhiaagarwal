@@ -1,0 +1,20 @@
+---
+import dayjs from "dayjs";
+import Layout from "../layouts/Base.astro";
+---
+
+<Layout
+    title="404 - Page Not Found"
+    description="The page you're looking for doesn't exist."
+    type="website"
+    publishedTime={dayjs()}
+    noindex={true}
+>
+    <div class="m-auto max-w-2xl text-center font-serif text-dark">
+        <h1 class="mb-6 text-6xl font-bold text-dark">404</h1>
+        <h2 class="mb-4 text-2xl font-semibold">Page Not Found</h2>
+        <p class="mb-8 text-base/6 text-dark-gray">
+            You've stumbled upon a page that doesn't exist.
+        </p>
+    </div>
+</Layout>

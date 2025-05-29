@@ -1,3 +1,10 @@
 {
-    "tailwindCSS.experimental.configFile": "./src/global.css"
+    "tailwindCSS.experimental.configFile": "./src/global.css",
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "astro"
+    ]
 }

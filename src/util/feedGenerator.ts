@@ -147,7 +147,6 @@ export class FeedGenerator {
                     const { Content } = await render(originalEntry);
                     const content =
                         await this.container.renderToString(Content);
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
                     sanitizedContent = sanitizeHtml(content);
                 } catch (error) {
                     console.warn(
