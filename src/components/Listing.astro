@@ -1,12 +1,14 @@
 ---
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import { type HierarchicalBlogNode } from "../blogIndex";
 import Breadcrumbs from "./Breadcrumbs.astro";
 import KindIcon from "./KindIcon.astro";
 import PostDates from "./PostDates.astro";
 
 dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface Props {
     posts: HierarchicalBlogNode[];

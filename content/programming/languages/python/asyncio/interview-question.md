@@ -1,7 +1,7 @@
 ---
 title: The only python interview question you will ever need
 tags: [thoughts]
-published: '2025-01-11'
+published: '2025-01-11T17:00:37-05:00'
 ---
 
 I've been thinking recently about Python API design (as one does, in their mid 20s). I'm someone who cares deeply writing performant code, so I often turn to [[Content/programming/languages/python/threading|threading, multiprocessing]] or asyncio when dealing with IO-bound work (which is the majority of python applications).

@@ -1,7 +1,7 @@
 ---
 title: 'James Harden: a half-hearted defense'
 tags: [thoughts]
-published: '2024-06-18'
+published: '2024-06-18T17:57:37-04:00'
 ---
 
 Let me be clear: James Harden will be remembered. But I really don't think he's going to be remembered as he should.

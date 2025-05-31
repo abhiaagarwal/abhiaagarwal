@@ -3,8 +3,10 @@ import CalendarPlus from "@lucide/astro/icons/calendar-plus";
 import Pen from "@lucide/astro/icons/pen";
 import dayjs, { type Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
 dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface Props {
     createdTime: Dayjs;
@@ -24,9 +26,9 @@ const {
     className = "",
 } = Astro.props;
 
-const formattedCreatedTime = createdTime.utc().format("MMMM D, YYYY");
+const formattedCreatedTime = createdTime.format("MMMM D, YYYY");
 const formattedLastModified = lastModified
-    ? lastModified.utc().format("MMMM D, YYYY")
+    ? lastModified.format("MMMM D, YYYY")
     : null;
 
 const showLastModified =

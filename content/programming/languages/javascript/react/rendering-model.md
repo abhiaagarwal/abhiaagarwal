@@ -1,7 +1,7 @@
 ---
 title: "Notes on React's Rendering Model"
 tags: [notes]
-published: "2024-12-02"
+published: '2025-02-23T18:59:14-05:00'
 ---
 
 - **React Core:** Creates "stuff" on the page with Javascript. How? VDOM!

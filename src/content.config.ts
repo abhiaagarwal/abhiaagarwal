@@ -1,5 +1,6 @@
-import { defineCollection, z } from "astro:content";
+import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
+import {z } from "zod/v4";
 
 const kind = z.enum(["observations", "notes", "thoughts"]);
 
@@ -8,7 +9,7 @@ const baseSchema = z
         title: z.string().optional(),
         description: z.string().optional(),
         tags: z.array(z.string()).default([]),
-        published: z.coerce.date().optional(),
+        published: z.iso.datetime({offset: true}).optional(),
     })
     .transform((data) => {
         const parsedKind = kind.safeParse(data.tags[0]);

@@ -1,7 +1,7 @@
 ---
 title: Notes on React Memoization
 tags: [notes]
-published: "2024-12-02"
+published: '2025-02-23T18:51:16-05:00'
 ---
 
 - **What is Memoization?**

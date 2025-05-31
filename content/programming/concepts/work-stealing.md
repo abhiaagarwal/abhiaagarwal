@@ -1,7 +1,7 @@
 ---
 title: Work-stealing executors in a multithreaded environment
 tags: [notes]
-published: '2024-03-30'
+published: '2024-03-30T18:38:15-04:00'
 ---
 
 - Work-stealing is an algorithm that enables threads in an application to "steal" work from other threads to balance tasks across threads

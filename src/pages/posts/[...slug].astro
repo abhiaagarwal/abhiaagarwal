@@ -2,6 +2,7 @@
 import { getCollection, getEntry, render } from "astro:content";
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
 import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 import {
     blogIndex as blogIndexPromise,
@@ -18,6 +19,7 @@ import Base from "../../layouts/Base.astro";
 import { feedConfigToLinks, generateFeedUrls } from "../../util/feeds";
 
 dayjs.extend(utc);
+dayjs.extend(timezone);
 
 interface Props {
     currentNode: HierarchicalBlogNode;

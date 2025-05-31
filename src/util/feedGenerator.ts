@@ -2,6 +2,7 @@ import { getCollection, render, type CollectionEntry } from "astro:content";
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import { Feed } from "feed";
 import sanitizeHtml from "sanitize-html";
 import {
@@ -10,6 +11,7 @@ import {
 } from "../blogIndex";
 
 dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export interface FeedConfig {
     siteUrl: string;
