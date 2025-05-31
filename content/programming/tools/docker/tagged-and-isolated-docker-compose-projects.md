@@ -1,6 +1,7 @@
 ---
 title: Using `just` to properly tag and isolate docker compose projects
 tags: [observations]
+published: 2025-02-02T10:53:30-05:00
 ---
 
 You're developing a dockerized application, so you have a docker compose stack.
@@ -65,14 +66,11 @@ just up *FLAGS:
 
 This branch would get normalized to `my-feature-branch`, all lowercase.
 
-# Appendix
-
-## Parity with CI
+# Parity with CI
 
 Let's say you have a CI/CD process that builds containers and pushes them to your Gitlab/Github container registry. Assuming your CI tags and your docker compose tags are identical, you can pull your images directly from CI, bypassing a potentially expensive build step.
 
 ```yaml
-name: my-project-${TAG:-develop}
 services:
   frontend:
     image: ${REGISTRY}/frontend:${TAG:-develop}
@@ -102,7 +100,6 @@ just up *FLAGS:
 For a bonus-bonus round, if you use buildkit caching ([github](https://docs.docker.com/build/ci/github-actions/cache/) and [gitlab](https://docs.gitlab.com/ee/ci/docker/docker_layer_caching.html)), you can use the `cache_from` directive to save yourself some substantial time by pre-seeding your cache with dependencies in python, typescript, etc (again, assuming you are cache-mounting your layers correctly).
 
 ```yaml
-name: my-project-${TAG:-develop}
 services:
   frontend:
     image: ${REGISTRY}/frontend:${TAG:-develop}$
@@ -118,7 +115,7 @@ services:
       - ${REGISTRY}/frontend:buildcache
 ```
 
-## Using the tag to achieve pure isolation
+# Using the tag to achieve pure isolation
 
 If you're running a multiple copies on your machine, say, to test multiple branches, you can use the `name` top-level element to achieve pure isolation between each stack.
 

@@ -1,7 +1,8 @@
 ---
 title: "Notes on React's Rendering Model"
+description: Why does react render the way it does?
 tags: [notes]
-published: '2025-02-23T18:59:14-05:00'
+published: 2025-02-23T18:59:14-05:00
 ---
 
 - **React Core:** Creates "stuff" on the page with Javascript. How? VDOM!

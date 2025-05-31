@@ -1,8 +1,8 @@
 ---
 title: Global (database) dependencies in FastAPI, done right with lifespans
-description: "Globals are the root of all evil, and Python is more than happy to let you indulge. FastAPI provides an alternative mechanism, but it's not well-known."
+description: Using a sparsely-known feature to pass globals in a safe-manner inside of FastAPI
 tags: [observations]
-published: '2025-01-01T23:09:58-05:00'
+published: 2025-01-01T23:09:58-05:00
 ---
 
 As much as I love python, it also makes you fight _hard_ to avoid doing the wrong things. The wrong thing in this case being global state.

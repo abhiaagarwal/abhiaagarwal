@@ -37,25 +37,43 @@ function getSunset(date) {
 }
 ```
 
-"Yuck", I thought at the time. Coming from a statically-typed C++ mindset having been my first language, this code looked _ugly_ to me. I use a library called `SunCalc`, and it wasn't obvious to me what each function was returning. I didn't want to spend time guessing and looking, I just wanted to know! I spent _hours_ writing this code, and to boot, Mr. Shenker was not very impressed with me.
+"Yuck", I thought at the time. Coming from a statically-typed C++ mindset having been my first language, this code looked _ugly_ to me. I use a library called `SunCalc`, and it wasn't obvious to me what each function was returning. I didn't want to spend time guessing and looking, I just wanted to know!
 
 The experience left with me a bad taste in the mouth regarding Javascript, and by proxy, frontend development as a whole. A hilariously strong position for a dumb 8th grader to take, but one that affected me nonetheless. 
 
-I wrote a lot of Python in high school, doing Project Euler problems during math class to solve my boredom. This followed me in college, where due to my undergrad focusing on math, econ, and physics, I was able to use `sympy`, `pandas`, `skikit-learn`, etc to do a ton of cool shit. Python has been my ride or die for around half my life.
+I wrote a lot of Python in high school, doing Project Euler problems during math class to solve my boredom. This followed me in college, where due to my undergrad focusing on math, econ, and physics, I was able to use `sympy`, `pandas`, `skikit-learn`, etc to power through my undergrad research and the start of my professional career.
 
-Yet, as my career has progressed and I've drifted more into web app development, I've found only a positive experience with Typescript, and more worryingly... I feel my love for python starting to dissipate. 
+Yet, as my career has progressed and I've drifted more into services-based development, and recently onto the frontend, I've found only a positive experience with Typescript, and more worryingly... I feel my love for python starting to dissipate.
+
 # The build step is a good thing
+
 The common criticism of typescript is the build step. You have to run `tsc` to compile your code, and that compilation can sometimes be _painful_. I get it. In the case of python, it's nice to just be able to `python whatever.py` and it'll work. 
 
-However, I think the _timing_ of the build step is important. In practice, the performance of dev servers means that the first build can be expensive, but subsequent builds are cheap. When iterating, I only really care about the time my changes in my code are changes on the screen, and that's on the order of milliseconds.
+However, I think the _timing_ of the build step is important. In practice, the performance of dev servers means that while the first build can be expensive, subsequent builds are cheap. When iterating, I only really care about the time my changes in my code are changes on the screen, and that's on the order of milliseconds.
 
 But the build step is a cost you pay once, and you pay it _before_ your application is deployed. I've found that in my python apps, I do a sort of build step where I set up global, static state during the init functions and whatnot, meaning that I pay for a build step **every time I refresh my application.** I don't really care that I can do `python3 server.py` if `server.py ` needs to spend multiple seconds doing things to become useful.
+
+Additionally, with the recent development of node gaining native typescript support (with bun, my preferred runtime, already natively transpiling) and [`erasableSyntaxOnly`](https://www.totaltypescript.com/erasable-syntax-only), we're getting closer to 
 # A shorter feedback loop
 Typescript is immensely powerful. Going between Python's static type system and Typescript's is what man must have felt like discovering fire. With Typescript, I'm confident that if my code passes the type checker that it will work first try, but I can't say the same for Python, even with a maximalist mypy/ruff setup.
 
 I recently, as a student of [[Content/education/omscs/omscs|Georgia Tech's OMSCS]], got access to Cursor for free for a year. Having not used it at all before, I ran it on some toy python and typescript code, and [[Content/ai/llms/reviews/gemini/gemini-2.5-pro|gemini-2.5-pro]] was able to iterate on the typescript code. It spent over 5 minutes, pondering, making mistakes, and constantly fixing them, but in the case of typescript, it was able to resolve my relatively complicated request in one shot. Due to the typescript (and eslint) constantly emitting errors whenever it hallucinated functions or wrote redundant code, the LLMs get a near-instant feedback loop that allows them to determine the behavior of a program _without_ running it.
 
 Meanwhile, the python code _sucked_, for the lack of a better word. Gemini in this case reward-hacked, writing code that meet my intention but not actually resolving the problem. Nothing was there to hold it accountable, and why would they? MyPy smiled the whole way through. Python's type system is very weak, and I'd argue, close to useless.
+
+# Python's type system is bad
+
+I cannot emphasize how badly Python messed up with its type system.
+
+So in python, types do nothing. They're entirely annotations. So as a result, they don't actually affect the execution of a program. Similar to typescript!
+
+I lied. That's _not even true_. Types are available at runtime in python, you can get them by using `inspect.get_annotations()`. The worst part is that type hints actually resolve to their module names at runtime, so if you were to type-hint a function that took an `np.ndarray` and therefore imported `numpy as np`, it would import numpy even though it "does" nothing! You can mitigate this with `from __future__ import annotations` and guarding your imports with `if typing.TYPE_CHECKING`, but it just goes to show the layers of hackery that go into this.
+
+ Python has the typing information available at "build time", but does absolutely nothing with it. Even though the types _do nothing_, Python isn't able to provide the rich, structural typing that Typescript is able to do. Hell, someone just [wrote doom](https://www.youtube.com/watch?v=0mCsluv5FXA) inside of Typescript; if you tried to do the same with mypy, it would likely cause a small nuclear explosion.
+
+I'm sorry, I lied again. Perhaps the absolute worst part of Python's type system is the fact that it those advisory types actually _can_ affect runtime behavior. For example, my favorite Python library, Pydantic, uses those type hints to create its data classes at runtime. Yet simultaneously it doesn't actually depend on that data being available at run time. You're ideally using them during your build step to ensure that you actually have access to it.
+
+Arguably the worst of both worlds. The more I try to use python's type system to enable me to write correct code the more frustrated I get.
 
 # The world is the web
 I develop full stack applications during my day job, but I personally fashion myself as a backend developer. Probably due to relating to Steve Carrell more than Ryan Gosling.

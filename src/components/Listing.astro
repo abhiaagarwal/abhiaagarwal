@@ -1,8 +1,9 @@
 ---
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { type HierarchicalBlogNode } from "../blogIndex";
+import { parseInlineCode } from "../util/parseInlineCode";
 import Breadcrumbs from "./Breadcrumbs.astro";
 import KindIcon from "./KindIcon.astro";
 import PostDates from "./PostDates.astro";
@@ -81,13 +82,19 @@ const kinds = [
 
                         <h2 class="font-serif text-2xl font-semibold text-dark">
                             <a href={`/posts/${node.id}/`} data-astro-prefetch>
-                                {node.title}
+                                <Fragment
+                                    set:html={parseInlineCode(node.title)}
+                                />
                             </a>
                         </h2>
 
                         {node.data?.description && !node.isFolder && (
                             <span class="font-sans text-sm/snug text-dark-gray italic">
-                                {node.data.description}
+                                <Fragment
+                                    set:html={parseInlineCode(
+                                        node.data.description,
+                                    )}
+                                />
                             </span>
                         )}
 

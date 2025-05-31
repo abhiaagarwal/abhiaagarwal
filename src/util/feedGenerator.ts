@@ -1,8 +1,8 @@
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { Feed } from "feed";
 import sanitizeHtml from "sanitize-html";
 import {

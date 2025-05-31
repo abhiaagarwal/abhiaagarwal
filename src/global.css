@@ -46,3 +46,13 @@
     --font-mono: var(--font-fira-code);
     --font-serif: var(--font-lora);
 }
+
+.inline-code {
+    &::before {
+        content: "`";
+    }
+
+    &::after {
+        content: "`";
+    }
+}

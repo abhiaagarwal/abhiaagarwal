@@ -1,7 +1,8 @@
 ---
 title: Sending file descriptors through unix domain sockets
+description: You can do zero-trust shared memory on Linux with this one neat trick
 tags: [observations]
-published: '2024-03-30T10:21:36-04:00'
+published: 2024-03-30T10:21:36-04:00
 ---
 
 Unix domain sockets is the third type of socket (after TCP and UDP) which enables IPC. It also has a pretty unique power in that it can duplicate file descriptors across processes.

@@ -17,6 +17,7 @@ import PostDates from "../../components/PostDates.astro";
 import Prose from "../../components/Prose.astro";
 import Base from "../../layouts/Base.astro";
 import { feedConfigToLinks, generateFeedUrls } from "../../util/feeds";
+import { parseInlineCode } from "../../util/parseInlineCode";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -156,7 +157,7 @@ const feeds = currentNode.isFolder
             </div>
             <div class="flex items-center justify-between">
                 <h1 class="font-serif text-3xl font-semibold text-dark">
-                    {pageTitle}
+                    <Fragment set:html={parseInlineCode(pageTitle)} />
                 </h1>
                 {
                     currentNode.isFolder && feeds && (
@@ -215,9 +216,9 @@ const feeds = currentNode.isFolder
                 </>
             )
         }
-        <>
-            <hr />
+        <Fragment>
+            <hr class="my-6" />
             <Giscus />
-        </>
+        </Fragment>
     </div>
 </Base>

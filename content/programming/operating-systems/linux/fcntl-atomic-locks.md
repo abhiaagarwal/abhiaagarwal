@@ -1,9 +1,8 @@
 ---
-title: File-locking is not atomic and FIFO.
-description: File-locking on Linux is not atomic and FIFO, meaning readers and writers
-  can claim locks in any order, running contrary to what the behavior should be.
+title: File-locking is not atomic and FIFO
+description: File-locking on Linux is not atomic and FIFO, meaning readers and writers can claim locks in any order, running contrary to what the behavior should be
 tags: [observations]
-published: '2024-03-29T20:59:35-04:00'
+published: 2024-03-29T20:59:35-04:00
 ---
 
 File-locking on linux is NOT atomic and FIFO, contrary to what the docs may tell you.

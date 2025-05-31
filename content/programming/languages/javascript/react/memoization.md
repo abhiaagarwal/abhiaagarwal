@@ -1,7 +1,8 @@
 ---
 title: Notes on React Memoization
+description: What is react memoization, and how can we use it?
 tags: [notes]
-published: '2025-02-23T18:51:16-05:00'
+published: 2025-02-23T18:51:16-05:00
 ---
 
 - **What is Memoization?**

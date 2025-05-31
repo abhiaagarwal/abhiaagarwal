@@ -1,7 +1,8 @@
 ---
 title: Pydantic models in SQLAlchemy
+description: We have MongoDB at home
 tags: [observations]
-published: '2025-01-06T22:15:19-05:00'
+published: 2025-01-06T22:15:19-05:00
 ---
 
 Been using this snippet a lot recently in SQLAlchemy to have Pydantic models be de/serialized to JSON transparently for a nice abstraction.
