@@ -6,6 +6,7 @@ import expressiveCode from "astro-expressive-code";
 import { defineConfig, fontProviders } from "astro/config";
 import rehypeShiftHeading from "rehype-shift-heading";
 import { loadEnv } from "vite";
+import devtoolsJson from "vite-plugin-devtools-json";
 import { remarkExtractWikiLinks } from "./src/plugins/remark-extract-wikilinks";
 
 const resolveSlug = (slug: string) => {
@@ -28,7 +29,7 @@ export default defineConfig({
     prefetch: true,
     //trailingSlash: "always",
     vite: {
-        plugins: [tailwindcss()],
+        plugins: [tailwindcss(), devtoolsJson()],
     },
     experimental: {
         clientPrerender: true,

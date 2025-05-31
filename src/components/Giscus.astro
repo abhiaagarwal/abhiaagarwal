@@ -21,43 +21,45 @@
     async></script>
 
 <script>
-    function changeGiscusTheme() {
-        const theme =
-            document.documentElement.getAttribute("data-theme") === "dark"
-                ? "dark"
-                : "light";
-
-        function sendMessage(message: { setConfig: { theme: string } }) {
-            const iframe = document.querySelector("iframe.giscus-frame");
-            if (!iframe) return;
-            // @ts-expect-error - contentWindow is not typed
-            iframe.contentWindow.postMessage(
-                { giscus: message },
-                "https://giscus.app",
-            );
-        }
-
-        sendMessage({
-            setConfig: {
-                theme: theme,
-            },
-        });
+    // Thanks https://github.com/giscus/giscus/issues/336#issuecomment-2644726328
+    function getGiscusTheme() {
+        return document.documentElement.getAttribute("data-theme") === "dark"
+            ? "dark"
+            : "light";
     }
 
-    function waitForGiscusAndSync() {
-        const iframe = document.querySelector("iframe.giscus-frame");
-        if (iframe) {
-            changeGiscusTheme();
+    function setGiscusTheme() {
+        const iframe: HTMLIFrameElement | null = document.querySelector(
+            "iframe.giscus-frame",
+        );
+
+        const setGisSrc = (theme: string) => {
+            if (iframe) {
+                const iframeSrc = iframe.src;
+                const iframeUrl = new URL(iframeSrc);
+                const iframeSearchParams = iframeUrl.searchParams;
+                iframeSearchParams.set("theme", theme);
+                iframe.src = iframeUrl.toString();
+            }
+        };
+
+        const sendMessage = (message: { setConfig: { theme: string } }) => {
+            if (iframe?.contentWindow) {
+                iframe.contentWindow.postMessage(
+                    { giscus: message },
+                    "https://giscus.app",
+                );
+            }
+        };
+
+        if (iframe?.classList.contains("giscus-frame--loading")) {
+            setGisSrc(getGiscusTheme());
         } else {
-            setTimeout(waitForGiscusAndSync, 100);
+            sendMessage({ setConfig: { theme: getGiscusTheme() } });
         }
     }
 
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", waitForGiscusAndSync);
-    } else {
-        waitForGiscusAndSync();
-    }
+    setTimeout(setGiscusTheme, 100);
 
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
@@ -65,7 +67,7 @@
                 mutation.type === "attributes" &&
                 mutation.attributeName === "data-theme"
             ) {
-                changeGiscusTheme();
+                setGiscusTheme();
             }
         });
     });

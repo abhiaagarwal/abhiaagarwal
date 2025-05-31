@@ -49,7 +49,8 @@
         "prettier-plugin-astro": "^0.14.1",
         "prettier-plugin-tailwindcss": "^0.6.12",
         "typescript": "^5.8.3",
-        "typescript-eslint": "^8.33.0"
+        "typescript-eslint": "^8.33.0",
+        "vite-plugin-devtools-json": "^0.1.0"
     },
     "patchedDependencies": {
         "@portaljs/remark-wiki-link@1.2.0": "patches/@portaljs%2Fremark-wiki-link@1.2.0.patch"
