@@ -324,7 +324,7 @@ const compressedGraphData = compress(keyCompressedData);
             .attr(
                 "style",
                 (d) =>
-                    `fill: color-mix(in oklch, var(--color-secondary), var(--color-primary) ${(100 / (d.initialDepth + 1) ** 0.6).toFixed(2)}%)`,
+                    `fill: color-mix(in oklch, var(--color-light-gray), var(--color-primary) ${(100 / (d.initialDepth + 1) ** 0.6).toFixed(2)}%)`,
             );
 
         nodeElements

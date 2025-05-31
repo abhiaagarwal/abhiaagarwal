@@ -12,7 +12,6 @@
     reactions-enabled="1"
     emit-metadata="0"
     input-position="top"
-    theme="preferred_color_scheme"
     lang="en"
     loading="lazy"></giscus-widget>
 
@@ -61,7 +60,9 @@
         }
     }
 
-    setTimeout(setGiscusTheme, 100);
+    document.addEventListener("DOMContentLoaded", () => {
+        setGiscusTheme();
+    });
 
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {

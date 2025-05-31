@@ -6,8 +6,7 @@
 @theme {
     --default-transition-duration: 250ms;
 
-    --color-primary: oklch(0.61 0.14 309.8);
-    --color-secondary: oklch(0.64 0.15 350);
+    --color-primary: oklch(0.64 0.15 350);
     --color-light: oklch(0.973 0.007 324.6);
     --color-light-gray: oklch(0.88 0.01 0);
     --color-gray: oklch(0.75 0.02 325);
@@ -25,19 +24,11 @@
     }
 
     ::-moz-selection {
-        background-color: color-mix(
-            in oklch,
-            var(--color-secondary) 60%,
-            #fff0
-        );
+        background-color: color-mix(in oklch, var(--color-primary) 60%, #fff0);
     }
 
     ::selection {
-        background-color: color-mix(
-            in oklch,
-            var(--color-secondary) 60%,
-            #fff0
-        );
+        background-color: color-mix(in oklch, var(--color-primary) 60%, #fff0);
     }
 }
 

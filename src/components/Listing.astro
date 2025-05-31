@@ -15,46 +15,42 @@ interface Props {
     posts: HierarchicalBlogNode[];
 }
 const { posts } = Astro.props;
-const kinds = [
-    ...new Set(
+
+const kinds = Array.from(
+    new Set(
         posts
             .map((node) => node.data?.kind)
             .filter((kind) => kind !== undefined),
     ),
-];
+);
 ---
 
 <div id="post-listing-container">
     {
         kinds.length > 0 && (
-            <div class="mb-8 flex flex-wrap items-center gap-2">
-                {kinds.map((kind) => {
-                    return (
-                        <button
-                            class:list={[
-                                "filter-button",
-                                "flex items-center gap-1 rounded px-2 py-1 text-sm capitalize transition",
-                                "bg-light-gray text-dark hover:bg-gray",
-                            ]}
-                            data-filter={kind}
-                        >
-                            <KindIcon
-                                kind={kind}
-                                class="inline-block h-4 w-4"
+            <div class="mb-8">
+                <div class="flex flex-wrap items-center gap-2">
+                    {kinds.map((kind) => (
+                        <label class="filter-button flex cursor-pointer items-center gap-1 rounded bg-light-gray px-2 py-1 text-sm text-dark capitalize transition hover:bg-gray">
+                            <input
+                                type="checkbox"
+                                name="filter"
+                                value={kind}
+                                class="sr-only"
                             />
+                            <KindIcon kind={kind} class="inline-block size-4" />
                             {kind}
-                        </button>
-                    );
-                })}
+                        </label>
+                    ))}
+                </div>
             </div>
         )
     }
 
-    <div id="posts-list" class="flex flex-col gap-12">
+    <div class="flex flex-col gap-12">
         {
             posts.map((node) => {
                 const itemKind = node.data?.kind;
-
                 const pathParts = node.id.split("/").filter((s) => s);
                 const itemBreadcrumbs = pathParts.map((segment, index, arr) => {
                     const fragment = arr.slice(0, index + 1).join("/");
@@ -64,7 +60,7 @@ const kinds = [
                 return (
                     <div
                         class="post-item flex flex-col gap-1"
-                        data-kind={itemKind}
+                        data-kind={itemKind ?? ""}
                     >
                         <div class="flex flex-row items-center gap-1">
                             <KindIcon
@@ -98,10 +94,10 @@ const kinds = [
                             </span>
                         )}
 
-                        {!node.isFolder && (
+                        {!node.isFolder && node.data?.published && (
                             <PostDates
-                                createdTime={dayjs(node.data?.published)}
-                                lastModified={dayjs(node.data?.published)}
+                                createdTime={dayjs(node.data.published)}
+                                lastModified={dayjs(node.data.published)}
                                 iconSize="sm"
                                 textSize="xs"
                                 layout="horizontal"
@@ -114,51 +110,43 @@ const kinds = [
     </div>
 </div>
 
+<style>
+    @reference "../global.css";
+    #post-listing-container:has(.filter-button input:checked) .post-item {
+        @apply hidden;
+    }
+
+    #post-listing-container:has(
+            .filter-button input[value="observations"]:checked
+        )
+        .post-item[data-kind="observations"],
+    #post-listing-container:has(.filter-button input[value="notes"]:checked)
+        .post-item[data-kind="notes"],
+    #post-listing-container:has(.filter-button input[value="thoughts"]:checked)
+        .post-item[data-kind="thoughts"] {
+        @apply flex;
+    }
+
+    .filter-button:has(input:checked) {
+        @apply bg-primary text-light;
+    }
+</style>
+
 <script>
-    const activeClasses = ["bg-primary", "text-light", "hover:bg-secondary"];
-    const inactiveClasses = ["bg-light-gray", "text-dark", "hover:bg-gray"];
-
     const container = document.getElementById("post-listing-container");
-    const postItems = container?.querySelectorAll<HTMLElement>(".post-item");
-    const filterButtons =
-        container?.querySelectorAll<HTMLButtonElement>(".filter-button");
-    let currentFilter: string | null = null;
+    const checkboxes = container?.querySelectorAll<HTMLInputElement>(
+        ".filter-button input",
+    );
 
-    if (filterButtons && filterButtons.length > 0) {
-        filterButtons.forEach((button) => {
-            button.addEventListener("click", () => {
-                const filter = button.getAttribute("data-filter");
-                let effectiveFilter: string | null;
-
-                if (button.classList.contains(activeClasses[0])) {
-                    button.classList.remove(...activeClasses);
-                    button.classList.add(...inactiveClasses);
-                    currentFilter = null;
-                    effectiveFilter = null;
-                } else {
-                    filterButtons.forEach((btn) => {
-                        btn.classList.remove(...activeClasses);
-                        btn.classList.add(...inactiveClasses);
-                    });
-                    button.classList.remove(...inactiveClasses);
-                    button.classList.add(...activeClasses);
-                    currentFilter = filter;
-                    effectiveFilter = filter;
-                }
-
-                postItems?.forEach((item) => {
-                    const postKind = item.getAttribute("data-kind");
-                    if (
-                        !effectiveFilter ||
-                        postKind === effectiveFilter ||
-                        !postKind
-                    ) {
-                        item.style.display = "flex";
-                    } else {
-                        item.style.display = "none";
+    checkboxes?.forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+                checkboxes.forEach((otherCheckbox) => {
+                    if (otherCheckbox !== checkbox) {
+                        otherCheckbox.checked = false;
                     }
                 });
-            });
+            }
         });
-    }
+    });
 </script>

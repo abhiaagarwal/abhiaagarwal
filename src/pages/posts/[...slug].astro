@@ -26,6 +26,8 @@ interface Props {
     currentNode: HierarchicalBlogNode;
 }
 
+const { pathname } = Astro.url;
+
 export async function getStaticPaths() {
     const allNodesMap = await blogIndexPromise;
 
@@ -107,8 +109,14 @@ const breadcrumbSegments = currentNode.id
     .filter((segment: string) => segment)
     .map((segment: string, index: number, arr: string[]) => {
         const path = arr.slice(0, index + 1).join("/");
-        return { label: segment, fragment: path };
+        return {
+            label: segment,
+            fragment: path,
+            active: path === pathname.slice("posts/".length + 1, -1),
+        };
     });
+
+console.log(breadcrumbSegments, pathname.slice("posts/".length + 1, -1));
 
 const backlinkData = Array.from(currentNode.backlinks)
     .map((backlinkId: string) => {
@@ -192,7 +200,7 @@ const feeds = currentNode.isFolder
         {
             currentNode.isFolder && childrenForListing.length > 0 && (
                 <>
-                    <hr />
+                    <hr class="border-dark-gray" />
                     <Listing posts={childrenForListing} />
                 </>
             )
@@ -200,7 +208,7 @@ const feeds = currentNode.isFolder
         {
             backlinkData.length > 0 && (
                 <>
-                    <hr />
+                    <hr class="border-dark-gray" />
                     <h2 class="mb-2 font-serif text-xl font-semibold">
                         Backlinks
                     </h2>
@@ -217,7 +225,7 @@ const feeds = currentNode.isFolder
             )
         }
         <Fragment>
-            <hr class="my-6" />
+            <hr class="my-6 border-dark-gray" />
             <Giscus />
         </Fragment>
     </div>

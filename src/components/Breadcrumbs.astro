@@ -4,6 +4,7 @@ import ChevronRight from "@lucide/astro/icons/chevron-right";
 interface Breadcrumb {
     label: string;
     fragment: string;
+    active?: boolean;
 }
 
 interface Props {
@@ -19,17 +20,23 @@ const breadcrumbsWithUrls = breadcrumbs.map((crumb) => {
 });
 ---
 
-<nav aria-label="Breadcrumb" class="font-sans text-sm text-dark-gray">
+<nav
+    aria-label="Breadcrumb"
+    class="font-sans text-sm font-medium text-dark-gray"
+>
     <ol class="flex flex-wrap items-center align-middle">
         {
-            breadcrumbsWithUrls.map((crumb, index) => (
+            breadcrumbsWithUrls.map((crumb) => (
                 <li class="flex items-center">
                     <ChevronRight class="size-4" />
-                    {index < breadcrumbsWithUrls.length - 1 ? (
-                        <a href={crumb.url}>{crumb.label}</a>
-                    ) : (
-                        <span class="font-medium lowercase">{crumb.label}</span>
-                    )}
+                    <a
+                        href={crumb.url}
+                        class:list={[
+                            crumb.active && "font-semibold text-primary",
+                        ]}
+                    >
+                        {crumb.label}
+                    </a>
                 </li>
             ))
         }

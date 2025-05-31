@@ -18,7 +18,7 @@ const links: { href: string; text: string }[] = [
             links.map((link) => (
                 <a
                     class:list={[
-                        "transition-colors hover:text-secondary",
+                        "transition-colors hover:text-primary",
                         pathname === link.href && "text-primary",
                     ]}
                     href={link.href}
@@ -28,6 +28,6 @@ const links: { href: string; text: string }[] = [
                 </a>
             ))
         }
-        <ThemeToggle className="transition-colors hover:text-secondary" />
+        <ThemeToggle className="transition-colors hover:text-primary" />
     </nav>
 </header>
