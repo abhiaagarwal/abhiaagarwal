@@ -9,18 +9,18 @@
     --color-primary: oklch(0.61 0.14 309.8);
     --color-secondary: oklch(0.64 0.15 350);
     --color-light: oklch(0.973 0.007 324.6);
-    --color-light-gray: oklch(0.92 0.02 325);
+    --color-light-gray: oklch(0.88 0.01 0);
     --color-gray: oklch(0.75 0.02 325);
-    --color-dark-gray: oklch(0.45 0.02 325);
+    --color-dark-gray: oklch(0.28 0.01 324.99);
     --color-dark: oklch(0.12 0.05 325.34);
 }
 
 @layer base {
     @variant dark {
         --color-light: oklch(0.12 0.05 325.34);
-        --color-light-gray: oklch(0.35 0.02 325);
+        --color-light-gray: oklch(0.28 0.01 324.99);
         --color-gray: oklch(0.55 0.02 325);
-        --color-dark-gray: oklch(0.85 0.02 325);
+        --color-dark-gray: oklch(0.88 0.01 0);
         --color-dark: oklch(0.973 0.007 324.6);
     }
 
