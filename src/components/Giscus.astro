@@ -19,3 +19,59 @@
     data-loading="lazy"
     crossorigin="anonymous"
     async></script>
+
+<script>
+    function changeGiscusTheme() {
+        const theme =
+            document.documentElement.getAttribute("data-theme") === "dark"
+                ? "dark"
+                : "light";
+
+        function sendMessage(message: { setConfig: { theme: string } }) {
+            const iframe = document.querySelector("iframe.giscus-frame");
+            if (!iframe) return;
+            // @ts-expect-error - contentWindow is not typed
+            iframe.contentWindow.postMessage(
+                { giscus: message },
+                "https://giscus.app",
+            );
+        }
+
+        sendMessage({
+            setConfig: {
+                theme: theme,
+            },
+        });
+    }
+
+    function waitForGiscusAndSync() {
+        const iframe = document.querySelector("iframe.giscus-frame");
+        if (iframe) {
+            changeGiscusTheme();
+        } else {
+            setTimeout(waitForGiscusAndSync, 100);
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", waitForGiscusAndSync);
+    } else {
+        waitForGiscusAndSync();
+    }
+
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (
+                mutation.type === "attributes" &&
+                mutation.attributeName === "data-theme"
+            ) {
+                changeGiscusTheme();
+            }
+        });
+    });
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme"],
+    });
+</script>
