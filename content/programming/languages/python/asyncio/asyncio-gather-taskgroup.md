@@ -11,13 +11,14 @@ This code,
 async def my_function(val: int) -> int:
     return val * 2
 
+
 async def main() -> None:
     task_1 = asyncio.create_task(my_function(1))
     task_2 = asyncio.create_task(my_function(2))
     task_3 = asyncio.create_task(my_function(3))
 
     results = await asyncio.gather(*tasks)
-    print(results) # expect [2, 4, 6]
+    print(results)  # expect [2, 4, 6]
 
 
 if __name__ == "__main__":
@@ -40,6 +41,7 @@ The alternative solution, as the docs mention, is to use `asyncio.TaskGroup`. I 
 async def my_function(val: int) -> int:
     return val * 2
 
+
 async def main() -> None:
     async with asyncio.TaskGroup() as tg:
         task_1 = tg.create_task(my_function(1))
@@ -47,7 +49,7 @@ async def main() -> None:
         task_3 = tg.create_task(my_function(3))
 
     results = [task_1.result(), task_2.result(), task_3.result()]
-    print(results) # expect [2, 4, 6]
+    print(results)  # expect [2, 4, 6]
 
 
 if __name__ == "__main__":
@@ -60,14 +62,16 @@ Pretty good! After the `tg` scope context manager has ended, we are guaranteed t
 async def my_function(val: int) -> int:
     return val * 2
 
+
 async def run_a_bunch_of_tasks(n: int) -> list[int]:
     async with asyncio.TaskGroup() as tg:
         tasks = [tg.create_task(my_function(i)) for i in range(n)]
     return [task.result() for task in tasks]
 
+
 async def main() -> None:
     results = await run_a_bunch_of_tasks(1000000)
-    print(results) # expect [2, 4, 6, ..., 1999998, 2000000]
+    print(results)  # expect [2, 4, 6, ..., 1999998, 2000000]
 
 
 if __name__ == "__main__":
@@ -81,10 +85,10 @@ import asyncio
 from collections.abc import Awaitable, Iterable
 from typing import TypeVar
 
-T = TypeVar("T") # for compatibility with python <=3.11
+T = TypeVar("T")  # for compatibility with python <=3.11
 
 
-async def gather_tg(coros: *Awaitable[T]) -> list[T]:
+async def gather_tg(coros: list[Awaitable[T]]) -> list[T]:
     async with asyncio.TaskGroup() as tg:
         tasks: list[asyncio.Task] = [tg.create_task(coro) for coro in coros]
     return [t.result() for t in tasks]
@@ -96,8 +100,10 @@ Then, we can use it:
 async def func1(val: int) -> int:
     return val
 
+
 async def func2(val: str) -> int:
     return len(val)
+
 
 async def func3(val: str) -> str:
     return val
@@ -105,13 +111,13 @@ async def func3(val: str) -> str:
 
 async def main() -> None:
     results_1 = await gather_tg(*[func1(val) for val in range(5)])
-    print(results_1) # mypy thinks type is lint[int]
+    print(results_1)  # mypy thinks type is lint[int]
 
     results_2 = await gather_tg(func1(1), func2("4"))
-    print(results_2) # mypy thinks type is lint[int]
+    print(results_2)  # mypy thinks type is lint[int]
 
     results_3 = await gather_tg(func2("1"), func3("4"))
-    print(results_3) # mypy thinks type is lint[int | str]
+    print(results_3)  # mypy thinks type is lint[int | str]
 ```
 
 Interestingly, `mypy` throws an error on the `[tg.create_task(coro) for coro in coros]` block, claiming that `Argument 1 to "create_task" of "TaskGroup" has incompatible type "Awaitable[T]"; expected "Coroutine[Any, Any, Any]. Mypy[arg-type]`. But... it's right.

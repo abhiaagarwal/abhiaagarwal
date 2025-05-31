@@ -11,14 +11,14 @@ I have an API that looks something like this:
 from fastapi import File, Form
 from pydantic import BaseModel
 
+
 class CreateMyObject(BaseModel):
     name: str
     file: File
 
 
-@app.post("/my_object"):
-async def create_my_object(data: Annotated[CreateMyObject, Form()]) -> MyObject:
-    ...
+@app.post("/my_object")
+async def create_my_object(data: Annotated[CreateMyObject, Form()]) -> MyObject: ...
 ```
 
 FastAPI has this cool concept of [ `Form Models`](https://fastapi.tiangolo.com/tutorial/request-form-models/) that allows you to treat a `FormData` input like a pydantic `BaseModel`. So, the API caller would send a `multipart/form-data` object.
@@ -37,15 +37,15 @@ I recently had to extend this API to accept an arbitrary JSON payload:
 from fastapi import File, Form
 from pydantic import BaseModel
 
+
 class CreateMyObject(BaseModel):
     name: str
     file: File
     my_complicated_field: ComplicatedModel
 
 
-@app.post("/my_object"):
-async def create_my_object(data: Annotated[CreateMyObject, Form()]) -> MyObject:
-    ...
+@app.post("/my_object")
+async def create_my_object(data: Annotated[CreateMyObject, Form()]) -> MyObject: ...
 ```
 
 Here, `ComplicatedModel` is a heavily nested Pydantic object. This introduces an interesting problem: `FormData` only accepts primitive types—such as strings, blobs, or files—and, as you might imagine, `ComplicatedModel` is not primitive.
@@ -68,15 +68,17 @@ from fastapi import File, Form
 from pydantic import BaseModel, BeforeValidator
 from pydantic_core import from_json
 
+
 class CreateMyObject(BaseModel):
     name: str
     file: File
-    my_complicated_field: Annotated[ComplicatedModel, BeforeValidator(lambda val: from_json(val)]
+    my_complicated_field: Annotated[
+        ComplicatedModel, BeforeValidator(lambda val: from_json(val))
+    ]
 
 
-@app.post("/my_object"):
-async def create_my_object(data: Annotated[CreateMyObject, Form()]) -> MyObject:
-    ...
+@app.post("/my_object")
+async def create_my_object(data: Annotated[CreateMyObject, Form()]) -> MyObject: ...
 ```
 
 This solution is declarative with the `BeforeValidator` construct, requiring zero changes to any other code. I also learned that `pydantic_core` exports a [`from_json`](https://docs.pydantic.dev/latest/api/pydantic_core/#pydantic_core.from_json), which acts as a faster drop-in replacement for `json.loads`. I'll take it!

@@ -197,14 +197,14 @@ The downside of this approach is that you can't use the database outside of Fast
 This design primarily came from an issue that propped up with FastAPI in recent versions. I too, previously did something like:
 
 ```python
-async def get_session(...) -> AsyncGenerator[AsyncSession]:
-	async with AsyncSession(engine) as session:
-		try:
-			yield session
-		except:
-			session.rollback()
-		finally:
-			session.commit()
+async def get_session() -> AsyncGenerator[AsyncSession]:
+    async with AsyncSession(engine) as session:
+        try:
+            yield session
+        except:
+            session.rollback()
+        finally:
+            session.commit()
 ```
 
 The goal being that if I had an unhandled exception inside of a handler, the database would automatically roll itself back. This unfortunately [stopped working](https://github.com/fastapi/fastapi/issues/11143) due to some internal changes inside FastAPI's dependency resolution system.
@@ -219,42 +219,45 @@ First, we define a database abstraction as follows, that implements the Async Co
 ```python
 # imports and type hints excluded for brevity
 class DatabaseContext(AbstractAsyncContextManager):
-	"""Async context manager representing the lifespan of a database."""
-	def __init__(self, url: str, engine_kwargs = None, session_kwargs = None):
-		""""Initialize the database with an engine and session maker."""
-		self._engine = create_async_engine(url, **engine_kwargs if engine_kwargs is not None else {})
-		self._session_maker = async_sessionmaker(
-			self._engine, **session_kwargs if session_kwargs is not None else {}
-		)
+    """Async context manager representing the lifespan of a database."""
 
-	async def __aenter__(self) -> Self:
-		return self
+    def __init__(self, url: str, engine_kwargs=None, session_kwargs=None):
+        """ "Initialize the database with an engine and session maker."""
+        self._engine = create_async_engine(
+            url, **engine_kwargs if engine_kwargs is not None else {}
+        )
+        self._session_maker = async_sessionmaker(
+            self._engine, **session_kwargs if session_kwargs is not None else {}
+        )
 
-	async def __aexit__(self, exc_type, exc_value, traceback) -> None:
-		await self.dispose()
+    async def __aenter__(self) -> Self:
+        return self
 
-	@property
-	def engine(self) -> AsyncEngine:
-		"""Get a handle on the `AsyncEngine`."""
-		return self._engine
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
+        await self.dispose()
 
-	@property
-	def session_maker(self) -> async_sessionmaker[AsyncSession]:
-		"""Get the internal `async_sessionmaker`."""
-		return self._session_maker
+    @property
+    def engine(self) -> AsyncEngine:
+        """Get a handle on the `AsyncEngine`."""
+        return self._engine
 
-	async def dispose(self) -> None:
-	"""Dispose of the engine."""
-		await self._engine.dispose()
+    @property
+    def session_maker(self) -> async_sessionmaker[AsyncSession]:
+        """Get the internal `async_sessionmaker`."""
+        return self._session_maker
+
+    async def dispose(self) -> None:
+        """Dispose of the engine."""
+        await self._engine.dispose()
 ```
 
 Now, we can use `async with DatabaseContext(...) as db` inside of our lifespan function, and we've abstracted the lifespan of the database itself, so we no longer need to manually dispose.
 
 ```python
 @asynccontextmanager
-async lifespan(app: FastAPI) -> AsyncGenerator[AppState]:
-	async with DatabaseContext(...) as db:
-		yield { "db": db }
+async def lifespan(app: FastAPI) -> AsyncGenerator[AppState]:
+    async with DatabaseContext() as db:
+        yield {"db": db}
 ```
 
 We can define some middleware that reads the db injected into the ASGI scope, creates a session based off of it, then adds it to the request-specific `scope`.
@@ -286,16 +289,19 @@ class SessionMiddleware:
 We finally have to define the dependency:
 
 ```python
-async with get_session(request: Request) -> AsyncSession:
-	return request.scope.get("db_session")
+async def get_session(request: Request) -> AsyncSession:
+    return request.scope.get("db_session")
 ```
 
 And we can use it in any handler we desire!
 
 ```python
 app.get("/my_handler")
-async def my_handler(session: Annotated[AsyncSession, Depends(get_session)]):
-	# do some stuff with your session
+
+
+async def my_handler(
+    session: Annotated[AsyncSession, Depends(get_session)],
+): ...  # do some stuff with your session
 ```
 
 The main power of this approach is that you can automatically rollback the database on an unhandled exception. However, if manually triggering a `HTTPException`, a rollback won't occur unless manually initiated, which is often desired behavior. Take a look at the tests [here](https://github.com/abhiaagarwal/asgi-sqlalchemy/blob/2bf72c46bd2798d7ffe5fd29b21bf50be16a4ec5/tests/test_fastapi.py).

@@ -9,8 +9,8 @@ I've been thinking recently about Python API design (as one does, in their mid 2
 I was looking at the API design for `concurrent.futures.ProcessPoolExecutor/ThreadPoolExecutor.submit()`, which looks something like:
 
 ```python
-def cpu_bound_function(val, *, keyword_arg):
-    ...
+def cpu_bound_function(val, *, keyword_arg): ...
+
 
 # or ThreadPoolExecutor()
 with ProcessPoolExecutor() as executor:
@@ -20,8 +20,8 @@ with ProcessPoolExecutor() as executor:
 And `asyncio.TaskGroup.create_task()`, which looks something like:
 
 ```python
-async def io_bound_function(val, *, keyword_arg):
-    ...
+async def io_bound_function(val, *, keyword_arg): ...
+
 
 async with TaskGroup() as tg:
     task = tg.create_task(io_bound_function(5, keyword_arg=10))

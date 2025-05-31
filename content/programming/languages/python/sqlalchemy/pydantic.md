@@ -5,20 +5,22 @@ tags: [observations]
 published: 2025-01-06T22:15:19-05:00
 ---
 
-Been using this snippet a lot recently in SQLAlchemy to have Pydantic models be de/serialized to JSON transparently for a nice abstraction.
+I've been using this snippet a lot recently to transparently de/serialized Pydantic models be to JSON transparently to SQLAlchemy.
 
 ```python
 from sqlalchemy import DateTime, Dialect, func
 from sqlalchemy.types import JSON, TypeDecorator, TypeEngine
 from sqlalchemy.dialects.postgresql import JSONB
 from pydantic import BaseModel
+from typing import cast
 
 
 class PydanticModelType[T: BaseModel](TypeDecorator[T]):
     cache_ok = True
     impl = JSON()
 
-    def __init__(self) -> None:
+    def __init__(self, pydantic_model: type[T]) -> None:
+        self.pydantic_model = pydantic_model
         super().__init__()
 
     @override
@@ -30,16 +32,37 @@ class PydanticModelType[T: BaseModel](TypeDecorator[T]):
         return dialect.type_descriptor(JSON())
 
     @override
-    def process_bind_param(self, value: T | None, dialect: Dialect) -> dict[str, Any] | None:
+    def process_bind_param(
+        self, value: T | None, dialect: Dialect
+    ) -> dict[str, Any] | None:
         if value is not None:
             return value.model_dump()
         return value
 
     @override
-    def process_result_value(self, value: dict[str, Any] | None, dialect: Dialect) -> T | None:
+    def process_result_value(
+        self, value: dict[str, Any] | None, dialect: Dialect
+    ) -> T | None:
         if value is not None:
             return self.pydantic_type.model_validate(value)
         return value
+
+    @classmethod
+    def _resolve_for_python_type(
+        cls,
+        pytype: type,
+        subtype: type,
+        matched_on: type[BaseModel],
+    ) -> PydanticModelType[T] | None:
+        if (
+            isinstance(pytype, type)
+            and issubclass(pytype, BaseModel)
+            and pytype is not BaseModel
+        ):
+            specific_py_type = cast(Type[_T], pytype)
+            return cls(specific_py_type)
+        else:
+            return None
 ```
 
 If using python<3.12, the `T` can be replaced with `T = TypeVar("T", bound=BaseModel)` and it should also subclass `Generic[T]`.
@@ -54,11 +77,14 @@ from sqlalchemy.orm import (
 )
 from pydantic import BaseModel
 
+
 class BaseTable(DeclarativeBase):
     pass
 
+
 class MyModel(BaseModel):
     pass
+
 
 class MyTable(BaseTable):
     __tablename__ = "my_table"
@@ -72,8 +98,10 @@ Additionally, when instantiating your SQLAlchemy engine, you need to pass Pydant
 ```python
 from pydantic_core import to_json
 
+
 def _json_serializer(obj: Any) -> str:
     return to_json(obj).decode("utf-8")
+
 
 engine = create_engine(..., json_serializer=_json_serializer)
 ```
