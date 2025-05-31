@@ -2,26 +2,27 @@
 
 ---
 
-<script
-    is:inline
-    src="https://giscus.app/client.js"
-    data-repo="abhiaagarwal/abhiaagarwal"
-    data-repo-id="R_kgDOIZa_6w"
-    data-category="Comments"
-    data-category-id="DIC_kwDOIZa_684CTpsj"
-    data-mapping="pathname"
-    data-strict="1"
-    data-reactions-enabled="1"
-    data-emit-metadata="0"
-    data-input-position="top"
-    data-theme="preferred_color_scheme"
-    data-lang="en"
-    data-loading="lazy"
-    crossorigin="anonymous"
-    async></script>
+<giscus-widget
+    repo="abhiaagarwal/abhiaagarwal"
+    repo-id="R_kgDOIZa_6w"
+    category="Comments"
+    category-id="DIC_kwDOIZa_684CTpsj"
+    mapping="pathname"
+    strict="1"
+    reactions-enabled="1"
+    emit-metadata="0"
+    input-position="top"
+    theme="preferred_color_scheme"
+    lang="en"
+    loading="lazy"></giscus-widget>
 
 <script>
-    // Thanks https://github.com/giscus/giscus/issues/336#issuecomment-2644726328
+    import { GiscusWidget } from "giscus";
+
+    if (!customElements.get("giscus-widget")) {
+        customElements.define("giscus-widget", GiscusWidget);
+    }
+
     function getGiscusTheme() {
         return document.documentElement.getAttribute("data-theme") === "dark"
             ? "dark"
@@ -29,9 +30,10 @@
     }
 
     function setGiscusTheme() {
-        const iframe: HTMLIFrameElement | null = document.querySelector(
-            "iframe.giscus-frame",
-        );
+        const giscusWidget = document.querySelector("giscus-widget");
+        if (!giscusWidget) return;
+
+        let iframe = giscusWidget.shadowRoot?.querySelector("iframe");
 
         const setGisSrc = (theme: string) => {
             if (iframe) {
@@ -52,7 +54,7 @@
             }
         };
 
-        if (iframe?.classList.contains("giscus-frame--loading")) {
+        if (iframe?.classList.contains("loading")) {
             setGisSrc(getGiscusTheme());
         } else {
             sendMessage({ setConfig: { theme: getGiscusTheme() } });
