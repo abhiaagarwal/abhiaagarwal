@@ -1,11 +1,14 @@
 ---
+import { Image } from "astro:assets";
 import dayjs from "dayjs";
+import Lint from "../assets/lint.jpeg";
+import Midna from "../assets/midna.jpeg";
 import Layout from "../layouts/Base.astro";
 ---
 
 <Layout
     title="About"
-    description="Learn more about Abhi Agarwal."
+    description="About me, Abhi Agarwal."
     type="website"
     publishedTime={dayjs()}
 >
@@ -37,7 +40,12 @@ import Layout from "../layouts/Base.astro";
                     Boston Celtics fan. I'm a part-time Connecticut Sun fan,
                     too.
                 </li>
-                <li>I have two kittens that I adore. <a>Cat tax</a>!</li>
+                <li>
+                    I have two kittens that I adore. <button
+                        id="cat-tax-btn"
+                        class="cursor-pointer font-semibold">Cat tax</button
+                    >!
+                </li>
                 <li>
                     I consider myself a true full-stack engineer — I do
                     frontend, backend, devops, and cloud stuff! Jack of all
@@ -54,4 +62,57 @@ import Layout from "../layouts/Base.astro";
             </p>
         </div>
     </div>
+    <dialog
+        id="cat-modal"
+        class="fixed inset-0 z-50 m-auto max-h-[90vh] max-w-2xl overflow-auto rounded-lg border-none bg-light p-4 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-xs open:flex open:flex-col"
+    >
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div class="flex flex-col items-center text-center">
+                <div class="mb-2 flex flex-1 items-end">
+                    <Image
+                        src={Midna}
+                        alt="Midna, the first kitten"
+                        width={Midna.width}
+                        height={Midna.height}
+                        class="rounded-lg"
+                    />
+                </div>
+                <p class="font-semibold">Midna</p>
+                <p class="text-sm text-dark-gray italic">
+                    Yes, the zelda character.
+                </p>
+            </div>
+            <div class="flex flex-col items-center text-center">
+                <div class="mb-2 flex flex-1 items-end">
+                    <Image
+                        src={Lint}
+                        alt="Lint, the second kitten"
+                        width={Lint.width}
+                        height={Lint.height}
+                        class="rounded-lg"
+                    />
+                </div>
+                <p class="font-semibold">Lint</p>
+                <p class="text-sm text-dark-gray italic">
+                    Cuz she looks like a ball of lint.
+                </p>
+            </div>
+        </div>
+    </dialog>
+    <script>
+        const catTaxBtn = document.getElementById("cat-tax-btn");
+        const catModal = document.getElementById(
+            "cat-modal",
+        ) as HTMLDialogElement;
+
+        catTaxBtn?.addEventListener("click", () => {
+            catModal?.showModal();
+        });
+
+        catModal?.addEventListener("click", (e) => {
+            if (e.target === catModal) {
+                catModal.close();
+            }
+        });
+    </script>
 </Layout>
