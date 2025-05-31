@@ -66,29 +66,31 @@ import Layout from "../layouts/Base.astro";
         id="cat-modal"
         class="fixed inset-0 z-50 m-auto max-h-[90vh] max-w-2xl overflow-auto rounded-lg border-none bg-light p-4 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-xs open:flex open:flex-col"
     >
-        <div class="grid grid-cols-1 gap-4 font-serif text-dark md:grid-cols-2 items-end">
-            <section class="flex flex-col gap-1 items-center text-center">
+        <div
+            class="grid grid-cols-1 items-end gap-4 font-serif text-dark md:grid-cols-2"
+        >
+            <section class="flex flex-col items-center gap-1 text-center">
                 <Image
                     src={Midna}
                     alt="Midna, the first kitten"
                     width={Midna.width}
                     height={Midna.height}
-                    class="rounded-lg mb-auto"
+                    class="mb-auto rounded-lg"
                 />
-                <p class="font-semibold mt-1">Midna</p>
+                <p class="mt-1 font-semibold">Midna</p>
                 <p class="text-sm text-dark-gray italic">
                     Yes, the zelda character.
                 </p>
             </section>
-            <section class="flex flex-col gap-1 items-center text-center">
+            <section class="flex flex-col items-center gap-1 text-center">
                 <Image
                     src={Lint}
                     alt="Lint, the second kitten"
                     width={Lint.width}
                     height={Lint.height}
-                    class="rounded-lg mb-auto"
+                    class="mb-auto rounded-lg"
                 />
-                <p class="font-semibold mt-1">Lint</p>
+                <p class="mt-1 font-semibold">Lint</p>
                 <p class="text-sm text-dark-gray italic">
                     Cuz she looks like a ball of lint.
                 </p>

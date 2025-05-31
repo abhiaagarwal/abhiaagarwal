@@ -1,20 +1,20 @@
 ---
 title: Global (database) dependencies in FastAPI, done right with lifespans
-description: Using a sparsely-known feature to pass globals in a safe-manner inside of FastAPI
+description: A deep dive into using ASGI lifespan to safely manage shared state in FastAPI, without falling back on globals.
 tags: [observations]
 published: 2025-01-01T23:09:58-05:00
 ---
 
 As much as I love python, it also makes you fight _hard_ to avoid doing the wrong things. The wrong thing in this case being global state.
 
-FastAPI, my favorite python web framework, implicitly encourages the use of globals through its [Dependency](https://fastapi.tiangolo.com/tutorial/dependencies/) system. You define a global, throw it in a getter function defined as a dependency, you declare them in your handlers, and FastAPI will solve the tree for you, ensuring you don't get race conditions. As much as I appreciate the power and the ergonomics, I really don't like this. There's no way to validate the correct behavior until runtime. It also makes it hard to test, usually requiring to manually override the dependency in unit tests.
+FastAPI, my favorite python web framework, implicitly encourages the use of globals through its [Dependency](https://fastapi.tiangolo.com/tutorial/dependencies/) system. You define a global, throw it in a getter function defined as a dependency, you declare them in your handlers, and FastAPI will solve the tree for you, ensuring you don't get race conditions. As much as I appreciate the power and the ergonomics, I really don't like this. There's no way to validate the correct behavior until runtime. It also makes it hard to test, usually requiring manually overriding the dependency.
 
 # The anti-pattern
 
 Imagine you have a global dependency, say, a database engine. Instead of defining it as a global, let's define it as a function:
 
 ```python
-# this is psuedocode, but based off async sqlalchemy off the top of my head
+# this is pseudocode, but based off async sqlalchemy off the top of my head
 async def get_engine() -> AsyncGenerator[AsyncEngine]:
     engine = create_async_engine(...)
     try:
@@ -45,7 +45,7 @@ async def my_handler(
 
 When this endpoint is hit with a `get` request, FastAPI will solve the dependency tree, finding that `get_session` depends on `get_engine`, then it will call that, provide the value to `get_session`, and then we have a database session. Simple!
 
-This code has a problem. If you were to keep calling this endpoint, FastAPI would spin up a database engine _per_ request. It's best practice to keep an engine for the lifetime of your application, as it handles all the complicated database pooling nonsense. This is simply encouraging poor performance, as Database IO is likely the main blocker for your application.
+This code has a problem. If you were to keep calling this endpoint, FastAPI would spin up a database engine _per_ request. It's best practice to keep an engine for the lifetime of your application, as it handles all the complicated database pooling nonsense. This is simply encouraging poor performance, as database I/O is likely the main blocker for your application.
 
 There's a bunch of ways you can solve this. You can define a global inside your module:
 
@@ -80,12 +80,12 @@ async def get_engine() -> AsyncGenerator[AsyncEngine]:
 
 When this engine is created, our application now has one engine. Problem solved!
 
-This is a suboptimal solution. Our application only creates the engine when a handler that requires the dependency is called. Your application could start up, and things _seem_ alright, but it could then crash on a request if you failed to get a connection for some reason. With the engine tied outside the lifecycle of the application, we don't get predictable teardowns, which has all the potential for side-effects.
+This is a suboptimal solution. Our application only creates the engine when a handler that requires the dependency is called. Your application could start up, and things _seem_ alright, but it could then crash on a request if you failed to get a connection for some reason. When the engine is managed outside the application lifecycle, teardown becomes unpredictable.
 
 Our database should live _immediately before_ and immediately _after_ FastAPI, like an outer layer. We initialize it when FastAPI starts up, and when we CTRL-C (aka `SIGTERM`), our database should have the opportunity to clean itself up. It would be convenient if we could tie it to, say, the _lifespan_ of FastAPI...
 
 > [!example]
-> Some people attempt to solve this conundrum using [`contextvars`](https://github.com/fastapi/fastapi/discussions/8628). Contextvars scare me and I avoid them wherever possible.
+> Some people attempt to solve this conundrum using [`contextvars`](https://github.com/fastapi/fastapi/discussions/8628). I find contextvars confusing and prefer to avoid them when I can.
 
 # The right way with ASGI Lifespan
 
@@ -160,9 +160,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[AppState]:
     await engine.dispose()
 ```
 
-If the migration were to fail (and the function throws), your application wouldn't just start up in the first place. Since your database is a prerequisite to your entire application, this is more correct behavior than simply waiting for it to happen.
+If the migration were to fail (and the function throws), your application wouldn't just start up in the first place. Since your database is a prerequisite to your entire application, this is the correct behavior than simply waiting for it to happen.
 
-ASGI Lifespans are powerful! You should associate stuff with your application rather than letting it live external to it. I throw in pretty much everything inside of it, including my application settings (of which I use `pydantic_settings`), and all my dependencies are just wrappers that pull directly from the ASGI scope. It also has the benefit of being far more testable, as you can just mock the underlying object injected into the lifespan rather than overriding the dependency itself.
+ASGI Lifespans are powerful! You should associate stuff with your application rather than letting it live external to it. I throw in pretty much everything inside of it, including my application settings (of which I use `pydantic_settings`), and all my dependencies are just wrappers that pull directly from the ASGI scope. It's also more testable, since you can mock the object injected via the lifespan.
 
 The downside of this approach is that you can't use the database outside of FastAPI. But I consider this to be a **feature, not a bug**. In my view, it's an anti-pattern to do things external to your web server without explicit user interaction. If you _really_ need to step out of this, in your lifespan, you can schedule an task on the event loop, but you better have a damn good reason. The lifespan encourages you to think deeply about what the lifecycle of your application is, which I find leads to more predictable and maintainable code.
 
