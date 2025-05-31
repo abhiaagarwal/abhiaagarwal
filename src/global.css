@@ -12,12 +12,12 @@
     --color-light-gray: oklch(0.92 0.02 325);
     --color-gray: oklch(0.75 0.02 325);
     --color-dark-gray: oklch(0.45 0.02 325);
-    --color-dark: oklch(0.1596 0.0268 323.48);
+    --color-dark: oklch(0.12 0.05 325.34);
 }
 
 @layer base {
     @variant dark {
-        --color-light: oklch(0.1596 0.0268 323.48);
+        --color-light: oklch(0.12 0.05 325.34);
         --color-light-gray: oklch(0.35 0.02 325);
         --color-gray: oklch(0.55 0.02 325);
         --color-dark-gray: oklch(0.85 0.02 325);
