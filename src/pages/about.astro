@@ -66,37 +66,33 @@ import Layout from "../layouts/Base.astro";
         id="cat-modal"
         class="fixed inset-0 z-50 m-auto max-h-[90vh] max-w-2xl overflow-auto rounded-lg border-none bg-light p-4 shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-xs open:flex open:flex-col"
     >
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div class="flex flex-col items-center text-center">
-                <div class="mb-2 flex flex-1 items-end">
-                    <Image
-                        src={Midna}
-                        alt="Midna, the first kitten"
-                        width={Midna.width}
-                        height={Midna.height}
-                        class="rounded-lg"
-                    />
-                </div>
-                <p class="font-semibold">Midna</p>
+        <div class="grid grid-cols-1 gap-4 font-serif text-dark md:grid-cols-2 items-end">
+            <section class="flex flex-col gap-1 items-center text-center">
+                <Image
+                    src={Midna}
+                    alt="Midna, the first kitten"
+                    width={Midna.width}
+                    height={Midna.height}
+                    class="rounded-lg mb-auto"
+                />
+                <p class="font-semibold mt-1">Midna</p>
                 <p class="text-sm text-dark-gray italic">
                     Yes, the zelda character.
                 </p>
-            </div>
-            <div class="flex flex-col items-center text-center">
-                <div class="mb-2 flex flex-1 items-end">
-                    <Image
-                        src={Lint}
-                        alt="Lint, the second kitten"
-                        width={Lint.width}
-                        height={Lint.height}
-                        class="rounded-lg"
-                    />
-                </div>
-                <p class="font-semibold">Lint</p>
+            </section>
+            <section class="flex flex-col gap-1 items-center text-center">
+                <Image
+                    src={Lint}
+                    alt="Lint, the second kitten"
+                    width={Lint.width}
+                    height={Lint.height}
+                    class="rounded-lg mb-auto"
+                />
+                <p class="font-semibold mt-1">Lint</p>
                 <p class="text-sm text-dark-gray italic">
                     Cuz she looks like a ball of lint.
                 </p>
-            </div>
+            </section>
         </div>
     </dialog>
     <script>
@@ -105,11 +101,11 @@ import Layout from "../layouts/Base.astro";
             "cat-modal",
         ) as HTMLDialogElement;
 
-        catTaxBtn?.addEventListener("click", () => {
-            catModal?.showModal();
+        catTaxBtn!.addEventListener("click", () => {
+            catModal.showModal();
         });
 
-        catModal?.addEventListener("click", (e) => {
+        catModal!.addEventListener("click", (e) => {
             if (e.target === catModal) {
                 catModal.close();
             }
