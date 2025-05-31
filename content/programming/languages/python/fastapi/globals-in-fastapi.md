@@ -286,7 +286,7 @@ class SessionMiddleware:
 
 `scope.state` is global to every scope, while `scope["key"]` is specific to the the given request. A bit confusing, but don't worry about it.
 
-We finally have to define the dependency:
+We finally define the dependency:
 
 ```python
 async def get_session(request: Request) -> AsyncSession:
@@ -296,9 +296,7 @@ async def get_session(request: Request) -> AsyncSession:
 And we can use it in any handler we desire!
 
 ```python
-app.get("/my_handler")
-
-
+@app.get("/my_handler")
 async def my_handler(
     session: Annotated[AsyncSession, Depends(get_session)],
 ): ...  # do some stuff with your session
