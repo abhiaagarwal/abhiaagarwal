@@ -58,34 +58,42 @@ const modifiedTimeString = modifiedTime?.toISOString() ?? publishedTimeString;
 
 const structuredData = type === "article" ? {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
+    "@id": currentUrl,
+    "mainEntityOfPage": currentUrl,
     "headline": title,
     "description": description,
     "author": {
         "@type": "Person",
         "name": author,
-        "url": siteUrl
+        "url": siteUrl + "/about"
     },
     "publisher": {
         "@type": "Person",
-        "name": "Abhi Agarwal",
-        "url": siteUrl
+        "name": author,
+        "url": siteUrl + "/about"
+    },
+    "isPartOf": {
+        "@type": "Blog",
+        "@id": siteUrl,
+        "name": author,
+        "url": siteUrl,
     },
     "url": currentUrl,
     "datePublished": publishedTimeString,
     "dateModified": modifiedTimeString,
-    "image": ogImage,
     "keywords": tags.join(", ")
 } : {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Abhi Agarwal",
+    "@type": "Blog",
+    "@id": Astro.url.toString(),
+    "name": author,
     "description": description,
     "url": siteUrl,
     "author": {
         "@type": "Person",
-        "name": "Abhi Agarwal",
-        "url": siteUrl
+        "name": author,
+        "url": siteUrl + "/about"
     }
 };
 
@@ -121,7 +129,7 @@ const structuredData = type === "article" ? {
                     type: "image/png",
                     width: 1200,
                     height: 630,
-                    alt: `${title} - Abhi Agarwal`,
+                    alt: `${title} | Abhi Agarwal`,
                 },
                 article: type === "article" ? {
                     publishedTime: publishedTimeString,
@@ -162,7 +170,7 @@ const structuredData = type === "article" ? {
             rel="icon"
             href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤠</text></svg>"
         />
-        <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+        <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
         {/* This script was purposefully not bundled to prevent FOUC. I minified it with terser manually. Refer to util/theme-switch.ts for the source. */}
         <script is:inline>
 window.THEME_KEY="theme-preference",window.THEMES=["light","dark","system"],window.applyEffectiveTheme=e=>{const t="dark"===e||"system"===e&&window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=t?"dark":"light"},window.setThemePreference=e=>{const t=e&&window.THEMES.includes(e)?e:"system";document.documentElement.dataset.themePreference=t,localStorage.setItem(window.THEME_KEY,t),window.applyEffectiveTheme(t)};const e=localStorage.getItem(window.THEME_KEY);window.setThemePreference(e)
