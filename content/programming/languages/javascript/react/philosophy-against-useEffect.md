@@ -14,13 +14,13 @@ React is a declarative framework, arguably the first of its kind in the webdev s
 
 Let's consider this simple, contrived example of how the `imperative` style of programming would develop some simple client-side interaction.
 
-"I want my button to be red if the user clicks it, so I will set an event listener such that if they click it, I will add the `.red` css class."
+"I want my button to be red if the user clicks it, so **I will** set an event listener such that if they click it, **I will** add the `.red` css class."
 
 Meanwhile, React would solve this problem declaratively like:
 
-"If the Button is in the `clicked` state, then it will have the `.red` class applied to it."
+"If the Button is in the `clicked` state, then **it will** have the `.red` class applied to it."
 
-Notice that the declarative style leaves... a lot to interpretation. It's not even bothering to figure out the details, it's just saying what it wants. 
+Notice that the declarative style leaves... a lot to interpretation. It's not even bothering to figure out the details, it's just saying what it wants.
 
 UI development in particularly is just a jumbled mess of global, mutable state. I tried to write a QT app once in C++ and gave up. 
 
