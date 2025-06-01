@@ -29,7 +29,11 @@ const kinds = Array.from(
     {
         kinds.length > 0 && (
             <div class="mb-8">
-                <div class="flex flex-wrap items-center gap-2">
+                <fieldset
+                    role="group"
+                    class="flex flex-wrap items-center gap-2"
+                >
+                    <legend class="sr-only">Filter posts by kind</legend>
                     {kinds.map((kind) => (
                         <label class="filter-button flex cursor-pointer items-center gap-1 rounded bg-light-gray px-2 py-1 text-sm text-dark capitalize transition hover:bg-gray">
                             <input
@@ -42,12 +46,12 @@ const kinds = Array.from(
                             {kind}
                         </label>
                     ))}
-                </div>
+                </fieldset>
             </div>
         )
     }
 
-    <div class="flex flex-col gap-12">
+    <ol class="flex flex-col gap-12" aria-label="Post listing">
         {
             posts.map((node) => {
                 const itemKind = node.data?.kind;
@@ -62,7 +66,7 @@ const kinds = Array.from(
                 });
 
                 return (
-                    <div
+                    <li
                         class="post-item flex flex-col gap-1"
                         data-kind={itemKind ?? ""}
                     >
@@ -107,11 +111,11 @@ const kinds = Array.from(
                                 layout="horizontal"
                             />
                         )}
-                    </div>
+                    </li>
                 );
             })
         }
-    </div>
+    </ol>
 </div>
 
 <style>
