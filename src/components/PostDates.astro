@@ -2,11 +2,13 @@
 import CalendarPlus from "@lucide/astro/icons/calendar-plus";
 import Pen from "@lucide/astro/icons/pen";
 import dayjs, { type Dayjs } from "dayjs";
+import advancedFormat from "dayjs/plugin/advancedFormat";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+dayjs.extend(advancedFormat);
 
 interface Props {
     createdTime: Dayjs;
@@ -31,6 +33,11 @@ const formattedLastModified = lastModified
     ? lastModified.format("MMMM D, YYYY")
     : null;
 
+const fullCreatedTime = createdTime.format("MMMM D, YYYY [at] h:mm A z");
+const fullLastModified = lastModified
+    ? lastModified.format("MMMM D, YYYY [at] h:mm A z")
+    : null;
+
 const showLastModified =
     formattedLastModified && formattedLastModified !== formattedCreatedTime;
 
@@ -41,13 +48,19 @@ const containerClasses =
 ---
 
 <div class:list={[containerClasses, textClasses, "text-dark-gray", className]}>
-    <span class="flex items-center gap-1 text-dark-gray">
+    <span
+        class="flex items-center gap-1 text-dark-gray"
+        title={fullCreatedTime}
+    >
         <CalendarPlus class={iconClasses} />
         {formattedCreatedTime}
     </span>
     {
         showLastModified && (
-            <span class="flex items-center gap-1 text-gray">
+            <span
+                class="flex items-center gap-1 text-gray"
+                title={fullLastModified}
+            >
                 <Pen class={iconClasses} />
                 {formattedLastModified}
             </span>

@@ -34,6 +34,6 @@ Surprisingly, it's quite easy: find the component you're interested in, attach a
 </html>
 ```
 
-Note that I add the `prefetched` data flag to the button, so that I don't prefetch the image multiple times if the user is feeling particularly indecisive.
+I add the `prefetched` data flag to the button, so that I don't prefetch the image multiple times if the user is feeling particularly indecisive.
 
 Note that I'm using `rel="prefetch"` instead of `rel="preload"`. This is because `rel="preload"` is used to preload "high-importance" assets, while `rel="prefetch"` signals to the browser that the image is lower-priority. As much as I value these assets, I think I can be reasonable and say they are more of a "prefetch" then a "preload".
