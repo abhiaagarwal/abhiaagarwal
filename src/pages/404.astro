@@ -1,5 +1,8 @@
 ---
+import { Image } from "astro:assets";
 import dayjs from "dayjs";
+import Lint from "../assets/lint.jpeg";
+import Midna from "../assets/midna.jpeg";
 import Layout from "../layouts/Base.astro";
 ---
 
@@ -10,11 +13,31 @@ import Layout from "../layouts/Base.astro";
     publishedTime={dayjs()}
     noindex={true}
 >
-    <div class="m-auto max-w-2xl text-center font-serif text-dark">
-        <h1 class="mb-6 text-6xl font-bold text-dark">404</h1>
-        <h2 class="mb-4 text-2xl font-semibold">Page Not Found</h2>
-        <p class="mb-8 text-base/6 text-dark-gray">
+    <div
+        class="m-auto flex max-w-2xl flex-col items-center gap-4 text-center font-serif text-dark"
+    >
+        <h1 class="text-6xl font-bold text-dark">404</h1>
+        <h2 class="text-2xl font-semibold">Page Not Found</h2>
+        <p class="text-base/6 text-dark-gray">
             You've stumbled upon a page that doesn't exist.
         </p>
+        <p>As an apology, here's some pictures of my cats:</p>
+        <div class="flex max-h-96 flex-row gap-4">
+            <Image
+                src={Lint}
+                width={Lint.width}
+                height={Lint.height}
+                alt="Lint"
+                class="w-1/2"
+            />
+            <Image
+                src={Midna}
+                width={Midna.width}
+                height={Midna.height}
+                alt="Midna"
+                class="w-1/2"
+            />
+        </div>
+        <p>Aren't they the cutest?</p>
     </div>
 </Layout>

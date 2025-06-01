@@ -98,10 +98,31 @@ import Layout from "../layouts/Base.astro";
         </div>
     </dialog>
     <script>
+        import Lint from "../assets/lint.jpeg";
+        import Midna from "../assets/midna.jpeg";
+
         const catTaxBtn = document.getElementById("cat-tax-btn");
         const catModal = document.getElementById(
             "cat-modal",
         ) as HTMLDialogElement;
+
+        catTaxBtn!.addEventListener("mouseenter", () => {
+            if (catTaxBtn!.dataset.prefetched === "true") {
+                return;
+            }
+
+            const midnaLink = document.createElement("link");
+            midnaLink.rel = "prefetch";
+            midnaLink.href = Lint.src;
+            document.head.appendChild(midnaLink);
+
+            const lintLink = document.createElement("link");
+            lintLink.rel = "prefetch";
+            lintLink.href = Midna.src;
+            document.head.appendChild(lintLink);
+
+            catTaxBtn!.dataset.prefetched = "true";
+        });
 
         catTaxBtn!.addEventListener("click", () => {
             catModal.showModal();
