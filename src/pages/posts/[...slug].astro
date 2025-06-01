@@ -116,8 +116,6 @@ const breadcrumbSegments = currentNode.id
         };
     });
 
-console.log(breadcrumbSegments, pathname.slice("posts/".length + 1, -1));
-
 const backlinkData = Array.from(currentNode.backlinks)
     .map((backlinkId: string) => {
         const backlinkNode = allNodesMap.get(backlinkId);

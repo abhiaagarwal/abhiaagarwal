@@ -54,7 +54,11 @@ const kinds = Array.from(
                 const pathParts = node.id.split("/").filter((s) => s);
                 const itemBreadcrumbs = pathParts.map((segment, index, arr) => {
                     const fragment = arr.slice(0, index + 1).join("/");
-                    return { label: segment, fragment: fragment };
+                    return {
+                        label: segment,
+                        fragment: fragment,
+                        linkTo: index < arr.length - 1,
+                    };
                 });
 
                 return (
