@@ -1,4 +1,5 @@
 ---
+import Search from "../components/Search.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
 
 const { pathname } = Astro.url;
@@ -28,6 +29,7 @@ const links: { href: string; text: string }[] = [
                 </a>
             ))
         }
+        <Search className="transition-colors hover:text-primary" />
         <ThemeToggle className="transition-colors hover:text-primary" />
     </nav>
 </header>

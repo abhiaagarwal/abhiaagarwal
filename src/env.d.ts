@@ -3,4 +3,5 @@ interface Window {
     THEMES: readonly ["light", "dark", "system"];
     applyEffectiveTheme: (theme: string) => void;
     setThemePreference: (theme: string | null) => void;
+    getCurrentPreference: () => string;
 }

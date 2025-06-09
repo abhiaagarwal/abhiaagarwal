@@ -27,26 +27,54 @@ const kinds = Array.from(
 
 <div id="post-listing-container">
     {
-        kinds.length > 0 && (
-            <div class="mb-8">
+        kinds.length > 1 && (
+            <div class="mb-6 flex flex-col gap-2">
                 <fieldset
                     role="group"
                     class="flex flex-wrap items-center gap-2"
                 >
                     <legend class="sr-only">Filter posts by kind</legend>
                     {kinds.map((kind) => (
-                        <label class="filter-button flex cursor-pointer items-center gap-1 rounded bg-light-gray px-2 py-1 text-sm text-dark capitalize transition hover:bg-gray">
+                        <label class="filter-button flex cursor-pointer items-center gap-1 rounded bg-light-gray px-2 py-1 text-sm text-dark capitalize transition hover:bg-gray has-checked:bg-primary has-checked:text-light">
                             <input
+                                id={`filter-${kind}`}
                                 type="checkbox"
                                 name="filter"
                                 value={kind}
                                 class="sr-only"
+                                aria-labelledby={`filter-${kind}-label`}
                             />
                             <KindIcon kind={kind} class="inline-block size-4" />
                             {kind}
                         </label>
                     ))}
                 </fieldset>
+                <div class="h-4 text-sm text-dark-gray italic">
+                    <label
+                        id={`filter-observations-label`}
+                        class="kind-description hidden"
+                        data-kind="observations"
+                        for="filter-observations"
+                    >
+                        Long-form content, focusing on a single topic or idea.
+                    </label>
+                    <label
+                        id={`filter-notes-label`}
+                        class="kind-description hidden"
+                        data-kind="notes"
+                        for="filter-notes"
+                    >
+                        Generally just bullet-points on a certain topic.
+                    </label>
+                    <label
+                        id={`filter-thoughts-label`}
+                        class="kind-description hidden"
+                        data-kind="thoughts"
+                        for="filter-thoughts"
+                    >
+                        Short-form content, focusing on a single topic or idea.
+                    </label>
+                </div>
             </div>
         )
     }
@@ -120,8 +148,10 @@ const kinds = Array.from(
 
 <style>
     @reference "../global.css";
-    #post-listing-container:has(.filter-button input:checked) .post-item {
-        @apply hidden;
+    #post-listing-container:has(.filter-button input:checked) {
+        .post-item {
+            @apply hidden;
+        }
     }
 
     #post-listing-container:has(
@@ -131,12 +161,16 @@ const kinds = Array.from(
     #post-listing-container:has(.filter-button input[value="notes"]:checked)
         .post-item[data-kind="notes"],
     #post-listing-container:has(.filter-button input[value="thoughts"]:checked)
-        .post-item[data-kind="thoughts"] {
+        .post-item[data-kind="thoughts"],
+    #post-listing-container:has(
+            .filter-button input[value="observations"]:checked
+        )
+        .kind-description[data-kind="observations"],
+    #post-listing-container:has(.filter-button input[value="notes"]:checked)
+        .kind-description[data-kind="notes"],
+    #post-listing-container:has(.filter-button input[value="thoughts"]:checked)
+        .kind-description[data-kind="thoughts"] {
         @apply flex;
-    }
-
-    .filter-button:has(input:checked) {
-        @apply bg-primary text-light;
     }
 </style>
 

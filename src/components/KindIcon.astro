@@ -13,7 +13,7 @@ const KindIconMapping: Record<SpecificIconKind, typeof Orbit> = {
 };
 
 interface Props {
-    kind: string | undefined;
+    kind: SpecificIconKind;
     isFolder?: boolean;
     class?: string;
 }
@@ -23,11 +23,11 @@ const { kind, isFolder, class: iconClass } = Astro.props;
 let IconComponent;
 if (isFolder) {
     IconComponent = FolderIcon;
-} else if (kind && kind in KindIconMapping) {
-    IconComponent = KindIconMapping[kind as SpecificIconKind];
+} else if (kind in KindIconMapping) {
+    IconComponent = KindIconMapping[kind];
 } else {
     IconComponent = undefined;
 }
 ---
 
-{IconComponent && <IconComponent class={iconClass} />}
+{IconComponent && <IconComponent aria-label={kind} class={iconClass} />}

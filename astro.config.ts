@@ -3,6 +3,7 @@ import remarkWikiLink from "@portaljs/remark-wiki-link";
 import remarkCallout from "@r4ai/remark-callout";
 import tailwindcss from "@tailwindcss/vite";
 import expressiveCode from "astro-expressive-code";
+import pagefind from "astro-pagefind";
 import { defineConfig, fontProviders } from "astro/config";
 import rehypeShiftHeading from "rehype-shift-heading";
 import { loadEnv } from "vite";
@@ -83,6 +84,7 @@ export default defineConfig({
     },
     integrations: [
         sitemap(),
+        pagefind(),
         expressiveCode({
             themes: ["catppuccin-mocha"],
             frames: false,

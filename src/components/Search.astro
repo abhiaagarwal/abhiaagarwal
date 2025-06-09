@@ -1,0 +1,144 @@
+---
+import SearchIcon from "@lucide/astro/icons/search";
+import PagefindSearch from "astro-pagefind/components/Search";
+
+interface Props {
+    className?: string;
+}
+
+const { className } = Astro.props;
+---
+
+<button
+    type="button"
+    id="search-button"
+    aria-label="Open search"
+    class:list={[
+        className,
+        "relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-md",
+    ]}
+>
+    <SearchIcon class="h-5 w-5" />
+    <span class="sr-only">Search</span>
+</button>
+
+<dialog
+    id="search-modal"
+    class="mx-auto mt-16 w-2xl rounded-lg bg-light p-0 shadow-lg backdrop:backdrop-blur-xs"
+>
+    <div class="flex flex-col">
+        <div class="flex items-center justify-between p-4">
+            <h2 class="text-lg font-semibold text-dark">Search Posts</h2>
+            <button
+                type="button"
+                id="search-close"
+                aria-label="Close search"
+                class="flex h-8 w-8 items-center justify-center rounded-md"
+            >
+                ✕
+            </button>
+        </div>
+        <div class="p-4">
+            <PagefindSearch
+                id="pagefind-search"
+                className="pagefind-ui"
+                uiOptions={{
+                    showImages: false,
+                    resetStyles: false,
+                }}
+            />
+        </div>
+    </div>
+</dialog>
+
+<script>
+    const searchButton = document.getElementById("search-button")!;
+    const searchModal = document.getElementById(
+        "search-modal",
+    ) as HTMLDialogElement;
+    const searchClose = document.getElementById("search-close")!;
+
+    searchButton.addEventListener("click", () => {
+        searchModal.showModal();
+        setTimeout(() => {
+            const searchInput = searchModal.querySelector(
+                'input[type="search"]',
+            ) as HTMLInputElement;
+            if (searchInput) {
+                searchInput.focus();
+            }
+        }, 100);
+    });
+
+    searchClose.addEventListener("click", () => {
+        searchModal.close();
+    });
+
+    searchModal.addEventListener("click", (e) => {
+        if (e.target === searchModal) {
+            searchModal.close();
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && searchModal.open) {
+            searchModal.close();
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+            e.preventDefault();
+            searchButton.click();
+        }
+    });
+</script>
+
+<style is:global>
+    @reference "../global.css";
+
+    .pagefind-ui {
+        --pagefind-ui-scale: 0.9;
+        --pagefind-ui-text: var(--color-dark);
+        --pagefind-ui-background: transparent;
+        --pagefind-ui-border: var(--color-light-gray);
+        --pagefind-ui-tag: var(--color-light-gray);
+        --pagefind-ui-font: var(--font-sans);
+    }
+
+    .pagefind-ui__search-input {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--pagefind-ui-border);
+        padding: 0.75rem;
+        font-size: 1rem;
+    }
+
+    .pagefind-ui__search-input::placeholder {
+        color: var(--color-dark-gray);
+    }
+
+    .pagefind-ui__result {
+        border-bottom: 1px solid var(--pagefind-ui-border);
+        padding: 1rem 0;
+    }
+
+    .pagefind-ui__result:last-child {
+        border-bottom: none;
+    }
+
+    .pagefind-ui__result-title {
+        font-weight: var(--font-weight-semibold);
+        color: var(--pagefind-ui-primary);
+        margin-bottom: 0.5rem;
+        font-family: var(--font-serif);
+    }
+
+    .pagefind-ui__result-excerpt {
+        color: var(--pagefind-ui-text);
+        line-height: var(--text-sm--line-height);
+    }
+
+    .pagefind-ui__result-excerpt mark {
+        background-color: color-mix(in oklch, var(--color-primary) 40%, #fff0);
+    }
+</style>
