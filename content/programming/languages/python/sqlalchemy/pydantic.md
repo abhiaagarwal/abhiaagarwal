@@ -5,7 +5,7 @@ tags: [observations]
 published: 2025-01-06T22:15:19-05:00
 ---
 
-I've been using this snippet a lot recently to transparently de/serialized Pydantic models be to JSON transparently to SQLAlchemy.
+I've been using this snippet a lot recently to transparently de/serialize Pydantic models and JSON transparently with SQLAlchemy.
 
 ```python
 from sqlalchemy import DateTime, Dialect, func
@@ -79,7 +79,9 @@ from pydantic import BaseModel
 
 
 class BaseTable(DeclarativeBase):
-    pass
+    type_annotation_map = {
+        BaseModel: PydanticModelType
+    }
 
 
 class MyModel(BaseModel):
@@ -88,7 +90,7 @@ class MyModel(BaseModel):
 
 class MyTable(BaseTable):
     __tablename__ = "my_table"
-    config: Mapped[MyModel] = mapped_column(PydanticModelType(MyModel))
+    config: Mapped[MyModel]
 ```
 
 Unfortunately, SQLAlchemy doesn't have a nice way to infer that `MyModel` should be passed to `PydanticModelType` in an easy way, so we have to repeat ourselves.

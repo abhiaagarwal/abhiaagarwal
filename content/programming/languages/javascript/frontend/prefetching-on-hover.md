@@ -4,6 +4,7 @@ description: The best way to fake a fast website is to simplify anticipate what 
 tags: [thoughts]
 published: 2025-06-01T16:38:00-04:00
 ---
+
 If you visit the /about page of my blog, there's an easter egg. That easter egg features a few images, but the browser only fetches the images on viewport, which can cause a flash of content. Traditionally, the best way to solve this problem is to signal to the browser to load some assets with a `<link rel="prefetch">` in the `<head>`. However, I don't necessarily want to prefetch these images immediately as it is not necessarily a guarantee that the user will click the button leading them to an image, and I'd rather preserve my reader's bandwidth wherever possible.
 
 I'm spoiled by react frameworks, and in particular, [`Tanstack Router`](https://tanstack.com/router/latest), which has the ability to fetch whenever an user hovers over a `<Link>` element. I use this, combined with `react-query`, to make my SPAs feel instantaneous to the end user by aggressively prefetching. But in the case of this blog, it's written in pure Javascript/Astro. How can I do that?
