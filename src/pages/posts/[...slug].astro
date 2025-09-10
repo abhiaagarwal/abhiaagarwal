@@ -147,6 +147,7 @@ const feeds = currentNode.isFolder
     tags={seoTags}
     publishedTime={dayjs(currentNode.data?.published)}
     feeds={feeds}
+    noindex={currentNode.isFolder}
 >
     <div
         class="m-auto flex max-w-2xl flex-col gap-6"
