@@ -28,7 +28,7 @@ const getIcon = (type: string) => {
 };
 ---
 
-<div class:list={["flex items-center gap-1", className]}>
+<div class:list={["hidden items-center gap-1 lg:flex", className]}>
     {
         feeds.map((feed) => {
             const IconComponent = getIcon(feed.type);
