@@ -1,7 +1,9 @@
 ---
 import Copyright from "@lucide/astro/icons/copyright";
+import dayjs from "dayjs";
 
 const currentYear = new Date().getFullYear();
+const githubLink = "https://github.com/abhiaagarwal/abhiaagarwal";
 ---
 
 <footer class="self-end-safe text-right font-serif text-sm text-dark-gray">
@@ -9,5 +11,13 @@ const currentYear = new Date().getFullYear();
         <Copyright class="inline h-4 w-4 align-text-bottom" />
         {currentYear} Abhi Agarwal.
     </p>
-    <p>Built with {Astro.generator}. <a>Open Source</a>.</p>
+    <p>
+        Built with <span
+            title={"Built with " +
+                Astro.generator +
+                " on " +
+                dayjs().format("MMMM D, YYYY [at] h:mm A z")}
+            >{Astro.generator}</span
+        >. <a href={githubLink} class="font-semibold">Open Source</a>.
+    </p>
 </footer>
