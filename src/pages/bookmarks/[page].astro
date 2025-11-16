@@ -76,6 +76,7 @@ const bookmarkToPostItem = (
                             href={page.url.prev}
                             class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
                             aria-label="Previous page"
+                            data-astro-prefetch
                         >
                             <ArrowLeft class="size-4" />
                         </a>
@@ -87,6 +88,7 @@ const bookmarkToPostItem = (
                             href={page.url.next}
                             class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
                             aria-label="Next page"
+                            data-astro-prefetch
                         >
                             <ArrowRight class="size-4" />
                         </a>

@@ -40,6 +40,7 @@ const links: { href: string; text: string }[] = [
                         "relative flex h-8 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:text-primary",
                         pathname.startsWith("/bookmarks/") && "text-primary",
                     ]}
+                    data-astro-prefetch
                 >
                     <Bookmark class="size-6" />
                 </a>
