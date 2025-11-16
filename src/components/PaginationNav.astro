@@ -1,0 +1,47 @@
+---
+import ArrowLeft from "@lucide/astro/icons/arrow-left";
+import ArrowRight from "@lucide/astro/icons/arrow-right";
+
+interface Props {
+    prevUrl?: string | null;
+    nextUrl?: string | null;
+    justify?: "between" | "center";
+}
+
+const { prevUrl, nextUrl, justify = "between" } = Astro.props;
+
+const justifyClass =
+    justify === "center" ? "justify-center" : "justify-between";
+---
+
+<nav
+    class={`mt-12 flex items-center ${justifyClass} border-t border-dark-gray pt-8 font-serif`}
+    aria-label="Pagination"
+>
+    {
+        prevUrl ? (
+            <a
+                href={prevUrl}
+                class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
+                aria-label="Previous page"
+                data-astro-prefetch
+            >
+                <ArrowLeft class="size-4" />
+            </a>
+        ) : (
+            justify === "between" && <span />
+        )
+    }
+    {
+        nextUrl && (
+            <a
+                href={nextUrl}
+                class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
+                aria-label="Next page"
+                data-astro-prefetch
+            >
+                <ArrowRight class="size-4" />
+            </a>
+        )
+    }
+</nav>

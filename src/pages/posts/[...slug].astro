@@ -12,8 +12,8 @@ import Breadcrumbs from "../../components/Breadcrumbs.astro";
 import FeedIcons from "../../components/FeedIcons.astro";
 import Giscus from "../../components/Giscus.astro";
 import KindIcon from "../../components/KindIcon.astro";
-import Listing from "../../components/Listing.astro";
 import PostDates from "../../components/PostDates.astro";
+import PostListing from "../../components/PostListing.astro";
 import Prose from "../../components/Prose.astro";
 import Base from "../../layouts/Base.astro";
 import { feedConfigToLinks, generateFeedUrls } from "../../util/feeds";
@@ -158,9 +158,8 @@ const feeds = currentNode.isFolder
         <div class="flex flex-col gap-2">
             <div class="flex flex-row items-center gap-1" data-pagefind-ignore>
                 <KindIcon
-                    kind={currentNode.data?.kind}
-                    isFolder={currentNode.isFolder}
-                    class="h-4 w-4 stroke-dark-gray"
+                    kind={currentNode.data?.kind ?? "folder"}
+                    class="size-4 stroke-dark-gray"
                 />
                 <Breadcrumbs
                     baseUrl="/posts"
@@ -185,14 +184,14 @@ const feeds = currentNode.isFolder
             </div>
             {
                 !currentNode.isFolder && (
-                    <div data-pagefind-ignore>
+                    <div
+                        data-pagefind-ignore
+                        class="flex flex-row gap-4 text-sm text-dark-gray"
+                    >
                         <PostDates
                             createdTime={dayjs(currentNode.data?.published)}
                             lastModified={dayjs(currentNode.data?.published)}
                             iconSize="md"
-                            textSize="sm"
-                            layout="horizontal"
-                            className="text-dark-gray"
                         />
                     </div>
                 )
@@ -210,7 +209,7 @@ const feeds = currentNode.isFolder
             currentNode.isFolder && childrenForListing.length > 0 && (
                 <>
                     <hr class="border-dark-gray" />
-                    <Listing posts={childrenForListing} />
+                    <PostListing nodes={childrenForListing} />
                 </>
             )
         }

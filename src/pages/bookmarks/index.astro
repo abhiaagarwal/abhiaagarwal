@@ -1,0 +1,127 @@
+---
+import { getCollection } from "astro:content";
+import dayjs from "dayjs";
+import BookmarkListing from "../../components/BookmarkListing.astro";
+import { type FilterItem } from "../../components/FilterBar.astro";
+import PaginationNav from "../../components/PaginationNav.astro";
+import Base from "../../layouts/Base.astro";
+import { getTotalPages, PAGE_SIZE } from "../../util/bookmarks";
+
+const allBookmarks = await getCollection("bookmarks");
+const sortedBookmarks = allBookmarks.sort(
+    (a, b) => b.data.created.getTime() - a.data.created.getTime(),
+);
+
+const uniqueTags = [
+    ...new Set(allBookmarks.map((bookmark) => bookmark.data.tags).flat()),
+];
+
+const filterItems: FilterItem[] = uniqueTags.map((tag) => ({
+    text: tag.toLowerCase(),
+    value: tag,
+}));
+
+const firstPageBookmarks = sortedBookmarks.slice(0, PAGE_SIZE);
+const hasMorePages = sortedBookmarks.length > PAGE_SIZE;
+const totalPages = getTotalPages(sortedBookmarks.length);
+---
+
+<Base
+    title="Bookmarks"
+    description="Abhi's bookmarks."
+    type="website"
+    publishedTime={dayjs()}
+>
+    <div class="mx-auto max-w-2xl">
+        <div class="gap-2items-center mb-6 flex flex-col justify-between">
+            <h1 class="font-serif text-3xl font-semibold text-dark">
+                Bookmarks
+            </h1>
+        </div>
+        <BookmarkListing
+            bookmarks={firstPageBookmarks}
+            filterItems={filterItems}
+        >
+            {
+                hasMorePages && (
+                    <li
+                        slot="list-item"
+                        id="bookmark-sentinel"
+                        hx-get="/bookmarks/2/"
+                        hx-trigger="intersect delay:0.3s"
+                        hx-target="#bookmark-listing"
+                        hx-swap="beforeend"
+                        hx-select="#bookmark-listing > li"
+                        data-next-page="2"
+                        data-last-page={totalPages}
+                        aria-hidden="true"
+                        class="mt-4 items-center justify-center md:mt-6"
+                        style="display: none;"
+                    >
+                        <span class="sr-only">Loading more bookmarks…</span>
+                        <div class="relative flex size-6 items-center justify-center">
+                            <div class="size-4 animate-ping rounded-full bg-dark-gray/30" />
+                            <div class="absolute size-3 rounded-full bg-dark-gray/70" />
+                        </div>
+                    </li>
+                )
+            }
+            <noscript slot="pagination">
+                {hasMorePages && <PaginationNav nextUrl="/bookmarks/2/" />}
+            </noscript>
+        </BookmarkListing>
+    </div>
+</Base>
+
+<script>
+    // From: https://jhuleatt.com/posts/astro-htmx
+    import htmx from "htmx.org";
+
+    if (import.meta.env.DEV === true) {
+        htmx.logAll();
+    }
+
+    const sentinel = document.getElementById("bookmark-sentinel");
+    if (sentinel) {
+        // this is done to not display the sentinel if noscript is present
+        sentinel.style.display = "flex";
+    }
+
+    htmx.config.globalViewTransitions = true;
+
+    htmx.on("htmx:afterSwap", (event) => {
+        const list = document.getElementById("bookmark-listing");
+        const sentinel = document.getElementById("bookmark-sentinel");
+        if (!list || !sentinel) return;
+
+        const target = event.target as Element | null;
+        if (target !== list) return;
+
+        const nextPageAttr = sentinel.getAttribute("data-next-page");
+        const lastPageAttr = sentinel.getAttribute("data-last-page");
+
+        if (!nextPageAttr || !lastPageAttr) return;
+
+        const nextPage = Number(nextPageAttr);
+        const lastPage = Number(lastPageAttr);
+
+        if (nextPage >= lastPage) {
+            sentinel.remove();
+            return;
+        }
+
+        const newNextPage = nextPage + 1;
+
+        const newSentinel = sentinel.cloneNode(true) as HTMLElement;
+        newSentinel.setAttribute("data-next-page", String(newNextPage));
+        newSentinel.setAttribute("hx-get", `/bookmarks/${newNextPage}/`);
+
+        sentinel.remove();
+        list.appendChild(newSentinel);
+        htmx.process(newSentinel);
+    });
+
+    document.addEventListener("astro:after-swap", () => {
+        htmx.process(document.body);
+    });
+</script>

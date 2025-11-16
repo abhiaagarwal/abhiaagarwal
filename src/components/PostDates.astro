@@ -14,19 +14,9 @@ interface Props {
     createdTime: Dayjs;
     lastModified?: Dayjs;
     iconSize?: "sm" | "md";
-    textSize?: "xs" | "sm";
-    layout?: "horizontal" | "vertical";
-    className?: string;
 }
 
-const {
-    createdTime,
-    lastModified,
-    iconSize = "sm",
-    textSize = "xs",
-    layout = "horizontal",
-    className = "",
-} = Astro.props;
+const { createdTime, lastModified, iconSize = "sm" } = Astro.props;
 
 const formattedCreatedTime = createdTime.format("MMMM D, YYYY");
 const formattedLastModified = lastModified
@@ -42,12 +32,9 @@ const showLastModified =
     formattedLastModified && formattedLastModified !== formattedCreatedTime;
 
 const iconClasses = iconSize === "sm" ? "size-3" : "size-4";
-const textClasses = textSize === "xs" ? "text-xs" : "text-sm";
-const containerClasses =
-    layout === "horizontal" ? "flex flex-row gap-4" : "flex flex-col gap-1";
 ---
 
-<div class:list={[containerClasses, textClasses, "text-dark-gray", className]}>
+<>
     <span
         class="flex items-center gap-1 text-dark-gray"
         title={fullCreatedTime}
@@ -66,4 +53,4 @@ const containerClasses =
             </span>
         )
     }
-</div>
+</>

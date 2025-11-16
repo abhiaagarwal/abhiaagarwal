@@ -1,0 +1,95 @@
+---
+import Bookmark from "@lucide/astro/icons/bookmark";
+import NotebookText from "@lucide/astro/icons/notebook-text";
+import type { CollectionEntry } from "astro:content";
+import type { PostItemData } from "../components/PostItem.astro";
+import FilterBar, { type FilterItem } from "./FilterBar.astro";
+import KindIcon from "./KindIcon.astro";
+import PostItem from "./PostItem.astro";
+
+export const bookmarkToPostItem = (
+    bookmark: CollectionEntry<"bookmarks">,
+): PostItemData => ({
+    title: bookmark.data.title,
+    description: bookmark.data.excerpt ?? bookmark.data.note,
+    url: bookmark.data.url,
+    date: bookmark.data.created,
+});
+
+export const getHostname = (url: string): string => {
+    try {
+        return new URL(url).hostname.replace("www.", "");
+    } catch {
+        return url;
+    }
+};
+
+interface Props {
+    bookmarks: CollectionEntry<"bookmarks">[];
+    filterItems: FilterItem[];
+    listGapClass?: string;
+}
+
+const {
+    bookmarks,
+    filterItems,
+    listGapClass = "gap-8 md:gap-10",
+} = Astro.props;
+---
+
+<div id="bookmark-listing-container">
+    {
+        filterItems.length > 0 && (
+            <FilterBar
+                items={filterItems}
+                containerId="bookmark-listing-container"
+                dataAttribute="data-tag"
+                legend="Filter bookmarks by tag"
+                itemClass="post-item"
+            />
+        )
+    }
+    <ol
+        id="bookmark-listing"
+        class:list={[`flex flex-col`, listGapClass]}
+        aria-label="Bookmark listing"
+    >
+        {
+            bookmarks.map((bookmark) => {
+                const item = bookmarkToPostItem(bookmark);
+                return (
+                    <PostItem
+                        item={item}
+                        htmlAttributes={{
+                            "data-tag": bookmark.data.tags.join(" "),
+                        }}
+                    >
+                        <span
+                            slot="top-row"
+                            class="flex items-center gap-1 text-sm text-dark-gray"
+                        >
+                            <KindIcon
+                                kind="bookmark"
+                                class="size-4 stroke-dark-gray"
+                            />
+                            {bookmark.data.tags.map((tag) => (
+                                <span
+                                    class="filter-text-primary text-dark-gray"
+                                    data-value={tag}
+                                >{`#${tag}`}</span>
+                            ))}
+                        </span>
+                        <div slot="before-dates">
+                            <span class="flex items-center gap-1 text-dark-gray">
+                                <NotebookText class="size-4" />
+                                {getHostname(bookmark.data.url)}
+                            </span>
+                        </div>
+                    </PostItem>
+                );
+            })
+        }
+        <slot name="list-item" />
+    </ol>
+    <slot name="pagination" />
+</div>

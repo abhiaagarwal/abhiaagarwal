@@ -1,7 +1,7 @@
 ---
+import Eclipse from "@lucide/astro/icons/eclipse";
 import Moon from "@lucide/astro/icons/moon";
 import Sun from "@lucide/astro/icons/sun";
-import SunMoon from "@lucide/astro/icons/sun-moon";
 import type { AstroComponentFactory } from "astro/runtime/server/render/astro/index.js";
 
 interface Props {
@@ -13,7 +13,7 @@ const { className } = Astro.props;
 const themeConfig: Record<string, { Icon: AstroComponentFactory }> = {
     light: { Icon: Sun },
     dark: { Icon: Moon },
-    system: { Icon: SunMoon },
+    system: { Icon: Eclipse },
 };
 const themes = Object.keys(themeConfig);
 ---
@@ -25,7 +25,7 @@ const themes = Object.keys(themeConfig);
     transition:persist
     class:list={[
         className,
-        "relative flex h-8 w-8 cursor-pointer overflow-hidden rounded-md",
+        "relative flex h-8 w-7 cursor-pointer overflow-hidden rounded-md",
     ]}
 >
     {

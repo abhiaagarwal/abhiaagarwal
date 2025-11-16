@@ -1,0 +1,60 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import { getCollection } from "astro:content";
+import dayjs from "dayjs";
+import BookmarkListing from "../../components/BookmarkListing.astro";
+import { type FilterItem } from "../../components/FilterBar.astro";
+import PaginationNav from "../../components/PaginationNav.astro";
+import Base from "../../layouts/Base.astro";
+import { PAGE_SIZE } from "../../util/bookmarks";
+
+export const bookmarks = await getCollection("bookmarks");
+
+const uniqueTags = [
+    ...new Set(bookmarks.map((bookmark) => bookmark.data.tags).flat()),
+];
+
+const filterItems: FilterItem[] = uniqueTags.map((tag) => ({
+    text: tag.toLowerCase(),
+    value: tag,
+}));
+
+export const getStaticPaths = (({ paginate }) => {
+    return paginate(
+        bookmarks.sort(
+            (a, b) => b.data.created.getTime() - a.data.created.getTime(),
+        ),
+        { pageSize: PAGE_SIZE },
+    );
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { page } = Astro.props;
+---
+
+<Base
+    title="Bookmarks"
+    description="Abhi's bookmarks."
+    type="website"
+    publishedTime={dayjs()}
+>
+    <div class="mx-auto max-w-2xl">
+        <div class="gap-2items-center mb-6 flex flex-col justify-between">
+            <h1 class="font-serif text-3xl font-semibold text-dark">
+                Bookmarks
+            </h1>
+        </div>
+        <BookmarkListing bookmarks={page.data} filterItems={filterItems}>
+            {
+                page.lastPage > 1 && (
+                    <PaginationNav
+                        slot="pagination"
+                        prevUrl={page.url.prev}
+                        nextUrl={page.url.next}
+                    />
+                )
+            }
+        </BookmarkListing>
+    </div>
+</Base>

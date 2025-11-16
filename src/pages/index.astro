@@ -2,7 +2,7 @@
 import dayjs from "dayjs";
 import { blogIndex as blogIndexPromise } from "../blogIndex";
 import FeedIcons from "../components/FeedIcons.astro";
-import Listing from "../components/Listing.astro";
+import PostListing from "../components/PostListing.astro";
 import Layout from "../layouts/Base.astro";
 import { feedConfigToLinks, generateFeedUrls } from "../util/feeds";
 
@@ -38,6 +38,6 @@ const feeds = generateFeedUrls(siteUrl);
             </h1>
             <FeedIcons feeds={feedConfigToLinks(feeds)} size="md" />
         </div>
-        <Listing posts={postsForHomepage} />
+        <PostListing nodes={postsForHomepage} />
     </div>
 </Layout>

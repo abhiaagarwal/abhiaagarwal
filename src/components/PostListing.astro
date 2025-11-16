@@ -1,0 +1,109 @@
+---
+import Thoughts from "@lucide/astro/icons/cloud";
+import Notebook from "@lucide/astro/icons/notebook";
+import Orbit from "@lucide/astro/icons/orbit";
+import { capitalize } from "es-toolkit";
+import { type HierarchicalBlogNode } from "../blogIndex";
+import Breadcrumbs from "./Breadcrumbs.astro";
+import FilterBar, { type FilterItem } from "./FilterBar.astro";
+import KindIcon from "./KindIcon.astro";
+import PostItem, { type PostItemData } from "./PostItem.astro";
+
+interface Props {
+    nodes: HierarchicalBlogNode[];
+    listGapClass?: string;
+}
+
+const { nodes, listGapClass = "gap-8 md:gap-10" } = Astro.props;
+
+function nodeToPostItem(node: HierarchicalBlogNode): PostItemData {
+    return {
+        title: node.title,
+        description: node.data?.description,
+        url: `/posts/${node.id}/`,
+        date: node.data?.published,
+    };
+}
+
+const kinds = Array.from(
+    new Set(
+        nodes
+            .map((node) => node.data?.kind)
+            .filter((kind) => kind !== undefined),
+    ),
+);
+
+const kindIconMap: Record<string, typeof Orbit> = {
+    observations: Orbit,
+    thoughts: Thoughts,
+    notes: Notebook,
+};
+
+const kindDescriptionMap: Record<string, string> = {
+    observations: "Long-form content, focusing on a single topic or idea.",
+    notes: "Generally just bullet-points on a certain topic.",
+    thoughts: "Short-form content, focusing on a single topic or idea.",
+};
+
+const filterItems: FilterItem[] = kinds.map((kind) => ({
+    icon: kindIconMap[kind],
+    text: capitalize(kind),
+    value: kind,
+    description: kindDescriptionMap[kind],
+}));
+---
+
+<div id="post-listing-container">
+    {
+        kinds.length > 1 && (
+            <FilterBar
+                items={filterItems}
+                containerId="post-listing-container"
+                dataAttribute="data-kind"
+                legend="Filter posts by kind"
+            />
+        )
+    }
+    <ol class:list={[`flex flex-col`, listGapClass]} aria-label="Post listing">
+        {
+            nodes.map((node) => {
+                const item = nodeToPostItem(node);
+                const pathParts = node.id.split("/").filter((s) => s);
+                const breadcrumbs = pathParts.map((segment, index, arr) => {
+                    const fragment = arr.slice(0, index + 1).join("/");
+                    return {
+                        label: segment,
+                        fragment: fragment,
+                        linkTo: index < arr.length - 1,
+                    };
+                });
+                return (
+                    <PostItem
+                        item={item}
+                        htmlAttributes={
+                            node.data?.kind
+                                ? { "data-kind": node.data.kind }
+                                : {}
+                        }
+                    >
+                        <div
+                            slot="top-row"
+                            class="flex flex-row items-center gap-1"
+                        >
+                            <KindIcon
+                                kind={node.data?.kind ?? "folder"}
+                                class="size-4 stroke-dark-gray"
+                            />
+                            {breadcrumbs.length > 0 && (
+                                <Breadcrumbs
+                                    baseUrl="/posts"
+                                    breadcrumbs={breadcrumbs}
+                                />
+                            )}
+                        </div>
+                    </PostItem>
+                );
+            })
+        }
+    </ol>
+</div>

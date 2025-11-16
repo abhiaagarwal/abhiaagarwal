@@ -1,3 +1,4 @@
+import { csvLoader } from "@ascorbic/csv-loader";
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
@@ -23,4 +24,23 @@ const blog = defineCollection({
     schema: baseSchema,
 });
 
-export const collections = { blog };
+const bookmarks = defineCollection({
+    loader: csvLoader({ fileName: "bookmarks/technical_bookmarks.csv" }),
+    schema: z.object({
+        id: z.number(),
+        title: z.string(),
+        note: z.string().nullable(),
+        excerpt: z.string().nullable(),
+        url: z.string().url(),
+        tags: z
+            .string()
+            .transform((tags) => tags.split(","))
+            .pipe(z.string().trim().array()),
+        created: z.coerce.date(),
+        cover: z.string().url().nullable(),
+        //highlights: z.array(z.string()).default([]),
+        favorite: z.boolean().default(false),
+    }),
+});
+
+export const collections = { blog, bookmarks };
