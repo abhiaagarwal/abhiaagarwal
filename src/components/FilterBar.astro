@@ -1,0 +1,113 @@
+---
+import type { Icon } from "@lucide/astro";
+
+export interface FilterItem {
+    icon?: typeof Icon;
+    text: string;
+    value: string;
+    description?: string;
+}
+
+interface Props {
+    items: FilterItem[];
+    containerId: string;
+    dataAttribute: string;
+    legend: string;
+    itemClass?: string;
+}
+
+const {
+    items,
+    containerId,
+    dataAttribute,
+    legend,
+    itemClass = "post-item",
+} = Astro.props;
+
+// Generate CSS rules dynamically
+const cssRules = items
+    .map(
+        (item) => `
+    #${containerId}:has(.filter-button input[value="${item.value}"]:checked) .${itemClass}[${dataAttribute}="${item.value}"],
+    #${containerId}:has(.filter-button input[value="${item.value}"]:checked) .filter-description[data-value="${item.value}"] {
+        display: flex;
+    }`,
+    )
+    .join("\n");
+
+const fullStyle = `
+    #${containerId}:has(.filter-button input:checked) {
+        .${itemClass} {
+            display: none;
+        }
+    }
+    ${cssRules}
+`;
+
+const scriptContent = `
+    const container = document.getElementById("${containerId}");
+    const checkboxes = container?.querySelectorAll(".filter-button input[type='checkbox']");
+
+    checkboxes?.forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+                checkboxes.forEach((otherCheckbox) => {
+                    if (otherCheckbox !== checkbox) {
+                        otherCheckbox.checked = false;
+                    }
+                });
+            }
+        });
+    });
+`;
+---
+
+{
+    items.length > 0 && (
+        <div class="mb-4 flex flex-col gap-2 md:mb-6">
+            <fieldset role="group" class="flex flex-wrap items-center gap-2">
+                <legend class="sr-only">{legend}</legend>
+                {items.map((item) => {
+                    const IconComponent = item.icon;
+                    return (
+                        <label class="filter-button flex cursor-pointer items-center gap-1 rounded bg-light-gray px-2 py-1 text-sm text-dark transition hover:bg-gray has-checked:bg-primary has-checked:text-light">
+                            <input
+                                id={`filter-${item.value}`}
+                                type="checkbox"
+                                name="filter"
+                                value={item.value}
+                                class="sr-only"
+                                aria-labelledby={`filter-${item.value}-label`}
+                            />
+                            {IconComponent && (
+                                <IconComponent class="inline-block size-4" />
+                            )}
+                            {item.text}
+                        </label>
+                    );
+                })}
+            </fieldset>
+            {items.some((item) => item.description) && (
+                <div class="h-4 text-sm text-dark-gray italic">
+                    {items.map(
+                        (item) =>
+                            item.description && (
+                                <label
+                                    id={`filter-${item.value}-label`}
+                                    class="filter-description hidden"
+                                    data-value={item.value}
+                                    for={`filter-${item.value}`}
+                                >
+                                    {item.description}
+                                </label>
+                            ),
+                    )}
+                </div>
+            )}
+        </div>
+    )
+}
+
+<style set:html={fullStyle}></style>
+
+<script set:html={scriptContent} />

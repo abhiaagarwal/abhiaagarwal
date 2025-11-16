@@ -5,6 +5,7 @@ import NotebookText from "@lucide/astro/icons/notebook-text";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import { getCollection } from "astro:content";
 import dayjs from "dayjs";
+import FilterBar, { type FilterItem } from "../../components/FilterBar.astro";
 import PostItem from "../../components/PostItem.astro";
 import Base from "../../layouts/Base.astro";
 import {
@@ -13,8 +14,18 @@ import {
     PAGE_SIZE,
 } from "../../util/bookmarks";
 
-export const getStaticPaths = (async ({ paginate }) => {
-    const bookmarks = await getCollection("bookmarks");
+export const bookmarks = await getCollection("bookmarks");
+
+const uniqueTags = [
+    ...new Set(bookmarks.map((bookmark) => bookmark.data.tags).flat()),
+];
+
+const filterItems: FilterItem[] = uniqueTags.map((tag) => ({
+    text: tag.toLowerCase(),
+    value: tag,
+}));
+
+export const getStaticPaths = (({ paginate }) => {
     return paginate(
         bookmarks.sort(
             (a, b) => b.data.created.getTime() - a.data.created.getTime(),
@@ -44,27 +55,40 @@ const { page } = Astro.props;
                 A list of links I've bookmarked, mostly technical.
             </p>
         </div>
-        <ol
-            id="bookmark-list"
-            class="flex flex-col gap-8 md:gap-12"
-            aria-label="Bookmark listing"
-        >
-            {
-                page.data.map((bookmark) => {
-                    const item = bookmarkToPostItem(bookmark);
-                    return (
-                        <PostItem item={item}>
-                            <div slot="before-dates">
-                                <span class="flex items-center gap-1 text-dark-gray">
-                                    <NotebookText class="size-4" />
-                                    {getHostname(bookmark.data.url)}
-                                </span>
-                            </div>
-                        </PostItem>
-                    );
-                })
-            }
-        </ol>
+        {
+            filterItems.length > 0 && (
+                <FilterBar
+                    items={filterItems}
+                    containerId="bookmark-list-container"
+                    dataAttribute="data-tag"
+                    legend="Filter bookmarks by tag"
+                    itemClass="bookmark-item"
+                />
+            )
+        }
+        <div id="bookmark-list-container">
+            <ol
+                id="bookmark-list"
+                class="flex flex-col gap-8 md:gap-12"
+                aria-label="Bookmark listing"
+            >
+                {
+                    page.data.map((bookmark) => {
+                        const item = bookmarkToPostItem(bookmark);
+                        return (
+                            <PostItem item={item}>
+                                <div slot="before-dates">
+                                    <span class="flex items-center gap-1 text-dark-gray">
+                                        <NotebookText class="size-4" />
+                                        {getHostname(bookmark.data.url)}
+                                    </span>
+                                </div>
+                            </PostItem>
+                        );
+                    })
+                }
+            </ol>
+        </div>
         {
             page.lastPage > 1 && (
                 <nav
