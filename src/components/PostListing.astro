@@ -11,9 +11,10 @@ import PostItem, { type PostItemData } from "./PostItem.astro";
 
 interface Props {
     nodes: HierarchicalBlogNode[];
+    listGapClass?: string;
 }
 
-const { nodes } = Astro.props;
+const { nodes, listGapClass = "gap-8 md:gap-10" } = Astro.props;
 
 function nodeToPostItem(node: HierarchicalBlogNode): PostItemData {
     return {
@@ -63,7 +64,7 @@ const filterItems: FilterItem[] = kinds.map((kind) => ({
             />
         )
     }
-    <ol class="flex flex-col gap-8 md:gap-12" aria-label="Post listing">
+    <ol class:list={[`flex flex-col`, listGapClass]} aria-label="Post listing">
         {
             nodes.map((node) => {
                 const item = nodeToPostItem(node);

@@ -1,19 +1,12 @@
 ---
-import ArrowLeft from "@lucide/astro/icons/arrow-left";
-import ArrowRight from "@lucide/astro/icons/arrow-right";
-import Bookmark from "@lucide/astro/icons/bookmark";
-import NotebookText from "@lucide/astro/icons/notebook-text";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import { getCollection } from "astro:content";
 import dayjs from "dayjs";
-import FilterBar, { type FilterItem } from "../../components/FilterBar.astro";
-import PostItem from "../../components/PostItem.astro";
+import BookmarkListing from "../../components/BookmarkListing.astro";
+import { type FilterItem } from "../../components/FilterBar.astro";
+import PaginationNav from "../../components/PaginationNav.astro";
 import Base from "../../layouts/Base.astro";
-import {
-    bookmarkToPostItem,
-    getHostname,
-    PAGE_SIZE,
-} from "../../util/bookmarks";
+import { PAGE_SIZE } from "../../util/bookmarks";
 
 export const bookmarks = await getCollection("bookmarks");
 
@@ -37,7 +30,6 @@ export const getStaticPaths = (({ paginate }) => {
 
 type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
-// All paginated data is passed on the "page" prop
 const { page } = Astro.props;
 ---
 
@@ -53,87 +45,16 @@ const { page } = Astro.props;
                 Bookmarks
             </h1>
         </div>
-        <div id="bookmark-listing-container">
+        <BookmarkListing bookmarks={page.data} filterItems={filterItems}>
             {
-                filterItems.length > 0 && (
-                    <FilterBar
-                        items={filterItems}
-                        containerId="bookmark-listing-container"
-                        dataAttribute="data-tag"
-                        legend="Filter bookmarks by tag"
-                        itemClass="post-item"
+                page.lastPage > 1 && (
+                    <PaginationNav
+                        slot="pagination"
+                        prevUrl={page.url.prev}
+                        nextUrl={page.url.next}
                     />
                 )
             }
-            <ol
-                id="bookmark-listing"
-                class="flex flex-col gap-8 md:gap-12"
-                aria-label="Bookmark listing"
-            >
-                {
-                    page.data.map((bookmark) => {
-                        const item = bookmarkToPostItem(bookmark);
-                        return (
-                            <PostItem
-                                item={item}
-                                htmlAttributes={{
-                                    "data-tag": bookmark.data.tags.join(" "),
-                                }}
-                            >
-                                <span
-                                    slot="top-row"
-                                    class="flex items-center gap-1 text-sm text-dark-gray"
-                                >
-                                    <Bookmark class="size-4" />
-                                    {bookmark.data.tags.map((tag) => (
-                                        <span
-                                            class="filter-text-primary text-dark-gray"
-                                            data-value={tag}
-                                        >{`#${tag}`}</span>
-                                    ))}
-                                </span>
-                                <div slot="before-dates">
-                                    <span class="flex items-center gap-1 text-dark-gray">
-                                        <NotebookText class="size-4" />
-                                        {getHostname(bookmark.data.url)}
-                                    </span>
-                                </div>
-                            </PostItem>
-                        );
-                    })
-                }
-            </ol>
-            {
-                page.lastPage > 1 && (
-                    <nav
-                        class="mt-12 flex items-center justify-between border-t border-dark-gray pt-8 font-serif"
-                        aria-label="Pagination"
-                    >
-                        {page.url.prev ? (
-                            <a
-                                href={page.url.prev}
-                                class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
-                                aria-label="Previous page"
-                                data-astro-prefetch
-                            >
-                                <ArrowLeft class="size-4" />
-                            </a>
-                        ) : (
-                            <span />
-                        )}
-                        {page.url.next && (
-                            <a
-                                href={page.url.next}
-                                class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
-                                aria-label="Next page"
-                                data-astro-prefetch
-                            >
-                                <ArrowRight class="size-4" />
-                            </a>
-                        )}
-                    </nav>
-                )
-            }
-        </div>
+        </BookmarkListing>
     </div>
 </Base>
