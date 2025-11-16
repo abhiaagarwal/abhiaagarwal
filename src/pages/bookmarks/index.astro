@@ -2,24 +2,20 @@
 import { getCollection } from "astro:content";
 import dayjs from "dayjs";
 import BookmarkListing from "../../components/BookmarkListing.astro";
-import { type FilterItem } from "../../components/FilterBar.astro";
 import PaginationNav from "../../components/PaginationNav.astro";
 import Base from "../../layouts/Base.astro";
-import { getTotalPages, PAGE_SIZE } from "../../util/bookmarks";
+import {
+    getSortedFilterItems,
+    getTotalPages,
+    PAGE_SIZE,
+} from "../../util/bookmarks";
 
 const allBookmarks = await getCollection("bookmarks");
 const sortedBookmarks = allBookmarks.sort(
     (a, b) => b.data.created.getTime() - a.data.created.getTime(),
 );
 
-const uniqueTags = [
-    ...new Set(allBookmarks.map((bookmark) => bookmark.data.tags).flat()),
-];
-
-const filterItems: FilterItem[] = uniqueTags.map((tag) => ({
-    text: tag.toLowerCase(),
-    value: tag,
-}));
+const filterItems = getSortedFilterItems(allBookmarks);
 
 const firstPageBookmarks = sortedBookmarks.slice(0, PAGE_SIZE);
 const hasMorePages = sortedBookmarks.length > PAGE_SIZE;
