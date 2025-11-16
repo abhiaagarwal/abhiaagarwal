@@ -1,5 +1,5 @@
 ---
-import { NotebookText } from "@lucide/astro";
+import { ArrowLeft, ArrowRight, NotebookText } from "@lucide/astro";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import { getCollection, type CollectionEntry } from "astro:content";
 import dayjs from "dayjs";
@@ -65,5 +65,34 @@ const bookmarkToPostItem = (
                 ))
             }
         </ol>
+        {
+            page.lastPage > 1 && (
+                <nav
+                    class="mt-12 flex items-center justify-between border-t border-dark-gray pt-8 font-serif"
+                    aria-label="Pagination"
+                >
+                    {page.url.prev ? (
+                        <a
+                            href={page.url.prev}
+                            class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
+                            aria-label="Previous page"
+                        >
+                            <ArrowLeft class="size-4" />
+                        </a>
+                    ) : (
+                        <span />
+                    )}
+                    {page.url.next && (
+                        <a
+                            href={page.url.next}
+                            class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
+                            aria-label="Next page"
+                        >
+                            <ArrowRight class="size-4" />
+                        </a>
+                    )}
+                </nav>
+            )
+        }
     </div>
 </Base>
