@@ -1,10 +1,10 @@
 ---
-import Bookmark from "@lucide/astro/icons/bookmark";
-import NotebookText from "@lucide/astro/icons/notebook-text";
 import type { CollectionEntry } from "astro:content";
+import dayjs from "dayjs";
 import type { PostItemData } from "../components/PostItem.astro";
 import FilterBar, { type FilterItem } from "./FilterBar.astro";
 import KindIcon from "./KindIcon.astro";
+import PostDates from "./PostDates.astro";
 import PostItem from "./PostItem.astro";
 
 export const bookmarkToPostItem = (
@@ -79,12 +79,14 @@ const {
                                 >{`#${tag}`}</span>
                             ))}
                         </span>
-                        <div slot="before-dates">
-                            <span class="flex items-center gap-1 text-dark-gray">
-                                <NotebookText class="size-4" />
+                        <Fragment slot="bottom-row">
+                            <span class="text-dark-gray">
                                 {getHostname(bookmark.data.url)}
                             </span>
-                        </div>
+                            <PostDates
+                                createdTime={dayjs(bookmark.data.created)}
+                            />
+                        </Fragment>
                     </PostItem>
                 );
             })
