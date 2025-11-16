@@ -1,6 +1,7 @@
 ---
+import { NotebookText } from "@lucide/astro";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
-import { getCollection } from "astro:content";
+import { getCollection, type CollectionEntry } from "astro:content";
 import dayjs from "dayjs";
 import PostItem, { type PostItemData } from "../../components/PostItem.astro";
 import Base from "../../layouts/Base.astro";
@@ -22,12 +23,14 @@ type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 // All paginated data is passed on the "page" prop
 const { page } = Astro.props;
 
-const listingItems: PostItemData[] = page.data.map((bookmark) => ({
+const bookmarkToPostItem = (
+    bookmark: CollectionEntry<"bookmarks">,
+): PostItemData => ({
     title: bookmark.data.title,
     description: bookmark.data.excerpt ?? bookmark.data.note,
     url: bookmark.data.url,
-    published: bookmark.data.created,
-}));
+    date: bookmark.data.created,
+});
 ---
 
 <Base
@@ -36,7 +39,31 @@ const listingItems: PostItemData[] = page.data.map((bookmark) => ({
     type="website"
     publishedTime={dayjs()}
 >
-    <ol class="flex flex-col gap-8 md:gap-12" aria-label="Bookmark listing">
-        {listingItems.map((item) => <PostItem item={item} />)}
-    </ol>
+    <div class="mx-auto max-w-2xl">
+        <div class="gap-2items-center mb-6 flex flex-col justify-between">
+            <h1 class="font-serif text-3xl font-semibold text-dark">
+                Bookmarks
+            </h1>
+            <p class="text-sm text-dark-gray">
+                A list of links I've bookmarked, mostly technical.
+            </p>
+        </div>
+        <ol class="flex flex-col gap-8 md:gap-12" aria-label="Bookmark listing">
+            {
+                page.data.map((bookmark) => (
+                    <PostItem item={bookmarkToPostItem(bookmark)}>
+                        <div slot="before-dates">
+                            <span class="flex items-center gap-1 text-dark-gray">
+                                <NotebookText class="size-4" />
+                                {new URL(bookmark.data.url).hostname.replace(
+                                    "www.",
+                                    "",
+                                )}
+                            </span>
+                        </div>
+                    </PostItem>
+                ))
+            }
+        </ol>
+    </div>
 </Base>

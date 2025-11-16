@@ -7,7 +7,7 @@ export interface PostItemData {
     title: string;
     description?: string | null;
     url: string;
-    published?: Date;
+    date?: Date;
 }
 
 interface Props {
@@ -17,7 +17,7 @@ interface Props {
 
 const { item, htmlAttributes } = Astro.props;
 
-const { title, description, url, published } = item;
+const { title, description, url, date } = item;
 
 const isExternalUrl = url.startsWith("http://") || url.startsWith("https://");
 ---
@@ -38,21 +38,22 @@ const isExternalUrl = url.startsWith("http://") || url.startsWith("https://");
 
     {
         description && (
-            <span class="font-sans text-sm/snug text-dark-gray italic">
+            <span class="text-md/snug font-sans text-dark-gray italic">
                 <Fragment set:html={parseInlineCode(description)} />
             </span>
         )
     }
 
-    {
-        published && (
-            <PostDates
-                createdTime={dayjs(published)}
-                lastModified={dayjs(published)}
-                iconSize="sm"
-                textSize="xs"
-                layout="horizontal"
-            />
-        )
-    }
+    <div class="flex flex-row gap-4 text-sm text-dark-gray">
+        <slot name="before-dates" />
+        {
+            date && (
+                <PostDates
+                    createdTime={dayjs(date)}
+                    lastModified={dayjs(date)}
+                    iconSize="md"
+                />
+            )
+        }
+    </div>
 </li>

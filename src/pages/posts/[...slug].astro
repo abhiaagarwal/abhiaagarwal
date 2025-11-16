@@ -185,14 +185,14 @@ const feeds = currentNode.isFolder
             </div>
             {
                 !currentNode.isFolder && (
-                    <div data-pagefind-ignore>
+                    <div
+                        data-pagefind-ignore
+                        class="flex flex-row gap-4 text-sm text-dark-gray"
+                    >
                         <PostDates
                             createdTime={dayjs(currentNode.data?.published)}
                             lastModified={dayjs(currentNode.data?.published)}
                             iconSize="md"
-                            textSize="sm"
-                            layout="horizontal"
-                            className="text-dark-gray"
                         />
                     </div>
                 )

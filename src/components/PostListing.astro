@@ -15,7 +15,7 @@ function nodeToPostItem(node: HierarchicalBlogNode): PostItemData {
         title: node.title,
         description: node.data?.description,
         url: `/posts/${node.id}/`,
-        published: node.data?.published,
+        date: node.data?.published,
     };
 }
 
