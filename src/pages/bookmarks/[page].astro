@@ -1,12 +1,15 @@
 ---
 import { ArrowLeft, ArrowRight, NotebookText } from "@lucide/astro";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
 import dayjs from "dayjs";
-import PostItem, { type PostItemData } from "../../components/PostItem.astro";
+import PostItem from "../../components/PostItem.astro";
 import Base from "../../layouts/Base.astro";
-
-export const PAGE_SIZE = 20;
+import {
+    bookmarkToPostItem,
+    getHostname,
+    PAGE_SIZE,
+} from "../../util/bookmarks";
 
 export const getStaticPaths = (async ({ paginate }) => {
     const bookmarks = await getCollection("bookmarks");
@@ -22,15 +25,6 @@ type Props = InferGetStaticPropsType<typeof getStaticPaths>;
 
 // All paginated data is passed on the "page" prop
 const { page } = Astro.props;
-
-const bookmarkToPostItem = (
-    bookmark: CollectionEntry<"bookmarks">,
-): PostItemData => ({
-    title: bookmark.data.title,
-    description: bookmark.data.excerpt ?? bookmark.data.note,
-    url: bookmark.data.url,
-    date: bookmark.data.created,
-});
 ---
 
 <Base
@@ -48,21 +42,25 @@ const bookmarkToPostItem = (
                 A list of links I've bookmarked, mostly technical.
             </p>
         </div>
-        <ol class="flex flex-col gap-8 md:gap-12" aria-label="Bookmark listing">
+        <ol
+            id="bookmark-list"
+            class="flex flex-col gap-8 md:gap-12"
+            aria-label="Bookmark listing"
+        >
             {
-                page.data.map((bookmark) => (
-                    <PostItem item={bookmarkToPostItem(bookmark)}>
-                        <div slot="before-dates">
-                            <span class="flex items-center gap-1 text-dark-gray">
-                                <NotebookText class="size-4" />
-                                {new URL(bookmark.data.url).hostname.replace(
-                                    "www.",
-                                    "",
-                                )}
-                            </span>
-                        </div>
-                    </PostItem>
-                ))
+                page.data.map((bookmark) => {
+                    const item = bookmarkToPostItem(bookmark);
+                    return (
+                        <PostItem item={item}>
+                            <div slot="before-dates">
+                                <span class="flex items-center gap-1 text-dark-gray">
+                                    <NotebookText class="size-4" />
+                                    {getHostname(bookmark.data.url)}
+                                </span>
+                            </div>
+                        </PostItem>
+                    );
+                })
             }
         </ol>
         {
