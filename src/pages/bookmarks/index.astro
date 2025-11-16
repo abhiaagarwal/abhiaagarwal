@@ -1,7 +1,9 @@
 ---
+import Bookmark from "@lucide/astro/icons/bookmark";
 import NotebookText from "@lucide/astro/icons/notebook-text";
 import { getCollection } from "astro:content";
 import dayjs from "dayjs";
+import FilterBar, { type FilterItem } from "../../components/FilterBar.astro";
 import PostItem from "../../components/PostItem.astro";
 import Base from "../../layouts/Base.astro";
 import {
@@ -15,6 +17,15 @@ const allBookmarks = await getCollection("bookmarks");
 const sortedBookmarks = allBookmarks.sort(
     (a, b) => b.data.created.getTime() - a.data.created.getTime(),
 );
+
+const uniqueTags = [
+    ...new Set(allBookmarks.map((bookmark) => bookmark.data.tags).flat()),
+];
+
+const filterItems: FilterItem[] = uniqueTags.map((tag) => ({
+    text: tag.toLowerCase(),
+    value: tag,
+}));
 
 const firstPageBookmarks = sortedBookmarks.slice(0, PAGE_SIZE);
 const hasMorePages = sortedBookmarks.length > PAGE_SIZE;
@@ -32,53 +43,80 @@ const totalPages = getTotalPages(sortedBookmarks.length);
             <h1 class="font-serif text-3xl font-semibold text-dark">
                 Bookmarks
             </h1>
-            <p class="text-sm text-dark-gray">
-                A list of links I've bookmarked, mostly technical.
-            </p>
         </div>
-        <ol
-            id="bookmark-list"
-            class="flex flex-col gap-8 md:gap-12"
-            aria-label="Bookmark listing"
-        >
+        <div id="bookmark-listing-container">
             {
-                firstPageBookmarks.map((bookmark) => {
-                    const item = bookmarkToPostItem(bookmark);
-                    return (
-                        <PostItem item={item}>
-                            <div slot="before-dates">
-                                <span class="flex items-center gap-1 text-dark-gray">
-                                    <NotebookText class="size-4" />
-                                    {getHostname(bookmark.data.url)}
-                                </span>
-                            </div>
-                        </PostItem>
-                    );
-                })
-            }
-            {
-                hasMorePages && (
-                    <li
-                        id="bookmark-sentinel"
-                        hx-get="/bookmarks/2/"
-                        hx-trigger="intersect delay:0.3s"
-                        hx-target="#bookmark-list"
-                        hx-swap="beforeend"
-                        hx-select="#bookmark-list > li"
-                        data-next-page="2"
-                        data-last-page={totalPages}
-                        aria-hidden="true"
-                        class="mt-4 flex items-center justify-center md:mt-6"
-                    >
-                        <span class="sr-only">Loading more bookmarks…</span>
-                        <div class="relative flex h-6 w-6 items-center justify-center">
-                            <div class="h-4 w-4 animate-ping rounded-full bg-dark-gray/30" />
-                            <div class="absolute h-3 w-3 rounded-full bg-dark-gray/70" />
-                        </div>
-                    </li>
+                filterItems.length > 0 && (
+                    <FilterBar
+                        items={filterItems}
+                        containerId="bookmark-listing-container"
+                        dataAttribute="data-tag"
+                        legend="Filter bookmarks by tag"
+                        itemClass="post-item"
+                    />
                 )
             }
-        </ol>
+            <ol
+                id="bookmark-listing"
+                class="flex flex-col gap-8 md:gap-10"
+                aria-label="Bookmark listing"
+            >
+                {
+                    firstPageBookmarks.map((bookmark) => {
+                        const item = bookmarkToPostItem(bookmark);
+                        return (
+                            <PostItem
+                                item={item}
+                                htmlAttributes={{
+                                    "data-tag": bookmark.data.tags.join(" "),
+                                }}
+                            >
+                                <span
+                                    slot="top-row"
+                                    class="flex items-center gap-1 text-sm text-dark-gray"
+                                >
+                                    <Bookmark class="size-4" />
+                                    {bookmark.data.tags.map((tag) => (
+                                        <span
+                                            class="filter-text-primary text-dark-gray"
+                                            data-value={tag}
+                                        >{`#${tag}`}</span>
+                                    ))}
+                                </span>
+                                <div slot="before-dates">
+                                    <span class="flex items-center gap-1 text-dark-gray">
+                                        <NotebookText class="size-4" />
+                                        {getHostname(bookmark.data.url)}
+                                    </span>
+                                </div>
+                            </PostItem>
+                        );
+                    })
+                }
+                {
+                    hasMorePages && (
+                        <li
+                            id="bookmark-sentinel"
+                            hx-get="/bookmarks/2/"
+                            hx-trigger="intersect delay:0.3s"
+                            hx-target="#bookmark-listing"
+                            hx-swap="beforeend"
+                            hx-select="#bookmark-listing > li"
+                            data-next-page="2"
+                            data-last-page={totalPages}
+                            aria-hidden="true"
+                            class="mt-4 flex items-center justify-center md:mt-6"
+                        >
+                            <span class="sr-only">Loading more bookmarks…</span>
+                            <div class="relative flex h-6 w-6 items-center justify-center">
+                                <div class="h-4 w-4 animate-ping rounded-full bg-dark-gray/30" />
+                                <div class="absolute h-3 w-3 rounded-full bg-dark-gray/70" />
+                            </div>
+                        </li>
+                    )
+                }
+            </ol>
+        </div>
         <noscript>
             <nav
                 class="mt-12 flex items-center justify-center border-t border-dark-gray pt-8 font-serif"
@@ -111,7 +149,7 @@ const totalPages = getTotalPages(sortedBookmarks.length);
     htmx.config.globalViewTransitions = true;
 
     htmx.on("htmx:afterSwap", (event) => {
-        const list = document.getElementById("bookmark-list");
+        const list = document.getElementById("bookmark-listing");
         const sentinel = document.getElementById("bookmark-sentinel");
         if (!list || !sentinel) return;
 

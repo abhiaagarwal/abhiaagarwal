@@ -13,7 +13,10 @@ interface Page {
 const pages: Record<string, Page> = Object.fromEntries(
     Array.from(blogIndex.entries())
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        .filter(([_slug, node]) => !node.isFolderNote || node.data?.draft)
+        .filter(
+            ([_slug, node]) =>
+                !node.isFolderNote || node.data?.published === undefined,
+        )
         .map(([slug, node]) => [
             slug,
             {

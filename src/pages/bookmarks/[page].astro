@@ -1,6 +1,7 @@
 ---
 import ArrowLeft from "@lucide/astro/icons/arrow-left";
 import ArrowRight from "@lucide/astro/icons/arrow-right";
+import Bookmark from "@lucide/astro/icons/bookmark";
 import NotebookText from "@lucide/astro/icons/notebook-text";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import { getCollection } from "astro:content";
@@ -51,24 +52,21 @@ const { page } = Astro.props;
             <h1 class="font-serif text-3xl font-semibold text-dark">
                 Bookmarks
             </h1>
-            <p class="text-sm text-dark-gray">
-                A list of links I've bookmarked, mostly technical.
-            </p>
         </div>
-        {
-            filterItems.length > 0 && (
-                <FilterBar
-                    items={filterItems}
-                    containerId="bookmark-list-container"
-                    dataAttribute="data-tag"
-                    legend="Filter bookmarks by tag"
-                    itemClass="bookmark-item"
-                />
-            )
-        }
-        <div id="bookmark-list-container">
+        <div id="bookmark-listing-container">
+            {
+                filterItems.length > 0 && (
+                    <FilterBar
+                        items={filterItems}
+                        containerId="bookmark-listing-container"
+                        dataAttribute="data-tag"
+                        legend="Filter bookmarks by tag"
+                        itemClass="post-item"
+                    />
+                )
+            }
             <ol
-                id="bookmark-list"
+                id="bookmark-listing"
                 class="flex flex-col gap-8 md:gap-12"
                 aria-label="Bookmark listing"
             >
@@ -76,7 +74,24 @@ const { page } = Astro.props;
                     page.data.map((bookmark) => {
                         const item = bookmarkToPostItem(bookmark);
                         return (
-                            <PostItem item={item}>
+                            <PostItem
+                                item={item}
+                                htmlAttributes={{
+                                    "data-tag": bookmark.data.tags.join(" "),
+                                }}
+                            >
+                                <span
+                                    slot="top-row"
+                                    class="flex items-center gap-1 text-sm text-dark-gray"
+                                >
+                                    <Bookmark class="size-4" />
+                                    {bookmark.data.tags.map((tag) => (
+                                        <span
+                                            class="filter-text-primary text-dark-gray"
+                                            data-value={tag}
+                                        >{`#${tag}`}</span>
+                                    ))}
+                                </span>
                                 <div slot="before-dates">
                                     <span class="flex items-center gap-1 text-dark-gray">
                                         <NotebookText class="size-4" />
@@ -88,37 +103,37 @@ const { page } = Astro.props;
                     })
                 }
             </ol>
+            {
+                page.lastPage > 1 && (
+                    <nav
+                        class="mt-12 flex items-center justify-between border-t border-dark-gray pt-8 font-serif"
+                        aria-label="Pagination"
+                    >
+                        {page.url.prev ? (
+                            <a
+                                href={page.url.prev}
+                                class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
+                                aria-label="Previous page"
+                                data-astro-prefetch
+                            >
+                                <ArrowLeft class="size-4" />
+                            </a>
+                        ) : (
+                            <span />
+                        )}
+                        {page.url.next && (
+                            <a
+                                href={page.url.next}
+                                class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
+                                aria-label="Next page"
+                                data-astro-prefetch
+                            >
+                                <ArrowRight class="size-4" />
+                            </a>
+                        )}
+                    </nav>
+                )
+            }
         </div>
-        {
-            page.lastPage > 1 && (
-                <nav
-                    class="mt-12 flex items-center justify-between border-t border-dark-gray pt-8 font-serif"
-                    aria-label="Pagination"
-                >
-                    {page.url.prev ? (
-                        <a
-                            href={page.url.prev}
-                            class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
-                            aria-label="Previous page"
-                            data-astro-prefetch
-                        >
-                            <ArrowLeft class="size-4" />
-                        </a>
-                    ) : (
-                        <span />
-                    )}
-                    {page.url.next && (
-                        <a
-                            href={page.url.next}
-                            class="flex items-center justify-center rounded border border-dark-gray p-2 text-dark-gray transition-colors hover:border-dark hover:text-dark"
-                            aria-label="Next page"
-                            data-astro-prefetch
-                        >
-                            <ArrowRight class="size-4" />
-                        </a>
-                    )}
-                </nav>
-            )
-        }
     </div>
 </Base>

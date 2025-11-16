@@ -100,5 +100,16 @@ export default defineConfig({
                 uiLineHeight: "var(--text-sm--line-height)",
             },
         }),
+        /* 
+        import.meta.env.PROD &&
+            (await import("@playform/compress")).default({
+                CSS: {
+                    csso: false,
+                    lightningcss: {
+                        minify: false,
+                    },
+                },
+            }),
+        */
     ],
 });
