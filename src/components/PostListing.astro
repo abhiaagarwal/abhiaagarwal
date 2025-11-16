@@ -1,24 +1,27 @@
 ---
-import dayjs from "dayjs";
-import timezone from "dayjs/plugin/timezone";
-import utc from "dayjs/plugin/utc";
 import { type HierarchicalBlogNode } from "../blogIndex";
-import { parseInlineCode } from "../util/parseInlineCode";
 import Breadcrumbs from "./Breadcrumbs.astro";
 import KindIcon from "./KindIcon.astro";
-import PostDates from "./PostDates.astro";
-
-dayjs.extend(utc);
-dayjs.extend(timezone);
+import PostItem, { type PostItemData } from "./PostItem.astro";
 
 interface Props {
-    posts: HierarchicalBlogNode[];
+    nodes: HierarchicalBlogNode[];
 }
-const { posts } = Astro.props;
+
+const { nodes } = Astro.props;
+
+function nodeToPostItem(node: HierarchicalBlogNode): PostItemData {
+    return {
+        title: node.title,
+        description: node.data?.description,
+        url: `/posts/${node.id}/`,
+        published: node.data?.published,
+    };
+}
 
 const kinds = Array.from(
     new Set(
-        posts
+        nodes
             .map((node) => node.data?.kind)
             .filter((kind) => kind !== undefined),
     ),
@@ -78,13 +81,12 @@ const kinds = Array.from(
             </div>
         )
     }
-
     <ol class="flex flex-col gap-8 md:gap-12" aria-label="Post listing">
         {
-            posts.map((node) => {
-                const itemKind = node.data?.kind;
+            nodes.map((node) => {
+                const item = nodeToPostItem(node);
                 const pathParts = node.id.split("/").filter((s) => s);
-                const itemBreadcrumbs = pathParts.map((segment, index, arr) => {
+                const breadcrumbs = pathParts.map((segment, index, arr) => {
                     const fragment = arr.slice(0, index + 1).join("/");
                     return {
                         label: segment,
@@ -92,54 +94,34 @@ const kinds = Array.from(
                         linkTo: index < arr.length - 1,
                     };
                 });
-
                 return (
-                    <li
-                        class="post-item flex flex-col gap-1"
-                        data-kind={itemKind ?? ""}
+                    <PostItem
+                        item={item}
+                        htmlAttributes={
+                            node.data?.kind
+                                ? { "data-kind": node.data.kind }
+                                : {}
+                        }
                     >
-                        <div class="flex flex-row items-center gap-1">
-                            <KindIcon
-                                kind={itemKind}
-                                isFolder={node.isFolder}
-                                class="size-4 stroke-dark-gray"
-                            />
-                            {itemBreadcrumbs.length > 0 && (
+                        <div
+                            slot="top-row"
+                            class="flex flex-row items-center gap-1"
+                        >
+                            {node.data?.kind && (
+                                <KindIcon
+                                    kind={node.data.kind}
+                                    isFolder={node.isFolder}
+                                    class="size-4 stroke-dark-gray"
+                                />
+                            )}
+                            {breadcrumbs.length > 0 && (
                                 <Breadcrumbs
                                     baseUrl="/posts"
-                                    breadcrumbs={itemBreadcrumbs}
+                                    breadcrumbs={breadcrumbs}
                                 />
                             )}
                         </div>
-
-                        <h2 class="font-serif text-2xl font-semibold text-dark">
-                            <a href={`/posts/${node.id}/`} data-astro-prefetch>
-                                <Fragment
-                                    set:html={parseInlineCode(node.title)}
-                                />
-                            </a>
-                        </h2>
-
-                        {node.data?.description && !node.isFolder && (
-                            <span class="font-sans text-sm/snug text-dark-gray italic">
-                                <Fragment
-                                    set:html={parseInlineCode(
-                                        node.data.description,
-                                    )}
-                                />
-                            </span>
-                        )}
-
-                        {!node.isFolder && node.data?.published && (
-                            <PostDates
-                                createdTime={dayjs(node.data.published)}
-                                lastModified={dayjs(node.data.published)}
-                                iconSize="sm"
-                                textSize="xs"
-                                layout="horizontal"
-                            />
-                        )}
-                    </li>
+                    </PostItem>
                 );
             })
         }

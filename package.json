@@ -10,6 +10,7 @@
         "format": "prettier --write ."
     },
     "dependencies": {
+        "@ascorbic/csv-loader": "^2.0.3",
         "@astrojs/sitemap": "^3.6.0",
         "@fontsource-variable/lora": "^5.2.8",
         "@lucide/astro": "^0.544.0",

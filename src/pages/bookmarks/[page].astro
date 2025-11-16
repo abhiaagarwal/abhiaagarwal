@@ -1,0 +1,42 @@
+---
+import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
+import { getCollection } from "astro:content";
+import dayjs from "dayjs";
+import PostItem, { type PostItemData } from "../../components/PostItem.astro";
+import Base from "../../layouts/Base.astro";
+
+export const PAGE_SIZE = 20;
+
+export const getStaticPaths = (async ({ paginate }) => {
+    const bookmarks = await getCollection("bookmarks");
+    return paginate(
+        bookmarks.sort(
+            (a, b) => b.data.created.getTime() - a.data.created.getTime(),
+        ),
+        { pageSize: PAGE_SIZE },
+    );
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+// All paginated data is passed on the "page" prop
+const { page } = Astro.props;
+
+const listingItems: PostItemData[] = page.data.map((bookmark) => ({
+    title: bookmark.data.title,
+    description: bookmark.data.excerpt ?? bookmark.data.note,
+    url: bookmark.data.url,
+    published: bookmark.data.created,
+}));
+---
+
+<Base
+    title="Bookmarks"
+    description="Abhi's bookmarks."
+    type="website"
+    publishedTime={dayjs()}
+>
+    <ol class="flex flex-col gap-8 md:gap-12" aria-label="Bookmark listing">
+        {listingItems.map((item) => <PostItem item={item} />)}
+    </ol>
+</Base>

@@ -1,0 +1,58 @@
+---
+import dayjs from "dayjs";
+import { parseInlineCode } from "../util/parseInlineCode";
+import PostDates from "./PostDates.astro";
+
+export interface PostItemData {
+    title: string;
+    description?: string | null;
+    url: string;
+    published?: Date;
+}
+
+interface Props {
+    item: PostItemData;
+    htmlAttributes?: Record<string, string>;
+}
+
+const { item, htmlAttributes } = Astro.props;
+
+const { title, description, url, published } = item;
+
+const isExternalUrl = url.startsWith("http://") || url.startsWith("https://");
+---
+
+<li class="post-item flex flex-col gap-1" {...htmlAttributes}>
+    <slot name="top-row" />
+
+    <h2 class="font-serif text-2xl font-semibold text-dark">
+        <a
+            href={url}
+            {...isExternalUrl
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : { "data-astro-prefetch": true }}
+        >
+            <Fragment set:html={parseInlineCode(title)} />
+        </a>
+    </h2>
+
+    {
+        description && (
+            <span class="font-sans text-sm/snug text-dark-gray italic">
+                <Fragment set:html={parseInlineCode(description)} />
+            </span>
+        )
+    }
+
+    {
+        published && (
+            <PostDates
+                createdTime={dayjs(published)}
+                lastModified={dayjs(published)}
+                iconSize="sm"
+                textSize="xs"
+                layout="horizontal"
+            />
+        )
+    }
+</li>
