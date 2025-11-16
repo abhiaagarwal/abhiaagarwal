@@ -1,5 +1,6 @@
 ---
-import Search from "../components/Search.astro";
+import { Bookmark } from "@lucide/astro";
+// import Search from "../components/Search.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
 
 const { pathname } = Astro.url;
@@ -29,7 +30,22 @@ const links: { href: string; text: string }[] = [
                 </a>
             ))
         }
-        <Search className="transition-colors hover:text-primary" />
+        {
+            (
+                <a
+                    id="bookmarks-button"
+                    aria-label="Bookmarks"
+                    href="/bookmarks/1/"
+                    class:list={[
+                        "relative flex h-8 w-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:text-primary",
+                        pathname.startsWith("/bookmarks/") && "text-primary",
+                    ]}
+                >
+                    <Bookmark class="size-6" />
+                </a>
+            )
+        }
+        <!-- <Search className="transition-colors hover:text-primary" /> -->
         <ThemeToggle className="transition-colors hover:text-primary" />
     </nav>
 </header>
