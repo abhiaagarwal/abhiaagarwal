@@ -4,6 +4,7 @@ import NotebookText from "@lucide/astro/icons/notebook-text";
 import type { CollectionEntry } from "astro:content";
 import type { PostItemData } from "../components/PostItem.astro";
 import FilterBar, { type FilterItem } from "./FilterBar.astro";
+import KindIcon from "./KindIcon.astro";
 import PostItem from "./PostItem.astro";
 
 export const bookmarkToPostItem = (
@@ -67,7 +68,10 @@ const {
                             slot="top-row"
                             class="flex items-center gap-1 text-sm text-dark-gray"
                         >
-                            <Bookmark class="size-4" />
+                            <KindIcon
+                                kind="bookmark"
+                                class="size-4 stroke-dark-gray"
+                            />
                             {bookmark.data.tags.map((tag) => (
                                 <span
                                     class="filter-text-primary text-dark-gray"

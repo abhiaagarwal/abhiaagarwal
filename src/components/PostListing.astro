@@ -90,13 +90,10 @@ const filterItems: FilterItem[] = kinds.map((kind) => ({
                             slot="top-row"
                             class="flex flex-row items-center gap-1"
                         >
-                            {node.data?.kind && (
-                                <KindIcon
-                                    kind={node.data.kind}
-                                    isFolder={node.isFolder}
-                                    class="size-4 stroke-dark-gray"
-                                />
-                            )}
+                            <KindIcon
+                                kind={node.data?.kind ?? "folder"}
+                                class="size-4 stroke-dark-gray"
+                            />
                             {breadcrumbs.length > 0 && (
                                 <Breadcrumbs
                                     baseUrl="/posts"
