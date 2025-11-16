@@ -1,6 +1,4 @@
 ---
-import CalendarPlus from "@lucide/astro/icons/calendar-plus";
-import Pen from "@lucide/astro/icons/pen";
 import dayjs, { type Dayjs } from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import timezone from "dayjs/plugin/timezone";
@@ -13,10 +11,9 @@ dayjs.extend(advancedFormat);
 interface Props {
     createdTime: Dayjs;
     lastModified?: Dayjs;
-    iconSize?: "sm" | "md";
 }
 
-const { createdTime, lastModified, iconSize = "sm" } = Astro.props;
+const { createdTime, lastModified } = Astro.props;
 
 const formattedCreatedTime = createdTime.format("MMMM D, YYYY");
 const formattedLastModified = lastModified
@@ -30,25 +27,15 @@ const fullLastModified = lastModified
 
 const showLastModified =
     formattedLastModified && formattedLastModified !== formattedCreatedTime;
-
-const iconClasses = iconSize === "sm" ? "size-3" : "size-4";
 ---
 
 <>
-    <span
-        class="flex items-center gap-1 text-dark-gray"
-        title={fullCreatedTime}
-    >
-        <CalendarPlus class={iconClasses} />
+    <span class="text-dark-gray" title={fullCreatedTime}>
         {formattedCreatedTime}
     </span>
     {
         showLastModified && (
-            <span
-                class="flex items-center gap-1 text-gray"
-                title={fullLastModified}
-            >
-                <Pen class={iconClasses} />
+            <span class="text-gray" title={fullLastModified}>
                 {formattedLastModified}
             </span>
         )

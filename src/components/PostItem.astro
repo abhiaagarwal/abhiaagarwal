@@ -1,7 +1,5 @@
 ---
-import dayjs from "dayjs";
 import { parseInlineCode } from "../util/parseInlineCode";
-import PostDates from "./PostDates.astro";
 
 export interface PostItemData {
     title: string;
@@ -45,15 +43,6 @@ const isExternalUrl = url.startsWith("http://") || url.startsWith("https://");
     }
 
     <div class="flex flex-row gap-4 text-sm text-dark-gray">
-        <slot name="before-dates" />
-        {
-            date && (
-                <PostDates
-                    createdTime={dayjs(date)}
-                    lastModified={dayjs(date)}
-                    iconSize="md"
-                />
-            )
-        }
+        <slot name="bottom-row" />
     </div>
 </li>

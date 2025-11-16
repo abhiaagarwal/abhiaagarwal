@@ -133,7 +133,7 @@ const backlinkData = Array.from(currentNode.backlinks)
     })
     .filter((link) => link !== null);
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+// biome-ignore lint/style/noNonNullAssertion: always defined
 const siteUrl = Astro.site!.toString();
 const feeds = currentNode.isFolder
     ? generateFeedUrls(siteUrl, currentNode.id)
@@ -191,7 +191,6 @@ const feeds = currentNode.isFolder
                         <PostDates
                             createdTime={dayjs(currentNode.data?.published)}
                             lastModified={dayjs(currentNode.data?.published)}
-                            iconSize="md"
                         />
                     </div>
                 )

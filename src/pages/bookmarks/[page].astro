@@ -3,21 +3,13 @@ import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import { getCollection } from "astro:content";
 import dayjs from "dayjs";
 import BookmarkListing from "../../components/BookmarkListing.astro";
-import { type FilterItem } from "../../components/FilterBar.astro";
 import PaginationNav from "../../components/PaginationNav.astro";
 import Base from "../../layouts/Base.astro";
-import { PAGE_SIZE } from "../../util/bookmarks";
+import { getSortedFilterItems, PAGE_SIZE } from "../../util/bookmarks";
 
 export const bookmarks = await getCollection("bookmarks");
 
-const uniqueTags = [
-    ...new Set(bookmarks.map((bookmark) => bookmark.data.tags).flat()),
-];
-
-const filterItems: FilterItem[] = uniqueTags.map((tag) => ({
-    text: tag.toLowerCase(),
-    value: tag,
-}));
+const filterItems = getSortedFilterItems(bookmarks);
 
 export const getStaticPaths = (({ paginate }) => {
     return paginate(
