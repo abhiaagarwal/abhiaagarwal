@@ -13,7 +13,7 @@
         "@ascorbic/csv-loader": "^2.0.3",
         "@astrojs/sitemap": "^3.6.0",
         "@fontsource-variable/lora": "^5.2.8",
-        "@lucide/astro": "^0.553.0",
+        "@lucide/astro": "^0.554.0",
         "@playform/compress": "^0.2.0",
         "@portaljs/remark-wiki-link": "^1.2.0",
         "@r4ai/remark-callout": "^0.6.2",
