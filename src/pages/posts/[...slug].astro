@@ -9,7 +9,6 @@ import {
     type HierarchicalBlogNode,
 } from "../../blogIndex";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
-import FeedIcons from "../../components/FeedIcons.astro";
 import Giscus from "../../components/Giscus.astro";
 import KindIcon from "../../components/KindIcon.astro";
 import PostDates from "../../components/PostDates.astro";
@@ -173,14 +172,6 @@ const feeds = currentNode.isFolder
                 >
                     <Fragment set:html={parseInlineCode(pageTitle)} />
                 </h1>
-                {
-                    currentNode.isFolder && feeds && (
-                        <FeedIcons
-                            feeds={feedConfigToLinks(feeds, currentNode.title)}
-                            size="md"
-                        />
-                    )
-                }
             </div>
             {
                 !currentNode.isFolder && (

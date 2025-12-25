@@ -149,7 +149,11 @@ export class FeedGenerator {
                     const { Content } = await render(originalEntry);
                     const content =
                         await this.container.renderToString(Content);
-                    sanitizedContent = sanitizeHtml(content);
+                    sanitizedContent = sanitizeHtml(content, {
+                        allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+                            "img",
+                        ]),
+                    });
                 } catch (error) {
                     console.warn(
                         `Failed to render content for ${node.id}:`,
