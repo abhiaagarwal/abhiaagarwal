@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import { blogIndex as blogIndexPromise } from "../blogIndex";
 import PostListing from "../components/PostListing.astro";
 import Layout from "../layouts/Base.astro";
-import { feedConfigToLinks, generateFeedUrls } from "../util/feeds";
+import { generateFeedUrls } from "../util/feeds";
 
 const allNodesMap = await blogIndexPromise;
 

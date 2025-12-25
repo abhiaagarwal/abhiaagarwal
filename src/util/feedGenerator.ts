@@ -232,7 +232,7 @@ export class FeedGenerator {
      */
     async generateFeed(
         siteUrl: string,
-        format: "rss" | "atom" | "json",
+        format: "rss" | "atom",
         folderNode: HierarchicalBlogNode | null = null,
         limit?: number,
     ): Promise<string> {
@@ -241,34 +241,22 @@ export class FeedGenerator {
             posts.map((post) => this.nodeToFeedItem(post, siteUrl)),
         );
 
-        const config: FeedConfig = folderNode
-            ? {
-                  siteUrl,
-                  title: `${folderNode.title} - Abhi Agarwal`,
-                  description:
-                      folderNode.data?.description ??
-                      `Latest posts from ${folderNode.title} on Abhi Agarwal's blog`,
-                  id: `${siteUrl}posts/${folderNode.id}/`,
-                  link: `${siteUrl}posts/${folderNode.id}/`,
-                  feedLinks: {
-                      rss2: `${siteUrl}posts/${folderNode.id}.xml`,
-                      atom: `${siteUrl}posts/${folderNode.id}.atom`,
-                      json: `${siteUrl}posts/${folderNode.id}.json`,
-                  },
-              }
-            : {
-                  siteUrl,
-                  title: "Abhi Agarwal",
-                  description:
-                      "Software Engineer & Writer. Latest posts from my blog.",
-                  id: siteUrl,
-                  link: siteUrl,
-                  feedLinks: {
-                      rss2: `${siteUrl}rss.xml`,
-                      atom: `${siteUrl}rss.atom`,
-                      json: `${siteUrl}rss.json`,
-                  },
-              };
+        const config: FeedConfig = {
+            siteUrl,
+            title: folderNode
+                ? `${folderNode.title} - Abhi Agarwal`
+                : "Abhi Agarwal",
+            description: folderNode
+                ? (folderNode.data?.description ??
+                  `Latest posts from ${folderNode.title} on Abhi Agarwal's blog`)
+                : "Software Engineer & Writer. Latest posts from my blog.",
+            id: folderNode ? `${siteUrl}posts/${folderNode.id}/` : siteUrl,
+            link: folderNode ? `${siteUrl}posts/${folderNode.id}/` : siteUrl,
+            feedLinks: {
+                rss2: `${siteUrl}feed.rss`,
+                atom: `${siteUrl}feed.atom`,
+            },
+        };
 
         const feed = this.createFeed(config, items);
 
@@ -277,8 +265,6 @@ export class FeedGenerator {
                 return feed.rss2();
             case "atom":
                 return feed.atom1();
-            case "json":
-                return feed.json1();
             default:
                 throw new Error(`Unsupported feed format: ${format as string}`);
         }
@@ -290,9 +276,9 @@ export class FeedGenerator {
     async generateFolderFeed(
         folderNode: HierarchicalBlogNode,
         siteUrl: string,
-        format: "rss" | "atom" | "json",
+        format: "rss" | "atom",
     ): Promise<string> {
-        return this.generateFeed(siteUrl, format, folderNode);
+        return await this.generateFeed(siteUrl, format, folderNode);
     }
 
     /**
@@ -300,9 +286,9 @@ export class FeedGenerator {
      */
     async generateMainFeed(
         siteUrl: string,
-        format: "rss" | "atom" | "json",
+        format: "rss" | "atom",
         limit = 20,
     ): Promise<string> {
-        return this.generateFeed(siteUrl, format, null, limit);
+        return await this.generateFeed(siteUrl, format, null, limit);
     }
 }
