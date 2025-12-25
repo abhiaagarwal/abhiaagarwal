@@ -7,6 +7,12 @@ import type { Dayjs } from "dayjs";
 
 import { Font } from 'astro:assets';
 
+export interface BreadcrumbSegment {
+    label: string;
+    fragment: string;
+    active: boolean;
+}
+
 export interface Props {
     title?: string;
     description?: string;
@@ -18,7 +24,8 @@ export interface Props {
     tags?: string[];
     author?: string;
     canonical?: string;
-    feeds?: { rss: string; atom: string; json: string };
+    feeds?: { rss: string; atom: string };
+    breadcrumbs?: BreadcrumbSegment[];
 }
 
 const {
@@ -33,6 +40,7 @@ const {
     author = "Abhi Agarwal",
     canonical,
     feeds,
+    breadcrumbs,
 } = Astro.props;
 
 const siteUrl = Astro.site?.toString() ?? "";
@@ -66,12 +74,12 @@ const structuredData = type === "article" ? {
     "author": {
         "@type": "Person",
         "name": author,
-        "url": siteUrl + "/about"
+        "url": siteUrl + "about/"
     },
     "publisher": {
         "@type": "Person",
         "name": author,
-        "url": siteUrl + "/about"
+        "url": siteUrl + "about/"
     },
     "isPartOf": {
         "@type": "Blog",
@@ -93,9 +101,28 @@ const structuredData = type === "article" ? {
     "author": {
         "@type": "Person",
         "name": author,
-        "url": siteUrl + "/about"
+        "url": siteUrl + "about/"
     }
 };
+
+const breadcrumbStructuredData = breadcrumbs && breadcrumbs.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": siteUrl
+        },
+        ...breadcrumbs.slice(0, -1).map((crumb, index) => ({
+            "@type": "ListItem",
+            "position": index + 2,
+            "name": crumb.label,
+            "item": `${siteUrl}posts/${crumb.fragment}/`
+        }))
+    ]
+} : null;
 
 ---
 
@@ -104,6 +131,8 @@ const structuredData = type === "article" ? {
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
+        <link rel="preconnect" href="https://giscus.app" crossorigin />
         
         <SEO
             title={title}
@@ -154,7 +183,6 @@ const structuredData = type === "article" ? {
                     ...(feeds ? [
                         { rel: "alternate", type: "application/rss+xml", title: "Abhi Agarwal - RSS Feed", href: feeds.rss },
                         { rel: "alternate", type: "application/atom+xml", title: "Abhi Agarwal - Atom Feed", href: feeds.atom },
-                        { rel: "alternate", type: "application/feed+json", title: "Abhi Agarwal - JSON Feed", href: feeds.json },
                     ] : []),
                 ],
                 meta: [
@@ -166,11 +194,10 @@ const structuredData = type === "article" ? {
                 ],
             }}
         />
-        <link
-            rel="icon"
-            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤠</text></svg>"
-        />
         <script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+        {breadcrumbStructuredData && (
+            <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbStructuredData)} />
+        )}
         {/* This script was purposefully not bundled to prevent FOUC. I minified it with terser manually. Refer to util/theme-switch.ts for the source. */}
         <script is:inline>
 window.THEME_KEY="theme-preference";window.THEMES=["light","dark","system"];window.applyEffectiveTheme=e=>{const t="dark"===e||"system"===e&&window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=t?"dark":"light"};window.setThemePreference=e=>{const t=e&&window.THEMES.includes(e)?e:"system";document.documentElement.dataset.themePreference=t,localStorage.setItem(window.THEME_KEY,t),window.applyEffectiveTheme(t)};window.getCurrentPreference=()=>{const e=document.documentElement.dataset.themePreference;return e&&window.THEMES.includes(e)?e:"system"};const e=localStorage.getItem(window.THEME_KEY);window.setThemePreference(e);window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",(()=>{"system"===window.getCurrentPreference()&&window.applyEffectiveTheme("system")}))

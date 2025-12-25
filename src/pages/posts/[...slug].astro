@@ -15,7 +15,7 @@ import PostDates from "../../components/PostDates.astro";
 import PostListing from "../../components/PostListing.astro";
 import Prose from "../../components/Prose.astro";
 import Base from "../../layouts/Base.astro";
-import { feedConfigToLinks, generateFeedUrls } from "../../util/feeds";
+import { generateFeedUrls } from "../../util/feeds";
 import { parseInlineCode } from "../../util/parseInlineCode";
 
 dayjs.extend(utc);
@@ -134,9 +134,7 @@ const backlinkData = Array.from(currentNode.backlinks)
 
 // biome-ignore lint/style/noNonNullAssertion: always defined
 const siteUrl = Astro.site!.toString();
-const feeds = currentNode.isFolder
-    ? generateFeedUrls(siteUrl, currentNode.id)
-    : undefined;
+const feeds = generateFeedUrls(siteUrl);
 ---
 
 <Base
@@ -146,7 +144,7 @@ const feeds = currentNode.isFolder
     tags={seoTags}
     publishedTime={dayjs(currentNode.data?.published)}
     feeds={feeds}
-    noindex={currentNode.isFolder}
+    breadcrumbs={breadcrumbSegments}
 >
     <div
         class="m-auto mt-6 flex max-w-2xl flex-col gap-6 lg:mt-0"

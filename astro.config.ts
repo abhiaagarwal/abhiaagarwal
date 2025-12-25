@@ -1,10 +1,13 @@
+import { readFile } from "node:fs/promises";
 import sitemap from "@astrojs/sitemap";
 import remarkWikiLink from "@portaljs/remark-wiki-link";
 import remarkCallout from "@r4ai/remark-callout";
 import tailwindcss from "@tailwindcss/vite";
 import expressiveCode from "astro-expressive-code";
+import favicons from "astro-favicons";
 import pagefind from "astro-pagefind";
 import { defineConfig, fontProviders } from "astro/config";
+import rehypeExternalLinks from "rehype-external-links";
 import rehypeShiftHeading from "rehype-shift-heading";
 import { loadEnv } from "vite";
 import devtoolsJson from "vite-plugin-devtools-json";
@@ -76,6 +79,13 @@ export default defineConfig({
         ],
         rehypePlugins: [
             [
+                rehypeExternalLinks,
+                {
+                    target: "_blank",
+                    rel: ["noopener", "noreferrer"],
+                },
+            ],
+            [
                 rehypeShiftHeading,
                 {
                     shift: 1,
@@ -101,16 +111,8 @@ export default defineConfig({
                 uiLineHeight: "var(--text-sm--line-height)",
             },
         }),
-        /* 
-        import.meta.env.PROD &&
-            (await import("@playform/compress")).default({
-                CSS: {
-                    csso: false,
-                    lightningcss: {
-                        minify: false,
-                    },
-                },
-            }),
-        */
+        favicons({
+            input: { favicons: [await readFile("src/assets/favicon.png")] },
+        }),
     ],
 });

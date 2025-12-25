@@ -1,5 +1,5 @@
 export interface FeedLink {
-    type: "rss" | "atom" | "json";
+    type: "rss" | "atom";
     href: string;
     title: string;
 }
@@ -7,31 +7,16 @@ export interface FeedLink {
 export interface FeedConfig {
     rss: string;
     atom: string;
-    json: string;
 }
 
 /**
- * Generate feed URLs for a specific folder or the main site
+ * Generate feed URLs for the main site
  */
-export function generateFeedUrls(
-    siteUrl: string,
-    folderPath?: string,
-): FeedConfig {
-    if (folderPath) {
-        // Folder-specific feeds
-        return {
-            rss: `${siteUrl}posts/${folderPath}.rss`,
-            atom: `${siteUrl}posts/${folderPath}.atom`,
-            json: `${siteUrl}posts/${folderPath}.json`,
-        };
-    } else {
-        // Main site feeds
-        return {
-            rss: `${siteUrl}feed.rss`,
-            atom: `${siteUrl}feed.atom`,
-            json: `${siteUrl}feed.json`,
-        };
-    }
+export function generateFeedUrls(siteUrl: string): FeedConfig {
+    return {
+        rss: `${siteUrl}feed.rss`,
+        atom: `${siteUrl}feed.atom`,
+    };
 }
 
 /**
@@ -53,11 +38,6 @@ export function feedConfigToLinks(
             type: "atom",
             href: feeds.atom,
             title: `Atom feed${suffix}`,
-        },
-        {
-            type: "json",
-            href: feeds.json,
-            title: `JSON feed${suffix}`,
         },
     ];
 }
