@@ -51,7 +51,7 @@
         "prettier-plugin-tailwindcss": "^0.7.1",
         "typescript": "^5.9.3",
         "vite-plugin-devtools-json": "^1.0.0",
-        "wrangler": "^4.47.0"
+        "wrangler": "^4.54.0"
     },
     "patchedDependencies": {
         "@portaljs/remark-wiki-link@1.2.0": "patches/@portaljs%2Fremark-wiki-link@1.2.0.patch"
