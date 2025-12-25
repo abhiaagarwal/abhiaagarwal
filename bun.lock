@@ -7,7 +7,7 @@
         "@ascorbic/csv-loader": "^2.0.3",
         "@astrojs/sitemap": "^3.6.0",
         "@fontsource-variable/lora": "^5.2.8",
-        "@lucide/astro": "^0.553.0",
+        "@lucide/astro": "^0.562.0",
         "@playform/compress": "^0.2.0",
         "@portaljs/remark-wiki-link": "^1.2.0",
         "@r4ai/remark-callout": "^0.6.2",
@@ -273,7 +273,7 @@
 
     "@lit/reactive-element": ["@lit/reactive-element@2.1.0", "", { "dependencies": { "@lit-labs/ssr-dom-shim": "^1.2.0" } }, "sha512-L2qyoZSQClcBmq0qajBVbhYEcG6iK0XfLn66ifLe/RfC0/ihpc+pl0Wdn8bJ8o+hj38cG0fGXRgSS20MuXn7qA=="],
 
-    "@lucide/astro": ["@lucide/astro@0.553.0", "", { "peerDependencies": { "astro": "^4 || ^5" } }, "sha512-yiHpOKGBPOy+pmZfkQmZcFAETU8FvkqWdoLCboSZGuZ1zgwFHGxBmr/brmk5PxVFOUnImzsRFGzAX2O2A88hmQ=="],
+    "@lucide/astro": ["@lucide/astro@0.562.0", "", { "peerDependencies": { "astro": "^4 || ^5" } }, "sha512-Rdtykh/VmH3M7n4ckBWY2X7wTMyJX/At5MuJDZ+5M+QZNebxAa75TU7xmM0OVmQj60UsHvdmqRIRNTqEYIieKg=="],
 
     "@nodelib/fs.scandir": ["@nodelib/fs.scandir@2.1.5", "", { "dependencies": { "@nodelib/fs.stat": "2.0.5", "run-parallel": "^1.1.9" } }, "sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g=="],
 
