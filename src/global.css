@@ -6,22 +6,22 @@
 @theme {
     --default-transition-duration: 250ms;
 
-    --color-primary: oklch(0.4671 0.1917 355.16);
-    --color-light: oklch(0.973 0.007 324.6);
-    --color-light-gray: oklch(0.88 0.01 0);
-    --color-gray: oklch(0.75 0.02 325);
-    --color-dark-gray: oklch(0.28 0.01 324.99);
-    --color-dark: oklch(0.15 0.03 301.01);
+    --color-primary: oklch(0.45 0.18 355);
+    --color-light: oklch(0.975 0.008 350);
+    --color-light-gray: oklch(0.92 0.012 350);
+    --color-gray: oklch(0.72 0.015 350);
+    --color-dark-gray: oklch(0.35 0.012 350);
+    --color-dark: oklch(0.18 0.02 350);
 }
 
 @layer base {
     @variant dark {
-        --color-primary: oklch(0.7112 0.1636 346.14);
-        --color-light: oklch(0.15 0.03 301.01);
-        --color-light-gray: oklch(0.28 0.01 324.99);
-        --color-gray: oklch(0.55 0.02 325);
-        --color-dark-gray: oklch(0.88 0.01 0);
-        --color-dark: oklch(0.973 0.007 324.6);
+        --color-primary: oklch(0.74 0.145 350);
+        --color-light: oklch(0.205 0.02 285);
+        --color-light-gray: oklch(0.285 0.018 285);
+        --color-gray: oklch(0.52 0.015 285);
+        --color-dark-gray: oklch(0.72 0.012 285);
+        --color-dark: oklch(0.88 0.008 285);
     }
 
     ::-moz-selection {

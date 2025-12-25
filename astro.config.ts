@@ -34,6 +34,7 @@ export default defineConfig({
     },
     experimental: {
         clientPrerender: true,
+        failOnPrerenderConflict: true,
         fonts: [
             {
                 provider: fontProviders.fontsource(),
